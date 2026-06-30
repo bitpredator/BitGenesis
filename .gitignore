@@ -1,0 +1,42 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# virtual environments
+venv/
+.env/
+.venv/
+
+# pytest
+.pytest_cache/
+.cache/
+
+# mypy / type checkers
+.mypy_cache/
+.dmypy.json
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Project specific
+# =========================
+structure.txt
