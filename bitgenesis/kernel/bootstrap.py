@@ -1,5 +1,5 @@
-from bitgenesis.core.event_bus import EventBus
-from bitgenesis.core.kernel import Kernel
+from bitgenesis.events.event_bus import EventBus
+from bitgenesis.kernel.kernel import Kernel
 
 
 def bootstrap():
