@@ -2,15 +2,15 @@ from bitgenesis.kernel.bootstrap import bootstrap
 from bitgenesis.events.types import Event
 
 
-bus, kernel = bootstrap()
+bus, kernel, memory_store = bootstrap()
 
-event = Event(
+bus.emit(Event(
     type="perception.event",
     source="system",
     payload={
-        "type": "system.boot",
-        "data": "BitGenesis online"
+        "input": "hello world",
+        "context": "test memory system"
     }
-)
+))
 
-bus.emit(event)
+print("Memories stored:", len(memory_store.get_all()))
