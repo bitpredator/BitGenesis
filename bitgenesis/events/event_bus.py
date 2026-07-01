@@ -3,10 +3,10 @@ Core EventBus implementation.
 """
 
 from collections import defaultdict
-from collections.abc import Callable
 
 from .enums import EventCategory
 from .event import Event
+from .subscriber import EventSubscriber
 
 
 class EventBus:
@@ -14,47 +14,46 @@ class EventBus:
     Central publish/subscribe event bus.
 
     The EventBus is responsible only for distributing events to
-    registered subscribers. It does not contain business logic,
-    persistence, or event processing.
+    registered subscribers.
     """
 
     def __init__(self) -> None:
         self._subscribers: dict[
             EventCategory,
-            list[Callable[[Event], None]]
+            list[EventSubscriber],
         ] = defaultdict(list)
 
     def subscribe(
         self,
         category: EventCategory,
-        callback: Callable[[Event], None],
+        subscriber: EventSubscriber,
     ) -> None:
         """
         Register a subscriber for a specific event category.
         """
-        self._subscribers[category].append(callback)
+        self._subscribers[category].append(subscriber)
 
     def unsubscribe(
         self,
         category: EventCategory,
-        callback: Callable[[Event], None],
+        subscriber: EventSubscriber,
     ) -> None:
         """
-        Remove a previously registered subscriber.
+        Remove a subscriber.
         """
-        if callback in self._subscribers[category]:
-            self._subscribers[category].remove(callback)
+        if subscriber in self._subscribers[category]:
+            self._subscribers[category].remove(subscriber)
 
     def publish(self, event: Event) -> None:
         """
-        Publish an event to all subscribers of its category.
+        Publish an event to all subscribers.
         """
-        for callback in self._subscribers[event.category]:
-            callback(event)
+        for subscriber in self._subscribers[event.category]:
+            subscriber.handle(event)
 
     def clear(self) -> None:
         """
-        Remove every registered subscriber.
+        Remove all subscribers.
         """
         self._subscribers.clear()
 
@@ -63,6 +62,6 @@ class EventBus:
         Return the total number of registered subscribers.
         """
         return sum(
-            len(callbacks)
-            for callbacks in self._subscribers.values()
+            len(subscribers)
+            for subscribers in self._subscribers.values()
         )
