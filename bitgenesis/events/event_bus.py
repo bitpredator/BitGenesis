@@ -1,22 +1,68 @@
+"""
+Core EventBus implementation.
+"""
+
 from collections import defaultdict
-from typing import Callable, Dict, List
-from bitgenesis.events.types import Event
+from collections.abc import Callable
+
+from .enums import EventCategory
+from .event import Event
 
 
 class EventBus:
-    def __init__(self):
-        self.listeners: Dict[str, List[Callable]] = defaultdict(list)
-        self.event_log = []
+    """
+    Central publish/subscribe event bus.
 
-    def subscribe(self, event_type: str, handler: Callable):
-        self.listeners[event_type].append(handler)
+    The EventBus is responsible only for distributing events to
+    registered subscribers. It does not contain business logic,
+    persistence, or event processing.
+    """
 
-    def emit(self, event: Event):
-        self._log(event)
+    def __init__(self) -> None:
+        self._subscribers: dict[
+            EventCategory,
+            list[Callable[[Event], None]]
+        ] = defaultdict(list)
 
-        handlers = self.listeners.get(event.type, [])
-        for handler in handlers:
-            handler(event)
+    def subscribe(
+        self,
+        category: EventCategory,
+        callback: Callable[[Event], None],
+    ) -> None:
+        """
+        Register a subscriber for a specific event category.
+        """
+        self._subscribers[category].append(callback)
 
-    def _log(self, event: Event):
-        self.event_log.append(event)
+    def unsubscribe(
+        self,
+        category: EventCategory,
+        callback: Callable[[Event], None],
+    ) -> None:
+        """
+        Remove a previously registered subscriber.
+        """
+        if callback in self._subscribers[category]:
+            self._subscribers[category].remove(callback)
+
+    def publish(self, event: Event) -> None:
+        """
+        Publish an event to all subscribers of its category.
+        """
+        for callback in self._subscribers[event.category]:
+            callback(event)
+
+    def clear(self) -> None:
+        """
+        Remove every registered subscriber.
+        """
+        self._subscribers.clear()
+
+    def subscriber_count(self) -> int:
+        """
+        Return the total number of registered subscribers.
+        """
+        return sum(
+            len(callbacks)
+            for callbacks in self._subscribers.values()
+        )
