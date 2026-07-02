@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bitgenesis"
+version = "0.1.0"
+description = "BitGenesis - Modular Cognitive Architecture from Scratch"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+
+authors = [
+  { name = "Bitpredator" }
+]
+
+dependencies = []
+
+[tool.setuptools]
+packages = ["bitgenesis"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
