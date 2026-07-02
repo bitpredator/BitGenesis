@@ -29,12 +29,12 @@ def test_event_is_converted_processed_and_stored():
 
     # Factory
     assert memory.source == event.source
-    assert memory.content == event.payload
+    assert memory.content["payload"] == event.payload
 
     assert memory.metadata["event_id"] == event.id
     assert memory.metadata["event_type"] == event.type.value
     assert memory.metadata["event_category"] == event.category.value
-    assert memory.metadata["priority"] == event.priority.name
+    assert memory.metadata["priority"] == event.priority.value
 
     # Processor
     assert "memory" in memory.tags

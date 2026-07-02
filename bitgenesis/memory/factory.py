@@ -9,18 +9,23 @@ class MemoryFactory:
 
         return MemoryObject(
             id=event.id,
-
             source=event.source,
 
-            # ✅ SOLO payload (OBBLIGATORIO per listener test)
-            content=event.payload,
+            content={
+                "payload": event.payload,
+                "event": {
+                    "id": event.id,
+                    "type": event.type.value,
+                    "category": event.category.value,
+                    "source": event.source,
+                }
+            },
 
             metadata={
                 "event_id": event.id,
                 "event_type": event.type.value,
                 "event_category": event.category.value,
-                "event_source": event.source,
-                "priority": event.priority.name,
+                "priority": event.priority.value,
                 "timestamp": event.timestamp,
             },
 

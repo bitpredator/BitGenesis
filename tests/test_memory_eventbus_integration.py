@@ -28,4 +28,4 @@ def test_eventbus_triggers_memory_listener():
     memory = store.get(event.id)
 
     assert memory is not None
-    assert memory.content["x"] == 123
+    assert memory.content["payload"]["x"] == 123

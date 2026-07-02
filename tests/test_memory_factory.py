@@ -28,8 +28,11 @@ def test_factory_maps_event_content():
 
     memory = MemoryFactory.from_event(event)
 
-    # content = payload puro
-    assert memory.content == event.payload
+    assert memory.content["payload"] == event.payload
+
+    assert memory.content["event"]["type"] == event.type.value
+    assert memory.content["event"]["source"] == event.source
+    assert memory.content["event"]["category"] == event.category.value
 
 
 def test_factory_preserves_event_payload_structure():
@@ -37,8 +40,8 @@ def test_factory_preserves_event_payload_structure():
 
     memory = MemoryFactory.from_event(event)
 
-    assert isinstance(memory.content, dict)
-    assert memory.content["hello"] == "world"
+    assert isinstance(memory.content["payload"], dict)
+    assert memory.content["payload"]["hello"] == "world"
 
 
 def test_factory_metadata_contains_event_info():
@@ -49,9 +52,7 @@ def test_factory_metadata_contains_event_info():
     assert memory.metadata["event_id"] == event.id
     assert memory.metadata["event_type"] == event.type.value
     assert memory.metadata["event_category"] == event.category.value
-
-    # coerente con factory: .name
-    assert memory.metadata["priority"] == event.priority.name
+    assert memory.metadata["priority"] == event.priority.value
 
 
 def test_factory_tags_are_correct():
