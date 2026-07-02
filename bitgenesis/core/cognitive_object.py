@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from bitgenesis.core.entity import Entity
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, kw_only=True)
 class CognitiveObject(Entity):
     """
     Base class for every cognitive object managed by BitGenesis.

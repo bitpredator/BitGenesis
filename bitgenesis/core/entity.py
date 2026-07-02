@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from .identifiers import generate_id
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, kw_only=True)
 class Entity:
     """
     Base class for all persistent domain entities.

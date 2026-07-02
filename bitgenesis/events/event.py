@@ -13,7 +13,7 @@ from .enums import EventPriority
 from .enums import EventType
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, frozen=True, kw_only=True)
 class Event:
     """
     Immutable event exchanged across the BitGenesis architecture.
