@@ -31,4 +31,8 @@ class MemoryProcessor:
 
         memory.confidence = max(0.0, min(1.0, memory.confidence))
 
+        # 🧠 LEARNING STEP
+        from bitgenesis.memory.learning_rules import MemoryLearningRules
+        MemoryLearningRules.apply(memory)
+
         return memory
