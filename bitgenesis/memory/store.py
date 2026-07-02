@@ -1,17 +1,83 @@
+"""
+Memory storage layer.
 
-from typing import List, Optional
-from bitgenesis.memory.types import Memory
+This component is responsible for storing and retrieving MemoryObject instances.
+It does NOT perform reasoning or intelligence operations.
+"""
+
+from __future__ import annotations
+
+from typing import Dict, List, Optional
+
+from bitgenesis.memory.object import MemoryObject
 
 
 class MemoryStore:
-    def __init__(self):
-        self.memories: List[Memory] = []
+    """
+    Simple in-memory storage for MemoryObject instances.
+    """
 
-    def save(self, memory: Memory):
-        self.memories.append(memory)
+    def __init__(self) -> None:
+        self._store: Dict[str, MemoryObject] = {}
 
-    def query_by_type(self, memory_type: str) -> List[Memory]:
-        return [m for m in self.memories if m.type == memory_type]
+    # -------------------------
+    # Core CRUD operations
+    # -------------------------
 
-    def get_all(self) -> List[Memory]:
-        return self.memories
+    def add(self, memory: MemoryObject) -> None:
+        """
+        Add or overwrite a memory in the store.
+        """
+        self._store[memory.id] = memory
+
+    def get(self, memory_id: str) -> Optional[MemoryObject]:
+        """
+        Retrieve a memory by its ID.
+        """
+        return self._store.get(memory_id)
+
+    def remove(self, memory_id: str) -> None:
+        """
+        Remove a memory from the store if it exists.
+        """
+        self._store.pop(memory_id, None)
+
+    def exists(self, memory_id: str) -> bool:
+        """
+        Check whether a memory exists in the store.
+        """
+        return memory_id in self._store
+
+    # -------------------------
+    # Bulk access
+    # -------------------------
+
+    def all(self) -> List[MemoryObject]:
+        """
+        Return all stored memories.
+        """
+        return list(self._store.values())
+
+    # -------------------------
+    # Query operations
+    # -------------------------
+
+    def find_by_source(self, source: str) -> List[MemoryObject]:
+        """
+        Return all memories matching a given source.
+        """
+        return [
+            memory
+            for memory in self._store.values()
+            if memory.source == source
+        ]
+
+    def find_by_tag(self, tag: str) -> List[MemoryObject]:
+        """
+        Return all memories containing a given tag.
+        """
+        return [
+            memory
+            for memory in self._store.values()
+            if tag in memory.tags
+        ]
