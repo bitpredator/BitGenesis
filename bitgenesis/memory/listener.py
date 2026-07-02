@@ -1,48 +1,23 @@
-"""
-Memory event listener.
-
-This component connects the Event System with the MemoryStore,
-allowing automatic memory creation from system events.
-"""
-
-from typing import Any
-
-from bitgenesis.events.event import Event
-from bitgenesis.events.enums import EventType
-from bitgenesis.memory.store import MemoryStore
-from bitgenesis.memory.object import MemoryObject
+from bitgenesis.memory.factory import MemoryFactory
+from bitgenesis.memory.processor import MemoryProcessor
 
 
 class MemoryListener:
     """
-    Listens to system events and converts them into MemoryObjects.
+    Listens to events and converts them into MemoryObjects.
     """
 
-    def __init__(self, store: MemoryStore) -> None:
-        self.store = store
+    def __init__(self, store):
+        self._store = store
+        self._processor = MemoryProcessor()
 
-    def handle(self, event: Event) -> None:
+    def handle(self, event) -> None:
         """
-        Handle incoming events and store relevant ones as memory.
-        """
-
-        memory = self._convert_event_to_memory(event)
-
-        self.store.add(memory)
-
-    def _convert_event_to_memory(self, event: Event) -> MemoryObject:
-        """
-        Convert an Event into a MemoryObject.
+        Convert event → memory → process → store
         """
 
-        return MemoryObject(
-            id=event.id,
-            source=event.category.value,
-            content={
-                "type": event.type.value,
-                "payload": event.payload,
-                "metadata": event.metadata,
-                "priority": event.priority.value,
-                "timestamp": event.timestamp.isoformat(),
-            },
-        )
+        memory = MemoryFactory.from_event(event)
+        memory = self._processor.process(memory)
+
+        # IMPORTANT: use add() (test expects store.add)
+        self._store.add(memory)

@@ -1,72 +1,34 @@
-"""
-Memory processing pipeline.
-
-Responsible for enriching MemoryObject instances before
-they are persisted inside the MemoryStore.
-"""
-
-from bitgenesis.memory.object import MemoryObject
-
-
 class MemoryProcessor:
-    """
-    Enriches newly created memories.
 
-    Future versions will perform semantic analysis,
-    embedding generation, knowledge extraction,
-    duplicate detection and consolidation.
-    """
+    def process(self, memory):
 
-    def process(self, memory: MemoryObject) -> MemoryObject:
-        """
-        Process and enrich a memory object.
+        # safety init
+        if memory.metadata is None:
+            memory.metadata = {}
 
-        Parameters
-        ----------
-        memory:
-            The memory to process.
+        if memory.tags is None:
+            memory.tags = []
 
-        Returns
-        -------
-        MemoryObject
-            The processed memory.
-        """
+        # metadata processed
+        memory.metadata["processed"] = True
 
-        self._normalize_importance(memory)
-        self._normalize_confidence(memory)
-        self._ensure_system_tags(memory)
-        self._mark_processed(memory)
+        # tags idempotent
+        if "memory" not in memory.tags:
+            memory.tags.append("memory")
 
-        return memory
+        if "processed" not in memory.tags:
+            memory.tags.append("processed")
 
-    def _normalize_importance(self, memory: MemoryObject) -> None:
-        """
-        Clamp importance between 0.0 and 1.0.
-        """
+        # clamp importance
+        if memory.importance is None:
+            memory.importance = 0.5
 
         memory.importance = max(0.0, min(1.0, memory.importance))
 
-    def _normalize_confidence(self, memory: MemoryObject) -> None:
-        """
-        Clamp confidence between 0.0 and 1.0.
-        """
+        # clamp confidence
+        if memory.confidence is None:
+            memory.confidence = 1.0
 
         memory.confidence = max(0.0, min(1.0, memory.confidence))
 
-    def _ensure_system_tags(self, memory: MemoryObject) -> None:
-        """
-        Ensure internal tags always exist.
-        """
-
-        if "memory" not in memory.tags:
-            memory.add_tag("memory")
-
-        if "processed" not in memory.tags:
-            memory.add_tag("processed")
-
-    def _mark_processed(self, memory: MemoryObject) -> None:
-        """
-        Mark memory as processed.
-        """
-
-        memory.metadata["processed"] = True
+        return memory

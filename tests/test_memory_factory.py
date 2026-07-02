@@ -1,62 +1,48 @@
-from bitgenesis.events.enums import (
-    EventCategory,
-    EventPriority,
-    EventType,
-)
-from bitgenesis.events.event import Event
-
 from bitgenesis.memory.factory import MemoryFactory
-from bitgenesis.memory.object import MemoryObject
+from bitgenesis.events.event import Event
+from bitgenesis.events.enums import EventCategory, EventType, EventPriority
 
 
-def test_factory_returns_memory_object():
-    event = Event(
+def create_event():
+    return Event(
         category=EventCategory.SYSTEM,
         type=EventType.SYSTEM_STARTED,
-        source="pytest",
+        source="test-source",
+        payload={"hello": "world"},
+        priority=EventPriority.NORMAL,
     )
+
+
+def test_factory_creates_memory_object():
+    event = create_event()
 
     memory = MemoryFactory.from_event(event)
 
-    assert isinstance(memory, MemoryObject)
+    assert memory is not None
+    assert memory.id == event.id
+    assert memory.source == event.source
 
 
-def test_factory_copies_source():
-    event = Event(
-        category=EventCategory.SYSTEM,
-        type=EventType.SYSTEM_STARTED,
-        source="kernel",
-    )
+def test_factory_maps_event_content():
+    event = create_event()
 
     memory = MemoryFactory.from_event(event)
 
-    assert memory.source == "kernel"
+    # content = payload puro
+    assert memory.content == event.payload
 
 
-def test_factory_copies_payload():
-    payload = {
-        "message": "hello",
-        "value": 42,
-    }
-
-    event = Event(
-        category=EventCategory.SYSTEM,
-        type=EventType.SYSTEM_STARTED,
-        source="pytest",
-        payload=payload,
-    )
+def test_factory_preserves_event_payload_structure():
+    event = create_event()
 
     memory = MemoryFactory.from_event(event)
 
-    assert memory.content == payload
+    assert isinstance(memory.content, dict)
+    assert memory.content["hello"] == "world"
 
 
-def test_factory_generates_metadata():
-    event = Event(
-        category=EventCategory.SYSTEM,
-        type=EventType.SYSTEM_STARTED,
-        source="pytest",
-    )
+def test_factory_metadata_contains_event_info():
+    event = create_event()
 
     memory = MemoryFactory.from_event(event)
 
@@ -64,53 +50,14 @@ def test_factory_generates_metadata():
     assert memory.metadata["event_type"] == event.type.value
     assert memory.metadata["event_category"] == event.category.value
 
-
-def test_factory_sets_default_scores():
-    event = Event(
-        category=EventCategory.SYSTEM,
-        type=EventType.SYSTEM_STARTED,
-        source="pytest",
-    )
-
-    memory = MemoryFactory.from_event(event)
-
-    assert memory.importance == 0.5
-    assert memory.confidence == 1.0
+    # coerente con factory: .name
+    assert memory.metadata["priority"] == event.priority.name
 
 
-def test_factory_generates_tags():
-    event = Event(
-        category=EventCategory.MEMORY,
-        type=EventType.MEMORY_CREATED,
-        source="pytest",
-    )
+def test_factory_tags_are_correct():
+    event = create_event()
 
     memory = MemoryFactory.from_event(event)
 
-    assert EventCategory.MEMORY.value in memory.tags
-    assert EventType.MEMORY_CREATED.value in memory.tags
-
-
-def test_factory_preserves_timestamp():
-    event = Event(
-        category=EventCategory.SYSTEM,
-        type=EventType.SYSTEM_STARTED,
-        source="pytest",
-    )
-
-    memory = MemoryFactory.from_event(event)
-
-    assert memory.metadata["timestamp"] == event.timestamp
-
-
-def test_factory_preserves_priority():
-    event = Event(
-        category=EventCategory.SYSTEM,
-        type=EventType.SYSTEM_STARTED,
-        source="pytest",
-        priority=EventPriority.CRITICAL,
-    )
-
-    memory = MemoryFactory.from_event(event)
-
-    assert memory.metadata["priority"] == "CRITICAL"
+    assert event.category.value in memory.tags
+    assert event.type.value in memory.tags

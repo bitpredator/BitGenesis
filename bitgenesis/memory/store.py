@@ -63,9 +63,6 @@ class MemoryStore:
     # -------------------------
 
     def find_by_source(self, source: str) -> List[MemoryObject]:
-        """
-        Return all memories matching a given source.
-        """
         return [
             memory
             for memory in self._store.values()
@@ -73,9 +70,6 @@ class MemoryStore:
         ]
 
     def find_by_tag(self, tag: str) -> List[MemoryObject]:
-        """
-        Return all memories containing a given tag.
-        """
         return [
             memory
             for memory in self._store.values()
