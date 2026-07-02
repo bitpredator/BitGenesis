@@ -1,6 +1,6 @@
 from bitgenesis.events.event_bus import EventBus
-from bitgenesis.events.enums import EventCategory
-from bitgenesis.events.enums import EventType
+from bitgenesis.events.enums import EventCategory, EventType
+from bitgenesis.events.event import Event
 
 from bitgenesis.kernel.kernel import Kernel
 from bitgenesis.memory.store import MemoryStore
@@ -11,15 +11,25 @@ def bootstrap():
     bus = EventBus()
     kernel = Kernel(bus)
 
-    # MEMORY SYSTEM
     store = MemoryStore()
     memory_listener = MemoryListener(store)
 
-    # hook events → memory (CLEAN VERSION)
-    bus.subscribe(EventCategory.PERCEPTION, memory_listener.handle)
+    # memory listens to system events
     bus.subscribe(EventCategory.SYSTEM, memory_listener.handle)
-    bus.subscribe(EventCategory.REASONING, memory_listener.handle)
 
     kernel.start()
+
+    # 🔥 FIRST MEMORY EVENT (SYSTEM BIRTH)
+    bus.publish(
+        Event(
+            category=EventCategory.MEMORY,
+            type=EventType.MEMORY_BOOTSTRAP,
+            source="bootstrap",
+            payload={
+                "message": "BitGenesis system initialized",
+                "phase": "birth"
+            }
+        )
+    )
 
     return bus, kernel, store
