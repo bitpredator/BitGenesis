@@ -1,4 +1,7 @@
 from bitgenesis.events.event_bus import EventBus
+from bitgenesis.events.enums import EventCategory
+from bitgenesis.events.enums import EventType
+
 from bitgenesis.kernel.kernel import Kernel
 from bitgenesis.memory.store import MemoryStore
 from bitgenesis.memory.listener import MemoryListener
@@ -12,10 +15,10 @@ def bootstrap():
     store = MemoryStore()
     memory_listener = MemoryListener(store)
 
-    # hook eventi → memoria
-    bus.subscribe("perception.event", memory_listener.handle)
-    bus.subscribe("system.event", memory_listener.handle)
-    bus.subscribe("reasoning.event", memory_listener.handle)
+    # hook events → memory (CLEAN VERSION)
+    bus.subscribe(EventCategory.PERCEPTION, memory_listener.handle)
+    bus.subscribe(EventCategory.SYSTEM, memory_listener.handle)
+    bus.subscribe(EventCategory.REASONING, memory_listener.handle)
 
     kernel.start()
 
