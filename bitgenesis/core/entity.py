@@ -1,34 +1,31 @@
-"""
-Base entity for BitGenesis domain objects.
-"""
+from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, UTC
+from uuid import UUID, uuid4
 
-from .identifiers import generate_id
 
-
-@dataclass(slots=True, kw_only=True)
+@dataclass(slots=True)
 class Entity:
     """
-    Base class for all persistent domain entities.
-
-    Every entity owns a globally unique identifier and
-    lifecycle timestamps.
+    Base identity object for all system entities.
     """
 
-    id: str = field(default_factory=generate_id)
+    id: UUID = field(default_factory=uuid4)
 
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(UTC)
-    )
-
-    updated_at: datetime = field(
-        default_factory=lambda: datetime.now(UTC)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def touch(self) -> None:
         """
-        Update the modification timestamp.
+        Update the last modification timestamp safely.
+        Ensures monotonic time progression.
         """
-        self.updated_at = datetime.now(UTC)
+        now = datetime.now(UTC)
+
+        if now <= self.updated_at:
+            now = self.updated_at.replace(
+                microsecond=self.updated_at.microsecond + 1
+            )
+
+        self.updated_at = now

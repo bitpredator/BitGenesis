@@ -1,67 +1,76 @@
-"""
-Core EventBus implementation.
-"""
-
 from collections import defaultdict
+from typing import Callable, Dict, List, Union
 
-from .enums import EventCategory
-from .event import Event
-from .subscriber import EventSubscriber
+from bitgenesis.events.event import Event
+from bitgenesis.events.enums import EventCategory, EventType
 
 
 class EventBus:
     """
-    Central publish/subscribe event bus.
-
-    The EventBus is responsible only for distributing events to
-    registered subscribers.
+    Central event dispatcher.
     """
 
-    def __init__(self) -> None:
-        self._subscribers: dict[
-            EventCategory,
-            list[EventSubscriber],
-        ] = defaultdict(list)
+    def __init__(self):
+        self._by_category: Dict[EventCategory, List] = defaultdict(list)
+        self._by_type: Dict[EventType, List] = defaultdict(list)
 
-    def subscribe(
-        self,
-        category: EventCategory,
-        subscriber: EventSubscriber,
-    ) -> None:
-        """
-        Register a subscriber for a specific event category.
-        """
-        self._subscribers[category].append(subscriber)
+    # -------------------------
+    # Subscription
+    # -------------------------
 
-    def unsubscribe(
-        self,
-        category: EventCategory,
-        subscriber: EventSubscriber,
-    ) -> None:
-        """
-        Remove a subscriber.
-        """
-        if subscriber in self._subscribers[category]:
-            self._subscribers[category].remove(subscriber)
+    def subscribe(self, key: Union[EventCategory, EventType], subscriber):
+        if isinstance(key, EventCategory):
+            self._by_category[key].append(subscriber)
+        elif isinstance(key, EventType):
+            self._by_type[key].append(subscriber)
+        else:
+            raise TypeError("Invalid subscription key")
 
-    def publish(self, event: Event) -> None:
-        """
-        Publish an event to all subscribers.
-        """
-        for subscriber in self._subscribers[event.category]:
-            subscriber.handle(event)
+    def unsubscribe(self, key: Union[EventCategory, EventType], subscriber):
+        if isinstance(key, EventCategory):
+            if subscriber in self._by_category[key]:
+                self._by_category[key].remove(subscriber)
+        elif isinstance(key, EventType):
+            if subscriber in self._by_type[key]:
+                self._by_type[key].remove(subscriber)
 
-    def clear(self) -> None:
-        """
-        Remove all subscribers.
-        """
-        self._subscribers.clear()
+    def clear(self):
+        self._by_category.clear()
+        self._by_type.clear()
 
     def subscriber_count(self) -> int:
-        """
-        Return the total number of registered subscribers.
-        """
-        return sum(
-            len(subscribers)
-            for subscribers in self._subscribers.values()
+        return (
+            sum(len(v) for v in self._by_category.values()) +
+            sum(len(v) for v in self._by_type.values())
         )
+
+    # -------------------------
+    # Publish / Emit
+    # -------------------------
+
+    def publish(self, event: Event):
+        self._dispatch(event)
+
+    def emit(self, event: Event):
+        """Alias for compatibility"""
+        self._dispatch(event)
+
+    def _dispatch(self, event: Event):
+        for sub in self._by_category.get(event.category, []):
+            self._call(sub, event)
+
+        for sub in self._by_type.get(event.type, []):
+            self._call(sub, event)
+
+    def _call(self, subscriber, event: Event):
+        """
+        Supports:
+        - callable(event)
+        - object with handle(event)
+        """
+        if callable(subscriber):
+            subscriber(event)
+        elif hasattr(subscriber, "handle"):
+            subscriber.handle(event)
+        else:
+            raise TypeError("Subscriber must be callable or have handle(event)")
