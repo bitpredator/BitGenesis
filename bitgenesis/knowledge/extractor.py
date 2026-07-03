@@ -9,7 +9,6 @@ class KnowledgeExtractor:
         entities = []
 
         content = getattr(memory, "content", {}) or {}
-
         payload = content.get("payload", {})
 
         if not isinstance(payload, dict):

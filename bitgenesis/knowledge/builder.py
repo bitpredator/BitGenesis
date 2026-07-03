@@ -1,4 +1,5 @@
 from bitgenesis.knowledge.extractor import KnowledgeExtractor
+from bitgenesis.knowledge.relation_mapper import RelationMapper
 
 
 class KnowledgeBuilder:
@@ -12,6 +13,9 @@ class KnowledgeBuilder:
 
         extracted = KnowledgeExtractor.extract(memory)
 
+        if not extracted:
+            return []
+
         entities = []
 
         for entity in extracted:
@@ -24,14 +28,44 @@ class KnowledgeBuilder:
 
             entities.append(node)
 
-        # collega tutte le entità trovate nella memoria
-        for i in range(len(entities)):
-            for j in range(i + 1, len(entities)):
+        # Individua il progetto principale
+        project = None
 
+        for entity in entities:
+            if entity.entity_type == "project":
+                project = entity
+                break
+
+        if project is None:
+            return entities
+
+        # Costruisce le relazioni semantiche
+        for entity in entities:
+
+            if entity is project:
+                continue
+
+            relation = RelationMapper.relation_for(entity.entity_type)
+
+            if relation in ("creator_of", "author_of", "developer_of"):
                 self.graph.add_relation(
-                    entities[i],
-                    "related_to",
-                    entities[j],
+                    entity,
+                    relation,
+                    project,
+                )
+
+            elif relation == "written_in":
+                self.graph.add_relation(
+                    project,
+                    relation,
+                    entity,
+                )
+
+            else:
+                self.graph.add_relation(
+                    project,
+                    relation,
+                    entity,
                 )
 
         return entities
