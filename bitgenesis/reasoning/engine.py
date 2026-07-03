@@ -1,24 +1,31 @@
-from bitgenesis.reasoning.context import ReasoningContext
 from bitgenesis.reasoning.decision import Decision
+
+from bitgenesis.reasoning.rules.perception import PerceptionRule
+from bitgenesis.reasoning.rules.identity import IdentityRule
+from bitgenesis.reasoning.rules.memory import MemoryRule
 
 
 class ReasoningEngine:
 
-    def evaluate(self, context: ReasoningContext) -> Decision:
+    def __init__(self):
 
-        event = context.event
+        self.rules = [
+            PerceptionRule(),
+            IdentityRule(),
+            MemoryRule(),
+        ]
 
-        if event.type == "perception.event":
+    def evaluate(self, context):
 
-            return Decision(
-                action="store_information",
-                confidence=1.0,
-                explanation="Perception events are stored for future reasoning.",
-                data=event.payload,
-            )
+        for rule in self.rules:
+
+            decision = rule.evaluate(context)
+
+            if decision is not None:
+                return decision
 
         return Decision(
             action="ignore",
             confidence=0.5,
-            explanation="No reasoning rule matched."
+            explanation="No reasoning rule matched.",
         )

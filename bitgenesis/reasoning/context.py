@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Any
 
 from bitgenesis.events.types import Event
 from bitgenesis.memory.store import MemoryStore
@@ -7,5 +6,12 @@ from bitgenesis.memory.store import MemoryStore
 
 @dataclass
 class ReasoningContext:
+
+    # Evento che ha attivato il ragionamento
     event: Event
-    memory: MemoryStore
+
+    # Accesso alla memoria completa
+    memory_store: MemoryStore
+
+    # Contesto costruito da MemoryContext
+    memory_context: dict | None = None
