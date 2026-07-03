@@ -1,4 +1,5 @@
 from bitgenesis.reasoning.decision import Decision
+from bitgenesis.reasoning.context_rules import ContextAwareRules
 
 
 class ReasoningEngine:
@@ -9,9 +10,7 @@ class ReasoningEngine:
         memory = context.unified.memory_context
         knowledge = context.unified.knowledge_context
 
-        # -------------------------
-        # RULE 1: PERCEPTION
-        # -------------------------
+        # 1. PERCEPTION PRIORITY ASSOLUTA
         if getattr(event, "type", None) == "perception.event":
 
             return Decision(
@@ -21,35 +20,33 @@ class ReasoningEngine:
                 data=event.payload,
             )
 
-        # -------------------------
-        # RULE 2: KNOWLEDGE PRIORITY
-        # -------------------------
-        if knowledge and knowledge.get("relations"):
+        # 2. SCORING COGNITIVO
+        memory_score = ContextAwareRules.score_memory(memory)
+        knowledge_score = ContextAwareRules.score_knowledge(knowledge)
+
+        decision = ContextAwareRules.decide(memory_score, knowledge_score)
+
+        # 3. EXECUTION
+        if decision == "use_knowledge":
 
             return Decision(
                 action="use_knowledge",
-                confidence=0.95,
-                explanation="Knowledge graph contains relevant relations.",
-                data=knowledge["relations"],
+                confidence=knowledge_score,
+                explanation="Knowledge graph has higher relevance score.",
+                data=knowledge.get("relations"),
             )
 
-        # -------------------------
-        # RULE 3: MEMORY FALLBACK
-        # -------------------------
-        if memory and memory.get("items"):
+        if decision == "use_memory":
 
             return Decision(
                 action="use_memory",
-                confidence=0.7,
-                explanation=f"Using {len(memory['items'])} memory items.",
-                data=memory["items"],
+                confidence=memory_score,
+                explanation="Memory context is more relevant.",
+                data=memory.get("items"),
             )
 
-        # -------------------------
-        # DEFAULT
-        # -------------------------
         return Decision(
             action="ignore",
             confidence=0.5,
-            explanation="No reasoning rule matched."
+            explanation="No relevant cognitive signal detected."
         )
