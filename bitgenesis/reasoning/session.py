@@ -39,7 +39,11 @@ class ReasoningSession:
         decision.plan = plan
 
         # 4. EXECUTION (MISSING PIECE ORA RISOLTA)
-        execution_result = self.executor.execute(plan)
+        execution_result = self.executor.execute(
+            plan=plan,
+            decision=decision,
+            event=event,
+        )
 
         # 5. ATTACH RESULT
         decision.execution = execution_result

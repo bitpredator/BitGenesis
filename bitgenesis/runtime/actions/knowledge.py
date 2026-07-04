@@ -1,13 +1,14 @@
-def query_knowledge_graph(step, executor):
+def query_knowledge_graph(context):
 
-    if executor.graph is None:
+    if context.graph is None:
+
         return {
-            "action": step.action,
+            "action": context.step.action,
             "status": "graph_unavailable",
         }
 
     return {
-        "action": step.action,
+        "action": context.step.action,
         "status": "queried",
-        "data": step.target,
+        "data": context.step.target,
     }

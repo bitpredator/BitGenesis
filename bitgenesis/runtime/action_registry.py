@@ -8,7 +8,7 @@ class ActionRegistry:
 
         self._actions[name] = handler
 
-    def execute(self, name, step, executor):
+    def execute(self, name, context):
 
         handler = self._actions.get(name)
 
@@ -16,7 +16,7 @@ class ActionRegistry:
 
             return {
                 "action": name,
-                "status": "unknown_action"
+                "status": "unknown_action",
             }
 
-        return handler(step, executor)
+        return handler(context)

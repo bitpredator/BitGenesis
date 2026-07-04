@@ -1,4 +1,5 @@
 from bitgenesis.runtime.action_registry import ActionRegistry
+from bitgenesis.runtime.action_context import ActionContext
 
 from bitgenesis.runtime.actions.memory import (
     store_memory,
@@ -27,7 +28,7 @@ class Executor:
 
         self.registry = ActionRegistry()
 
-        # Memory
+        # Memory actions
         self.registry.register(
             "store_memory",
             store_memory,
@@ -38,22 +39,30 @@ class Executor:
             retrieve_memory_items,
         )
 
-        # Knowledge
+        # Knowledge actions
         self.registry.register(
             "query_knowledge_graph",
             query_knowledge_graph,
         )
 
-    def execute(self, plan):
+    def execute(self, plan, decision=None, event=None):
 
         results = []
 
         for step in plan.steps:
 
+            context = ActionContext(
+                step=step,
+                decision=decision,
+                plan=plan,
+                event=event,
+                memory_store=self.memory_store,
+                graph=self.graph,
+            )
+
             result = self.registry.execute(
                 step.action,
-                step,
-                self,
+                context,
             )
 
             results.append(result)

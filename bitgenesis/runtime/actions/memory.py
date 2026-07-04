@@ -1,18 +1,18 @@
-def store_memory(step, executor):
+def store_memory(context):
 
-    if executor.memory_store is not None:
-        executor.memory_store.add(step.target)
+    if context.memory_store is not None:
+        context.memory_store.add(context.step.target)
 
     return {
-        "action": step.action,
+        "action": context.step.action,
         "status": "stored",
     }
 
 
-def retrieve_memory_items(step, executor):
+def retrieve_memory_items(context):
 
     return {
-        "action": step.action,
+        "action": context.step.action,
         "status": "retrieved",
-        "data": step.target,
+        "data": context.step.target,
     }
