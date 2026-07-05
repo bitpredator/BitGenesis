@@ -1,21 +1,24 @@
+from bitgenesis.reasoning.intent_detector import Intent
+
+
 class ResponseFormatter:
 
-    def format(self, intent, value):
+    def format(self, resolution):
 
-        if intent is None:
+        if resolution is None:
             return None
 
-        if value is None:
+        if not resolution.success:
             return "I don't know."
 
-        if intent.domain == "identity":
+        if resolution.domain == "identity":
 
             return self._format_identity(
-                intent.target,
-                value,
+                resolution.target,
+                resolution.value,
             )
 
-        return str(value)
+        return str(resolution.value)
 
     def _format_identity(self, target, value):
 
@@ -27,9 +30,6 @@ class ResponseFormatter:
             "description": "{}",
         }
 
-        template = templates.get(
-            target,
-            "{}",
-        )
+        template = templates.get(target, "{}")
 
         return template.format(value)

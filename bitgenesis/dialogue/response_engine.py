@@ -18,9 +18,6 @@ class ResponseEngine:
         if intent is None:
             return None
 
-        value = self.resolver.resolve(intent)
+        resolution = self.resolver.resolve(intent)
 
-        return self.formatter.format(
-            intent,
-            value,
-        )
+        return self.formatter.format(resolution)

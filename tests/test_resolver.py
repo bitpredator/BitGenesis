@@ -9,9 +9,12 @@ def test_resolver_returns_creator():
 
     intent = detector.detect("Who created you?")
 
-    result = resolver.resolve(intent)
+    resolution = resolver.resolve(intent)
 
-    assert result == "Bitpredator"
+    assert resolution.domain == "identity"
+    assert resolution.target == "creator"
+    assert resolution.value == "Bitpredator"
+    assert resolution.success is True
 
 
 def test_resolver_returns_name():
@@ -21,9 +24,9 @@ def test_resolver_returns_name():
 
     intent = detector.detect("What is your name?")
 
-    result = resolver.resolve(intent)
+    resolution = resolver.resolve(intent)
 
-    assert result == "BitGenesis"
+    assert resolution.value == "BitGenesis"
 
 
 def test_resolver_returns_project():
@@ -33,9 +36,9 @@ def test_resolver_returns_project():
 
     intent = detector.detect("What is your project?")
 
-    result = resolver.resolve(intent)
+    resolution = resolver.resolve(intent)
 
-    assert result == "BitGenesis"
+    assert resolution.value == "BitGenesis"
 
 
 def test_resolver_returns_version():
@@ -45,21 +48,22 @@ def test_resolver_returns_version():
 
     intent = detector.detect("What is your version?")
 
-    result = resolver.resolve(intent)
+    resolution = resolver.resolve(intent)
 
-    assert result == "0.1.0"
+    assert resolution.value == "0.1.0"
 
 
 def test_resolver_returns_none_for_unknown_domain():
 
     class FakeIntent:
-
         domain = "unknown"
         target = "anything"
 
     resolver = Resolver()
 
-    assert resolver.resolve(FakeIntent()) is None
+    resolution = resolver.resolve(FakeIntent())
+
+    assert resolution is None
 
 
 def test_resolver_returns_none_for_none_intent():

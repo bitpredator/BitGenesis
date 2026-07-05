@@ -1,4 +1,5 @@
 from bitgenesis.identity.query import IdentityQuery
+from bitgenesis.reasoning.resolution import Resolution
 
 
 class Resolver:
@@ -7,10 +8,7 @@ class Resolver:
 
         self._domains = {}
 
-        self.register(
-            "identity",
-            self._resolve_identity,
-        )
+        self.register("identity", self._resolve_identity)
 
     def register(self, domain, handler):
 
@@ -28,8 +26,17 @@ class Resolver:
 
         return handler(intent)
 
+    # --------------------------
+    # IDENTITY DOMAIN
+    # --------------------------
     def _resolve_identity(self, intent):
 
         query = IdentityQuery()
 
-        return query.field(intent.target)
+        value = query.field(intent.target)
+
+        return Resolution(
+            domain=intent.domain,
+            target=intent.target,
+            value=value,
+        )
