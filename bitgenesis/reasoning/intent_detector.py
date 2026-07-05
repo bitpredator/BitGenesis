@@ -12,30 +12,45 @@ class Intent:
 
 class IntentDetector:
 
-    _IDENTITY_PATTERNS = {
-        "creator": (
-            "who created you",
-            "who is your creator",
-            "who made you",
-        ),
-        "name": (
-            "who are you",
-            "what is your name",
-            "your name",
-        ),
-        "project": (
-            "what is your project",
-            "project name",
-        ),
-        "version": (
-            "what is your version",
-            "version",
-        ),
-        "description": (
-            "what are you",
-            "describe yourself",
-            "what do you do",
-        ),
+    _PATTERNS = {
+        "identity": {
+            "creator": (
+                "who created you",
+                "who is your creator",
+                "who made you",
+            ),
+            "name": (
+                "who are you",
+                "what is your name",
+                "your name",
+            ),
+            "project": (
+                "what is your project",
+                "project name",
+            ),
+            "version": (
+                "what is your version",
+                "version",
+            ),
+            "description": (
+                "what are you",
+                "describe yourself",
+                "what do you do",
+            ),
+        },
+
+        "memory": {
+            "latest": (
+                "latest memory",
+                "last memory",
+            ),
+            "recent": (
+                "what do you remember",
+                "tell me what you remember",
+                "recent memories",
+                "show me your recent memories",
+            ),
+        },
     }
 
     def detect(self, text: str) -> Intent | None:
@@ -45,17 +60,19 @@ class IntentDetector:
 
         normalized = text.strip().lower()
 
-        for target, patterns in self._IDENTITY_PATTERNS.items():
+        for domain, targets in self._PATTERNS.items():
 
-            for pattern in patterns:
+            for target, patterns in targets.items():
 
-                if pattern in normalized:
+                for pattern in patterns:
 
-                    return Intent(
-                        domain="identity",
-                        action="query",
-                        target=target,
-                        confidence=1.0,
-                    )
+                    if pattern in normalized:
+
+                        return Intent(
+                            domain=domain,
+                            action="query",
+                            target=target,
+                            confidence=1.0,
+                        )
 
         return None

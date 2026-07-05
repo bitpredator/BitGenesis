@@ -88,3 +88,50 @@ def test_detect_returns_none_for_whitespace():
     detector = IntentDetector()
 
     assert detector.detect("     ") is None
+
+def test_detect_latest_memory_intent():
+
+    detector = IntentDetector()
+
+    intent = detector.detect("What is your latest memory?")
+
+    assert intent is not None
+    assert intent.domain == "memory"
+    assert intent.action == "query"
+    assert intent.target == "latest"
+
+
+def test_detect_recent_memories_intent():
+
+    detector = IntentDetector()
+
+    intent = detector.detect("Show me your recent memories.")
+
+    assert intent is not None
+    assert intent.domain == "memory"
+    assert intent.action == "query"
+    assert intent.target == "recent"
+
+
+def test_detect_remember_intent():
+
+    detector = IntentDetector()
+
+    intent = detector.detect("What do you remember?")
+
+    assert intent is not None
+    assert intent.domain == "memory"
+    assert intent.action == "query"
+    assert intent.target == "recent"
+
+
+def test_detect_tell_me_what_you_remember():
+
+    detector = IntentDetector()
+
+    intent = detector.detect("Tell me what you remember.")
+
+    assert intent is not None
+    assert intent.domain == "memory"
+    assert intent.action == "query"
+    assert intent.target == "recent"
