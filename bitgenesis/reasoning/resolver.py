@@ -1,14 +1,19 @@
 from bitgenesis.identity.query import IdentityQuery
+from bitgenesis.memory.query import MemoryQuery
 from bitgenesis.reasoning.resolution import Resolution
 
 
 class Resolver:
 
-    def __init__(self):
+    def __init__(self, memory_store=None):
+
+        self.identity = IdentityQuery()
+        self.memory = MemoryQuery(memory_store) if memory_store else None
 
         self._domains = {}
 
         self.register("identity", self._resolve_identity)
+        self.register("memory", self._resolve_memory)
 
     def register(self, domain, handler):
 
@@ -27,13 +32,36 @@ class Resolver:
         return handler(intent)
 
     # --------------------------
-    # IDENTITY DOMAIN
+    # IDENTITY
     # --------------------------
+
     def _resolve_identity(self, intent):
 
-        query = IdentityQuery()
+        value = self.identity.field(intent.target)
 
-        value = query.field(intent.target)
+        return Resolution(
+            domain=intent.domain,
+            target=intent.target,
+            value=value,
+        )
+
+    # --------------------------
+    # MEMORY
+    # --------------------------
+
+    def _resolve_memory(self, intent):
+
+        if self.memory is None:
+            return None
+
+        if intent.target == "latest":
+            value = self.memory.latest()
+
+        elif intent.target == "recent":
+            value = self.memory.recent()
+
+        else:
+            value = self.memory.all()
 
         return Resolution(
             domain=intent.domain,

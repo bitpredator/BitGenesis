@@ -1,5 +1,14 @@
 from bitgenesis.reasoning.intent_detector import IntentDetector
 from bitgenesis.reasoning.resolver import Resolver
+from bitgenesis.memory.store import MemoryStore
+from bitgenesis.memory.factory import MemoryFactory
+
+from bitgenesis.events.event import Event
+from bitgenesis.events.enums import (
+    EventCategory,
+    EventPriority,
+    EventType,
+)
 
 
 def test_resolver_returns_creator():
@@ -71,3 +80,62 @@ def test_resolver_returns_none_for_none_intent():
     resolver = Resolver()
 
     assert resolver.resolve(None) is None
+
+def create_memory(message):
+
+    event = Event(
+        category=EventCategory.SYSTEM,
+        type=EventType.SYSTEM_STARTED,
+        source="pytest",
+        payload={"message": message},
+        priority=EventPriority.NORMAL,
+    )
+
+    return MemoryFactory.from_event(event)
+
+
+def test_resolver_returns_latest_memory():
+
+    store = MemoryStore()
+
+    store.add(create_memory("First"))
+    store.add(create_memory("Second"))
+
+    detector = IntentDetector()
+    resolver = Resolver(memory_store=store)
+
+    intent = detector.detect(
+        "What is your latest memory?"
+    )
+
+    resolution = resolver.resolve(intent)
+
+    assert resolution.domain == "memory"
+    assert resolution.target == "latest"
+
+    assert (
+        resolution.value.content["payload"]["message"]
+        == "Second"
+    )
+
+
+def test_resolver_returns_recent_memories():
+
+    store = MemoryStore()
+
+    for i in range(5):
+        store.add(create_memory(f"Memory {i}"))
+
+    detector = IntentDetector()
+    resolver = Resolver(memory_store=store)
+
+    intent = detector.detect(
+        "What do you remember?"
+    )
+
+    resolution = resolver.resolve(intent)
+
+    assert resolution.domain == "memory"
+    assert resolution.target == "recent"
+
+    assert len(resolution.value) == 5

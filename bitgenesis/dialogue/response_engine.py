@@ -5,10 +5,10 @@ from bitgenesis.reasoning.resolver import Resolver
 
 class ResponseEngine:
 
-    def __init__(self):
+    def __init__(self, memory_store=None):
 
         self.detector = IntentDetector()
-        self.resolver = Resolver()
+        self.resolver = Resolver(memory_store=memory_store)
         self.formatter = ResponseFormatter()
 
     def respond(self, question: str):
@@ -19,5 +19,8 @@ class ResponseEngine:
             return None
 
         resolution = self.resolver.resolve(intent)
+
+        if resolution is None:
+            return None
 
         return self.formatter.format(resolution)
