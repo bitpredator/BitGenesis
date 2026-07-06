@@ -135,3 +135,44 @@ def test_detect_tell_me_what_you_remember():
     assert intent.domain == "memory"
     assert intent.action == "query"
     assert intent.target == "recent"
+
+def test_detect_memory_search_about():
+
+    detector = IntentDetector()
+
+    intent = detector.detect(
+        "What do you remember about planner?"
+    )
+
+    assert intent is not None
+    assert intent.domain == "memory"
+    assert intent.action == "search"
+    assert intent.target == "planner"
+
+
+def test_detect_memory_search_do_you_remember():
+
+    detector = IntentDetector()
+
+    intent = detector.detect(
+        "Do you remember Python?"
+    )
+
+    assert intent is not None
+    assert intent.domain == "memory"
+    assert intent.action == "search"
+    assert intent.target == "python"
+
+
+def test_detect_memory_search_case_insensitive():
+
+    detector = IntentDetector()
+
+    intent = detector.detect(
+        "DO YOU REMEMBER NETWORKING?"
+    )
+
+    assert intent is not None
+    assert intent.domain == "memory"
+    assert intent.action == "search"
+    assert intent.target == "networking"    

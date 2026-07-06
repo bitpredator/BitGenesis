@@ -33,3 +33,25 @@ class MemoryQuery:
             for memory in self.memory_store.all()
             if predicate(memory)
         ]
+
+    def search_text(self, text: str):
+
+        text = text.lower().strip()
+
+        if not text:
+            return []
+
+        def matches(memory):
+
+            message = (
+                memory.content
+                .get("payload", {})
+                .get("message", "")
+            )
+
+            if not isinstance(message, str):
+                return False
+
+            return text in message.lower()
+
+        return self.search(matches)

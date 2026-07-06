@@ -12,46 +12,45 @@ class Intent:
 
 class IntentDetector:
 
-    _PATTERNS = {
-        "identity": {
-            "creator": (
-                "who created you",
-                "who is your creator",
-                "who made you",
-            ),
-            "name": (
-                "who are you",
-                "what is your name",
-                "your name",
-            ),
-            "project": (
-                "what is your project",
-                "project name",
-            ),
-            "version": (
-                "what is your version",
-                "version",
-            ),
-            "description": (
-                "what are you",
-                "describe yourself",
-                "what do you do",
-            ),
-        },
-
-        "memory": {
-            "latest": (
-                "latest memory",
-                "last memory",
-            ),
-            "recent": (
-                "what do you remember",
-                "tell me what you remember",
-                "recent memories",
-                "show me your recent memories",
-            ),
-        },
+    _IDENTITY_PATTERNS = {
+        "creator": (
+            "who created you",
+            "who is your creator",
+            "who made you",
+        ),
+        "name": (
+            "who are you",
+            "what is your name",
+            "your name",
+        ),
+        "project": (
+            "what is your project",
+            "project name",
+        ),
+        "version": (
+            "what is your version",
+            "version",
+        ),
+        "description": (
+            "what are you",
+            "describe yourself",
+            "what do you do",
+        ),
     }
+
+
+    _MEMORY_QUERY_PATTERNS = {
+        "latest": (
+            "what is your latest memory",
+            "what was your latest memory",
+        ),
+        "recent": (
+            "show me your recent memories",
+            "what do you remember",
+            "tell me what you remember",
+        ),
+    }
+
 
     def detect(self, text: str) -> Intent | None:
 
@@ -60,19 +59,83 @@ class IntentDetector:
 
         normalized = text.strip().lower()
 
-        for domain, targets in self._PATTERNS.items():
+        if not normalized:
+            return None
 
-            for target, patterns in targets.items():
 
-                for pattern in patterns:
+        # --------------------------
+        # MEMORY SEARCH
+        # --------------------------
 
-                    if pattern in normalized:
+        if "remember about" in normalized:
 
-                        return Intent(
-                            domain=domain,
-                            action="query",
-                            target=target,
-                            confidence=1.0,
-                        )
+            target = normalized.split(
+                "remember about",
+                1
+            )[1].strip()
+
+            if target:
+
+                return Intent(
+                    domain="memory",
+                    action="search",
+                    target=target.rstrip("?"),
+                    confidence=1.0,
+                )
+
+
+        if normalized.startswith("do you remember "):
+
+            target = normalized.replace(
+                "do you remember ",
+                "",
+                1
+            ).strip()
+
+            if target:
+
+                return Intent(
+                    domain="memory",
+                    action="search",
+                    target=target.rstrip("?"),
+                    confidence=1.0,
+                )
+
+
+        # --------------------------
+        # MEMORY QUERY
+        # --------------------------
+
+        for target, patterns in self._MEMORY_QUERY_PATTERNS.items():
+
+            for pattern in patterns:
+
+                if pattern in normalized:
+
+                    return Intent(
+                        domain="memory",
+                        action="query",
+                        target=target,
+                        confidence=1.0,
+                    )
+
+
+        # --------------------------
+        # IDENTITY
+        # --------------------------
+
+        for target, patterns in self._IDENTITY_PATTERNS.items():
+
+            for pattern in patterns:
+
+                if pattern in normalized:
+
+                    return Intent(
+                        domain="identity",
+                        action="query",
+                        target=target,
+                        confidence=1.0,
+                    )
+
 
         return None

@@ -54,14 +54,36 @@ class Resolver:
         if self.memory is None:
             return None
 
-        if intent.target == "latest":
+
+        # --------------------------
+        # MEMORY SEARCH
+        # --------------------------
+
+        if intent.action == "search":
+
+            value = self.memory.search_text(
+                intent.target
+            )
+
+
+        # --------------------------
+        # MEMORY QUERY
+        # --------------------------
+
+        elif intent.target == "latest":
+
             value = self.memory.latest()
 
+
         elif intent.target == "recent":
+
             value = self.memory.recent()
 
+
         else:
+
             value = self.memory.all()
+
 
         return Resolution(
             domain=intent.domain,

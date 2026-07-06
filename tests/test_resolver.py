@@ -139,3 +139,24 @@ def test_resolver_returns_recent_memories():
     assert resolution.target == "recent"
 
     assert len(resolution.value) == 5
+
+def test_resolver_returns_memory_search():
+
+    store = MemoryStore()
+
+    store.add(create_memory("Planner initialized"))
+    store.add(create_memory("Memory subsystem ready"))
+
+    detector = IntentDetector()
+    resolver = Resolver(memory_store=store)
+
+    intent = detector.detect(
+        "What do you remember about planner?"
+    )
+
+    resolution = resolver.resolve(intent)
+
+    assert resolution.domain == "memory"
+    assert resolution.target == "planner"
+    assert len(resolution.value) == 1
+    assert resolution.value[0].content["payload"]["message"] == "Planner initialized"    
