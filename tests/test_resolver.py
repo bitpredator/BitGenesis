@@ -159,4 +159,32 @@ def test_resolver_returns_memory_search():
     assert resolution.domain == "memory"
     assert resolution.target == "planner"
     assert len(resolution.value) == 1
-    assert resolution.value[0].content["payload"]["message"] == "Planner initialized"    
+    assert resolution.value[0].content["payload"]["message"] == "Planner initialized"
+
+def test_resolver_uses_memory_retrieval():
+
+    store = MemoryStore()
+
+    store.add(create_memory("Python module created"))
+    store.add(create_memory("Planner initialized"))
+
+    detector = IntentDetector()
+    resolver = Resolver(memory_store=store)
+
+    intent = detector.detect(
+        "What do you remember about Python?"
+    )
+
+    resolution = resolver.resolve(intent)
+
+    assert resolution.domain == "memory"
+    assert resolution.target == "python"
+
+    assert len(resolution.value) == 1
+
+    assert (
+        resolution.value[0]
+        .content["payload"]["message"]
+        ==
+        "Python module created"
+    )
