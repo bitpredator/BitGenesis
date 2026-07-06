@@ -1,35 +1,28 @@
-from bitgenesis.reasoning.intent_detector import Intent
+from bitgenesis.dialogue.formatters.identity_formatter import IdentityFormatter
+from bitgenesis.dialogue.formatters.memory_formatter import MemoryFormatter
 
 
 class ResponseFormatter:
+
+    def __init__(self):
+
+        self._formatters = {
+            "identity": IdentityFormatter(),
+            "memory": MemoryFormatter(),
+        }
+
+    def register(self, domain, formatter):
+
+        self._formatters[domain] = formatter
 
     def format(self, resolution):
 
         if resolution is None:
             return None
 
-        if not resolution.success:
-            return "I don't know."
+        formatter = self._formatters.get(resolution.domain)
 
-        if resolution.domain == "identity":
+        if formatter is None:
+            return str(resolution.value)
 
-            return self._format_identity(
-                resolution.target,
-                resolution.value,
-            )
-
-        return str(resolution.value)
-
-    def _format_identity(self, target, value):
-
-        templates = {
-            "creator": "My creator is {}.",
-            "name": "I am {}.",
-            "project": "My project is {}.",
-            "version": "I am currently running version {}.",
-            "description": "{}",
-        }
-
-        template = templates.get(target, "{}")
-
-        return template.format(value)
+        return formatter.format(resolution)
