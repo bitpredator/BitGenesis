@@ -84,9 +84,8 @@ This milestone established the core architecture required for future cognitive c
 
 Current status:
 
-```
 263 tests passing
-```
+
 
 ---
 
@@ -96,60 +95,106 @@ Status:
 
 **In Development Planning**
 
-The objective of this milestone is to transform BitGenesis from a collection of cognitive modules into a coordinated cognitive runtime.
+The objective of this milestone is to transform BitGenesis from a collection of independent cognitive modules into a coordinated cognitive runtime.
+
+This milestone focuses on connecting existing subsystems into a unified execution architecture.
 
 ---
 
-## Kernel Evolution
+# Cognitive Kernel Evolution
+
+Goal:
+
+Create the foundation of a central cognitive execution cycle.
 
 Planned:
 
-- Expand kernel responsibilities.
-- Introduce cognitive execution pipeline.
-- Coordinate subsystem communication.
-- Improve lifecycle control.
+- Expand kernel orchestration responsibilities.
+- Introduce cognitive processing pipeline.
+- Coordinate communication between cognitive subsystems.
+- Improve initialization and lifecycle management.
+- Introduce unified runtime state management.
 
 ---
 
-## Persistent Memory
+# Cognitive Processing Pipeline
+
+Goal:
+
+Establish a complete internal processing flow.
+
+Planned:
+
+- Unified perception → cognition → memory → reasoning → action pipeline.
+- Context propagation between modules.
+- Cognitive state transitions.
+- Processing cycle management.
+- Internal event-driven execution flow.
+
+---
+
+# Persistent Memory Architecture
+
+Goal:
+
+Transform memory from runtime storage into a persistent cognitive component.
 
 Planned:
 
 - Persistent memory backend.
-- Memory serialization.
+- Memory serialization framework.
 - Memory restoration.
-- Long-term storage management.
+- Long-term memory management.
+- Memory lifecycle improvements.
+- Persistent cognitive state storage.
 
 ---
 
-## Cognitive Pipeline
+# Adaptive Learning Foundation
+
+Goal:
+
+Introduce the first foundations for system adaptation.
 
 Planned:
 
-- Unified perception → memory → reasoning → action flow.
-- Context management improvements.
-- Cognitive state transitions.
+- Experience evaluation framework.
+- Feedback processing.
+- Adaptive behavior rules.
+- Knowledge reinforcement mechanisms.
+- Memory optimization strategies.
 
 ---
 
-## Learning System
+# Runtime Action Framework
 
-Planned:
+Goal:
 
-- Experience evaluation.
-- Adaptive learning rules.
-- Knowledge reinforcement.
-- Memory optimization.
-
----
-
-## Runtime Tools
+Create a controlled interface between cognition and external operations.
 
 Planned:
 
 - External tool interface.
-- Action execution framework.
-- Secure tool sandboxing.
+- Action registration system.
+- Action execution pipeline.
+- Permission validation.
+- Secure execution boundaries.
+
+---
+
+# Architecture Improvements
+
+Goal:
+
+Improve reliability, maintainability and developer experience.
+
+Planned:
+
+- Internal logging architecture.
+- Configuration improvements.
+- Extended documentation.
+- Additional automated tests.
+- Improved error handling.
 
 ---
 
