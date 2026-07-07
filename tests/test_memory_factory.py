@@ -3,12 +3,12 @@ from bitgenesis.events.event import Event
 from bitgenesis.events.enums import EventCategory, EventType, EventPriority
 
 
-def create_event():
+def create_event(payload=None):
     return Event(
         category=EventCategory.SYSTEM,
         type=EventType.SYSTEM_STARTED,
         source="test-source",
-        payload={"hello": "world"},
+        payload=payload or {"hello": "world"},
         priority=EventPriority.NORMAL,
     )
 
@@ -29,7 +29,6 @@ def test_factory_maps_event_content():
     memory = MemoryFactory.from_event(event)
 
     assert memory.content["payload"] == event.payload
-
     assert memory.content["event"]["type"] == event.type.value
     assert memory.content["event"]["source"] == event.source
     assert memory.content["event"]["category"] == event.category.value
@@ -62,3 +61,43 @@ def test_factory_tags_are_correct():
 
     assert event.category.value in memory.tags
     assert event.type.value in memory.tags
+
+
+def test_factory_calculates_importance_for_user_memory():
+    event = create_event(
+        {"message": "User likes Python"}
+    )
+
+    memory = MemoryFactory.from_event(event)
+
+    assert memory.importance == 0.95
+
+
+def test_factory_calculates_importance_for_planner_memory():
+    event = create_event(
+        {"message": "Planner initialized"}
+    )
+
+    memory = MemoryFactory.from_event(event)
+
+    assert memory.importance == 0.70
+
+
+def test_factory_calculates_importance_for_system_memory():
+    event = create_event(
+        {"message": "System started"}
+    )
+
+    memory = MemoryFactory.from_event(event)
+
+    assert memory.importance == 0.40
+
+
+def test_factory_calculates_default_importance():
+    event = create_event(
+        {"message": "Hello world"}
+    )
+
+    memory = MemoryFactory.from_event(event)
+
+    assert memory.importance == 0.20

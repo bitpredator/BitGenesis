@@ -1,4 +1,5 @@
 from bitgenesis.events.event import Event
+from bitgenesis.memory.importance import MemoryImportance
 from bitgenesis.memory.object import MemoryObject
 
 
@@ -7,19 +8,37 @@ class MemoryFactory:
     @staticmethod
     def from_event(event: Event) -> MemoryObject:
 
+        content = {
+            "payload": event.payload,
+            "event": {
+                "id": event.id,
+                "type": event.type.value,
+                "category": event.category.value,
+                "source": event.source,
+            },
+        }
+
+        evaluator = MemoryImportance()
+
+        temporary_memory = MemoryObject(
+            id=event.id,
+            source=event.source,
+            content=content,
+            metadata={},
+            importance=0.0,
+            confidence=1.0,
+            tags=[],
+        )
+
+        importance = evaluator.score(
+            temporary_memory
+        )
+
         return MemoryObject(
             id=event.id,
             source=event.source,
 
-            content={
-                "payload": event.payload,
-                "event": {
-                    "id": event.id,
-                    "type": event.type.value,
-                    "category": event.category.value,
-                    "source": event.source,
-                }
-            },
+            content=content,
 
             metadata={
                 "event_id": event.id,
@@ -29,7 +48,7 @@ class MemoryFactory:
                 "timestamp": event.timestamp,
             },
 
-            importance=0.5,
+            importance=importance,
             confidence=1.0,
 
             tags=[
