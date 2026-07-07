@@ -17,7 +17,7 @@ The primary objectives of BitGenesis are:
 * Build an artificial cognitive architecture from scratch.
 * Design every subsystem as an independent and replaceable module.
 * Develop explainable reasoning instead of opaque decision making.
-* Implement a flexible long-term and short-term memory system.
+* Implement flexible short-term and long-term memory systems.
 * Create an event-driven architecture.
 * Allow continuous learning and knowledge acquisition.
 * Integrate external development tools without depending on proprietary AI services.
@@ -41,11 +41,127 @@ BitGenesis is developed around the following principles:
 
 # Current Status
 
-Current development stage:
+Current version:
 
-**Foundation**
+**v0.1.0**
 
-The project is currently focused on designing the architecture, documentation and core infrastructure before implementing the cognitive engine.
+Development stage:
+
+**Foundation Release**
+
+BitGenesis has reached its first functional milestone.
+
+The current implementation includes the foundations of a modular cognitive architecture:
+
+* Cognitive core and Brain lifecycle
+* Event-driven architecture
+* Identity system
+* Memory system
+* Memory retrieval and importance evaluation
+* Memory consolidation and episode generation
+* Knowledge representation
+* Reasoning engine
+* Reflection system
+* Inference engine
+* Dialogue and response system
+
+The architecture is continuously evolving toward a more complete cognitive framework.
+
+---
+
+# Implemented Systems
+
+## Cognitive Core
+
+* Brain controller
+* Lifecycle management
+* Configuration system
+* Runtime statistics
+* Version management
+
+## Memory
+
+* Event-based memory creation
+* Memory storage
+* Memory querying
+* Memory retrieval
+* Memory similarity
+* Importance scoring
+* Memory consolidation
+* Episode generation
+
+## Knowledge
+
+* Entity management
+* Knowledge graph foundation
+* Relations
+* Knowledge queries
+* Inference rules
+
+## Reasoning
+
+* Intent detection
+* Resolution system
+* Reflection engine
+* Inference engine
+* Reasoning sessions
+
+## Dialogue
+
+* Identity responses
+* Memory self-report
+* Response formatting
+* Dialogue engine
+
+---
+
+# Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/your-user/BitGenesis.git
+cd BitGenesis
+```
+
+Install the package:
+
+```bash
+pip install -e .
+```
+
+---
+
+# Quick Example
+
+```python
+from bitgenesis.core.brain import Brain
+
+
+brain = Brain()
+
+response = brain.ask(
+    "What do you remember?"
+)
+
+print(response)
+```
+
+---
+
+# Testing
+
+BitGenesis currently includes:
+
+```
+263 automated tests passing
+```
+
+Run the test suite:
+
+```bash
+pytest
+```
 
 ---
 
@@ -53,21 +169,22 @@ The project is currently focused on designing the architecture, documentation an
 
 ```text
 bitgenesis/
-├── kernel/
+├── core/
 ├── cognition/
-├── reasoning/
-├── planner/
 ├── memory/
+├── knowledge/
+├── reasoning/
+├── planning/
+├── dialogue/
+├── events/
+├── runtime/
+├── kernel/
 ├── learning/
 ├── language/
-├── knowledge/
 ├── perception/
 ├── neural/
-├── runtime/
-├── events/
 ├── tools/
 ├── security/
-├── config/
 └── utils/
 ```
 
@@ -93,22 +210,39 @@ before becoming part of the official architecture.
 
 # Roadmap
 
-The current high-level roadmap is:
+## v0.1.0 — Foundation Release
 
-* Foundation
-* Kernel
-* Event System
-* Runtime
-* Memory
-* Reasoning
-* Planning
-* Learning
-* Language Processing
-* Cognitive Engine
-* Tool Integration
-* Autonomous Agent
+Completed:
 
-The roadmap will evolve as the project matures.
+* Core architecture
+* Memory subsystem
+* Knowledge subsystem
+* Reasoning foundation
+* Reflection and inference
+* Dialogue system
+* Testing infrastructure
+
+---
+
+## v0.2.0 — Cognitive Runtime Evolution
+
+Planned:
+
+* Kernel-driven architecture
+* Persistent memory storage
+* Improved cognitive pipeline
+* Autonomous lifecycle management
+* Learning subsystem expansion
+* Tool execution framework
+
+---
+
+Future versions will expand toward:
+
+* Advanced planning
+* Language understanding
+* Autonomous agents
+* External environment interaction
 
 ---
 

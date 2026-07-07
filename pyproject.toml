@@ -2,23 +2,54 @@
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
+
 [project]
 name = "bitgenesis"
 version = "0.1.0"
 description = "BitGenesis - Modular Cognitive Architecture from Scratch"
 readme = "README.md"
 requires-python = ">=3.10"
+
 license = { text = "Apache-2.0" }
 
 authors = [
-  { name = "Bitpredator" }
+    { name = "Bitpredator" }
+]
+
+keywords = [
+    "artificial-intelligence",
+    "cognitive-architecture",
+    "reasoning",
+    "memory-system",
+    "knowledge-engine"
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14"
 ]
 
 dependencies = []
 
-[tool.setuptools]
-packages = ["bitgenesis"]
+
+[tool.setuptools.packages.find]
+where = [
+    "."
+]
+
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
+testpaths = [
+    "tests"
+]
+
+python_files = [
+    "test_*.py"
+]
