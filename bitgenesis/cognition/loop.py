@@ -1,71 +1,51 @@
 from bitgenesis.cognition.context import CognitiveContext
-from bitgenesis.cognition.state import CognitiveState
+
+from bitgenesis.cognition.stages import (
+    ConsolidationStage,
+    ExecutionStage,
+    KnowledgeStage,
+    MemoryStage,
+    PerceptionStage,
+    PlanningStage,
+    ReasoningStage,
+    ReflectionStage,
+)
 
 
 class CognitiveLoop:
     """
-    Executes the ordered sequence of cognitive processing stages.
+    Executes the cognitive pipeline by orchestrating
+    the registered cognitive stages.
 
-    The loop is responsible for advancing the cognitive context
-    through each stage of the pipeline.
+    Each stage receives the current CognitiveContext,
+    updates it if necessary, and returns it to the pipeline.
     """
 
+    def __init__(self):
+
+        self._stages = [
+            PerceptionStage(),
+            MemoryStage(),
+            KnowledgeStage(),
+            ReasoningStage(),
+            PlanningStage(),
+            ExecutionStage(),
+            ReflectionStage(),
+            ConsolidationStage(),
+        ]
+
+    @property
+    def stages(self):
+
+        return tuple(self._stages)
+
     def execute(self, context: CognitiveContext) -> CognitiveContext:
+        """
+        Executes a complete cognitive cycle.
+        """
 
-        self._perceive(context)
+        for stage in self._stages:
 
-        self._contextualize(context)
-
-        self._retrieve_memory(context)
-
-        self._integrate_knowledge(context)
-
-        self._reason(context)
-
-        self._plan(context)
-
-        self._execute_actions(context)
-
-        self._reflect(context)
-
-        self._consolidate(context)
-
-        context.update_state(CognitiveState.COMPLETED)
+            context = stage.execute(context)
 
         return context
-
-    def _perceive(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.PERCEIVING)
-
-    def _contextualize(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.CONTEXTUALIZING)
-
-    def _retrieve_memory(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.RETRIEVING_MEMORY)
-
-    def _integrate_knowledge(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.INTEGRATING_KNOWLEDGE)
-
-    def _reason(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.REASONING)
-
-    def _plan(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.PLANNING)
-
-    def _execute_actions(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.EXECUTING)
-
-    def _reflect(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.REFLECTING)
-
-    def _consolidate(self, context: CognitiveContext):
-
-        context.update_state(CognitiveState.CONSOLIDATING)
