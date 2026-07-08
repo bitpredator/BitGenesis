@@ -1,4 +1,5 @@
 from bitgenesis.cognition.context import CognitiveContext
+from bitgenesis.cognition.loop import CognitiveLoop
 from bitgenesis.cognition.state import CognitiveState
 
 
@@ -13,6 +14,8 @@ class CognitiveRuntime:
     def __init__(self):
 
         self.state = CognitiveState.IDLE
+
+        self._loop = CognitiveLoop()
 
     @property
     def is_running(self) -> bool:
@@ -38,11 +41,7 @@ class CognitiveRuntime:
 
         try:
 
-            context.update_state(CognitiveState.PERCEIVING)
-
-            context.update_state(CognitiveState.CONTEXTUALIZING)
-
-            context.update_state(CognitiveState.COMPLETED)
+            context = self._loop.execute(context)
 
             return context
 
