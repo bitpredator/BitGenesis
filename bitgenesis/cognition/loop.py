@@ -17,13 +17,13 @@ class CognitiveLoop:
     Executes the cognitive pipeline by orchestrating
     the registered cognitive stages.
 
-    Each stage receives the current CognitiveContext,
-    updates it if necessary, and returns it to the pipeline.
+    Stages are injected with shared dependencies through
+    the CognitiveContext.
     """
 
-    def __init__(self):
+    def __init__(self, stages=None):
 
-        self._stages = [
+        self._stages = stages or [
             PerceptionStage(),
             MemoryStage(),
             KnowledgeStage(),

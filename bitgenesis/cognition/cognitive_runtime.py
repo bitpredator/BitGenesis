@@ -21,11 +21,15 @@ class CognitiveRuntime:
         knowledge_registry=None,
         inference_engine=None,
         reflection_engine=None,
+        response_engine=None,
+        planner=None,
+        event_bus=None,
     ):
 
         self.state = CognitiveState.IDLE
 
         # Cognitive subsystem references
+
         self.memory_store = memory_store
 
         self.knowledge_registry = knowledge_registry
@@ -33,6 +37,12 @@ class CognitiveRuntime:
         self.inference_engine = inference_engine
 
         self.reflection_engine = reflection_engine
+
+        self.response_engine = response_engine
+
+        self.planner = planner
+
+        self.event_bus = event_bus
 
         self._loop = CognitiveLoop()
 
@@ -78,6 +88,12 @@ class CognitiveRuntime:
             inference_engine=self.inference_engine,
 
             reflection_engine=self.reflection_engine,
+
+            response_engine=self.response_engine,
+
+            planner=self.planner,
+
+            event_bus=self.event_bus,
         )
 
         self.state = CognitiveState.INITIALIZING
