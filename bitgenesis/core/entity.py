@@ -29,3 +29,14 @@ class Entity:
             )
 
         self.updated_at = now
+
+    def to_dict(self) -> dict:
+        """
+        Serialize entity into a JSON-compatible dictionary.
+        """
+
+        return {
+            "id": str(self.id),
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }

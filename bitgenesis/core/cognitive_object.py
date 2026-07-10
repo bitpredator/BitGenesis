@@ -39,3 +39,21 @@ class CognitiveObject(Entity):
         if tag in self.tags:
             self.tags.remove(tag)
             self.touch()
+
+    def to_dict(self) -> dict:
+        """
+        Serialize cognitive object.
+        """
+
+        data = super().to_dict()
+
+        data.update(
+            {
+                "metadata": self.metadata,
+                "importance": self.importance,
+                "confidence": self.confidence,
+                "tags": list(self.tags),
+            }
+        )
+
+        return data        
