@@ -34,18 +34,64 @@ class CognitiveLoop:
             ConsolidationStage(),
         ]
 
+
     @property
     def stages(self):
 
         return tuple(self._stages)
 
-    def execute(self, context: CognitiveContext) -> CognitiveContext:
+
+    def execute(
+        self,
+        context: CognitiveContext
+    ) -> CognitiveContext:
         """
         Executes a complete cognitive cycle.
         """
 
-        for stage in self._stages:
+        try:
 
-            context = stage.execute(context)
+            for stage in self._stages:
 
-        return context
+                stage_name = (
+                    stage.__class__.__name__
+                )
+
+                execution = (
+                    context.start_stage(
+                        stage_name
+                    )
+                )
+
+                try:
+
+                    context = stage.execute(
+                        context
+                    )
+
+                    context.complete_stage(
+                        execution
+                    )
+
+                except Exception as exc:
+
+                    context.fail_stage(
+                        execution,
+                        exc
+                    )
+
+                    raise
+
+
+            context.complete_cycle()
+
+            return context
+
+
+        except Exception as exc:
+
+            context.errors.append(
+                str(exc)
+            )
+
+            raise
