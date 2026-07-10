@@ -5,10 +5,10 @@ from bitgenesis.cognition.state import CognitiveState
 
 class CognitiveManager:
     """
-    Manages cognitive runtime instances.
+    Creates and supervises cognitive execution cycles.
 
-    The manager coordinates runtime creation and provides
-    shared cognitive subsystem dependencies.
+    The manager owns the runtime configuration but delegates
+    all cognitive processing to the CognitiveRuntime.
     """
 
     def __init__(
@@ -43,7 +43,6 @@ class CognitiveManager:
 
         self._cycles = 0
 
-
     @property
     def state(self) -> CognitiveState:
 
@@ -53,22 +52,19 @@ class CognitiveManager:
 
         return self._runtime.state
 
-
     @property
     def last_context(self) -> CognitiveContext | None:
 
         return self._last_context
-
 
     @property
     def cycles(self) -> int:
 
         return self._cycles
 
-
     def execute(self, input_data=None) -> CognitiveContext:
         """
-        Executes a new cognitive cycle.
+        Executes one cognitive cycle.
         """
 
         runtime = CognitiveRuntime(

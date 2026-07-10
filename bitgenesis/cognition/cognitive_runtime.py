@@ -8,10 +8,11 @@ class CognitiveRuntime:
     Coordinates the execution of a single cognitive cycle.
 
     The runtime is responsible for creating the execution context,
-    invoking the cognitive loop, and managing the runtime state.
+    injecting shared subsystem references and executing the cognitive
+    pipeline through the CognitiveLoop.
 
-    Cognitive processing is delegated to pipeline stages.
-    The runtime only coordinates execution flow and dependency injection.
+    Individual cognitive operations are delegated entirely to the
+    pipeline stages.
     """
 
     def __init__(
@@ -23,12 +24,13 @@ class CognitiveRuntime:
         reflection_engine=None,
         response_engine=None,
         planner=None,
+        executor=None,
         event_bus=None,
     ):
 
         self.state = CognitiveState.IDLE
 
-        # Cognitive subsystem references
+        # Shared cognitive subsystems
 
         self.memory_store = memory_store
 
@@ -42,14 +44,18 @@ class CognitiveRuntime:
 
         self.planner = planner
 
+        self.executor = executor
+
         self.event_bus = event_bus
+
+        # Cognitive pipeline
 
         self._loop = CognitiveLoop()
 
     @property
     def is_running(self) -> bool:
         """
-        Indicates whether a cognitive cycle is currently executing.
+        Returns True while a cognitive cycle is executing.
         """
 
         return self.state != CognitiveState.IDLE
@@ -64,22 +70,16 @@ class CognitiveRuntime:
 
     def run(self, input_data=None) -> CognitiveContext:
         """
-        Executes a complete cognitive cycle.
-
-        Parameters
-        ----------
-        input_data:
-            Initial input passed to the cognitive pipeline.
-
-        Returns
-        -------
-        CognitiveContext
-            The updated cognitive context produced by the pipeline.
+        Executes one complete cognitive cycle.
         """
+
+        self.state = CognitiveState.INITIALIZING
 
         context = CognitiveContext(
             state=CognitiveState.INITIALIZING,
             input_data=input_data,
+
+            # Shared subsystem injection
 
             memory_store=self.memory_store,
 
@@ -93,16 +93,14 @@ class CognitiveRuntime:
 
             planner=self.planner,
 
+            executor=self.executor,
+
             event_bus=self.event_bus,
         )
 
-        self.state = CognitiveState.INITIALIZING
-
         try:
 
-            context = self._loop.execute(context)
-
-            return context
+            return self._loop.execute(context)
 
         except Exception:
 
