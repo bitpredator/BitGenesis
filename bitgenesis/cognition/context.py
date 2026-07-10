@@ -49,6 +49,8 @@ class CognitiveContext:
 
     memory_store: Any = None
 
+    memory_factory: Any = None
+
     knowledge_registry: Any = None
 
     inference_engine: Any = None

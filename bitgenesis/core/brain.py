@@ -52,6 +52,7 @@ class Brain:
             inference_engine=self.inference_engine,
             reflection_engine=self.reflection_engine,
             response_engine=self.response_engine,
+            memory_factory=self.memory_factory,
         )
 
     # -------------------------------------------------

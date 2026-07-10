@@ -1,21 +1,25 @@
 from bitgenesis.cognition.context import CognitiveContext
 from bitgenesis.cognition.state import CognitiveState
 
+from bitgenesis.events.event import Event
+from bitgenesis.events.enums import EventCategory
+from bitgenesis.events.enums import EventType
+
 from .base import CognitiveStage
 
 
 class ConsolidationStage(CognitiveStage):
     """
-    Consolidates the results of a completed cognitive cycle.
+    Finalizes the cognitive cycle.
 
-    The stage coordinates final persistence, event notification
-    and cycle completion without implementing subsystem logic.
+    Consolidation delegates persistence to the existing
+    memory and knowledge subsystems.
     """
 
-    def execute(self, context: CognitiveContext) -> CognitiveContext:
-        """
-        Finalizes the cognitive execution cycle.
-        """
+    def execute(
+        self,
+        context: CognitiveContext
+    ) -> CognitiveContext:
 
         context.update_state(
             CognitiveState.CONSOLIDATING
@@ -23,54 +27,65 @@ class ConsolidationStage(CognitiveStage):
 
         try:
 
-            # -------------------------------------------------
+            consolidated_data = {
+                "input": context.input_data,
+                "response": context.response,
+                "reflection": context.reflection,
+            }
+
+            # -----------------------------
             # Memory consolidation
-            # -------------------------------------------------
+            # -----------------------------
 
             memory_store = context.memory_store
 
             if memory_store is not None:
 
-                if hasattr(memory_store, "consolidate"):
+                memory_object = consolidated_data
 
-                    memory_store.consolidate(
-                        context
+                if context.memory_factory is not None:
+
+                    event = Event(
+                        category=EventCategory.MEMORY,
+                        type=EventType.MEMORY_CREATED,
+                        source="cognitive_runtime",
+                        payload=consolidated_data,
                     )
 
-
-            # -------------------------------------------------
-            # Event notification
-            # -------------------------------------------------
-
-            event_bus = context.event_bus
-
-            if event_bus is not None:
-
-                if hasattr(event_bus, "publish"):
-
-                    event_bus.publish(
-                        "cognitive_cycle_completed",
-                        context,
+                    memory_object = (
+                        context.memory_factory
+                        .from_event(event)
                     )
 
+                if hasattr(memory_store, "add"):
 
-            # -------------------------------------------------
-            # Final state
-            # -------------------------------------------------
+                    memory_store.add(
+                        memory_object
+                    )
+
+            # -----------------------------
+            # Knowledge consolidation
+            # -----------------------------
+
+            knowledge_registry = (
+                context.knowledge_registry
+            )
+
+            if knowledge_registry is not None:
+
+                if hasattr(
+                    knowledge_registry,
+                    "add"
+                ):
+
+                    knowledge_registry.add(
+                        consolidated_data
+                    )
+
+            return context
+
+        finally:
 
             context.update_state(
                 CognitiveState.COMPLETED
             )
-
-            return context
-
-        except Exception:
-
-            # Consolidation failures must not destroy
-            # the completed cognitive result.
-
-            context.update_state(
-                CognitiveState.COMPLETED
-            )
-
-            return context

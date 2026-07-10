@@ -11,10 +11,12 @@ class CognitiveManager:
     all cognitive processing to the CognitiveRuntime.
     """
 
+
     def __init__(
         self,
         *,
         memory_store=None,
+        memory_factory=None,
         knowledge_registry=None,
         inference_engine=None,
         reflection_engine=None,
@@ -24,6 +26,8 @@ class CognitiveManager:
     ):
 
         self.memory_store = memory_store
+
+        self.memory_factory = memory_factory
 
         self.knowledge_registry = knowledge_registry
 
@@ -43,6 +47,7 @@ class CognitiveManager:
 
         self._cycles = 0
 
+
     @property
     def state(self) -> CognitiveState:
 
@@ -52,15 +57,18 @@ class CognitiveManager:
 
         return self._runtime.state
 
+
     @property
     def last_context(self) -> CognitiveContext | None:
 
         return self._last_context
 
+
     @property
     def cycles(self) -> int:
 
         return self._cycles
+
 
     def execute(self, input_data=None) -> CognitiveContext:
         """
@@ -69,6 +77,7 @@ class CognitiveManager:
 
         runtime = CognitiveRuntime(
             memory_store=self.memory_store,
+            memory_factory=self.memory_factory,
             knowledge_registry=self.knowledge_registry,
             inference_engine=self.inference_engine,
             reflection_engine=self.reflection_engine,

@@ -19,6 +19,7 @@ class CognitiveRuntime:
         self,
         *,
         memory_store=None,
+        memory_factory=None,
         knowledge_registry=None,
         inference_engine=None,
         reflection_engine=None,
@@ -33,6 +34,8 @@ class CognitiveRuntime:
         # Shared cognitive subsystems
 
         self.memory_store = memory_store
+
+        self.memory_factory = memory_factory
 
         self.knowledge_registry = knowledge_registry
 
@@ -83,6 +86,8 @@ class CognitiveRuntime:
 
             memory_store=self.memory_store,
 
+            memory_factory=self.memory_factory,
+
             knowledge_registry=self.knowledge_registry,
 
             inference_engine=self.inference_engine,
@@ -104,7 +109,9 @@ class CognitiveRuntime:
 
         except Exception:
 
-            context.update_state(CognitiveState.FAILED)
+            context.update_state(
+                CognitiveState.FAILED
+            )
 
             raise
 
