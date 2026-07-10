@@ -1,5 +1,6 @@
 from bitgenesis.cognition import CognitiveRuntime
 from bitgenesis.cognition import CognitiveState
+from bitgenesis.cognition.executor import CognitiveExecutor
 
 
 def test_runtime_initial_state():
@@ -33,3 +34,17 @@ def test_runtime_multiple_runs():
     runtime.run("two")
 
     assert runtime.state == CognitiveState.IDLE
+
+def test_runtime_injects_executor():
+
+    executor = CognitiveExecutor()
+
+    runtime = CognitiveRuntime(
+        executor=executor
+    )
+
+    context = runtime.run(
+        "test"
+    )
+
+    assert context.executor is executor
