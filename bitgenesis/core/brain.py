@@ -63,6 +63,13 @@ class Brain:
 
         return str(VERSION)
 
+
+    @property
+    def cognitive_context(self):
+
+        return self.cognitive_manager.last_context
+
+
     def stats(self):
 
         return BrainStats(
@@ -72,6 +79,33 @@ class Brain:
             state=self.state.value,
             version=self.version,
         )
+
+
+    # -------------------------------------------------
+    # Cognition
+    # -------------------------------------------------
+
+    def think(self, input_data=None):
+
+        """
+        Executes a complete cognitive cycle.
+
+        This is the primary entry point for the
+        cognitive architecture.
+        """
+
+        self.state = BrainState.THINKING
+
+        try:
+
+            return self.cognitive_manager.execute(
+                input_data
+            )
+
+        finally:
+
+            self.state = BrainState.IDLE
+
 
     # -------------------------------------------------
     # Dialogue
@@ -88,6 +122,7 @@ class Brain:
         finally:
 
             self.state = BrainState.IDLE
+
 
     # -------------------------------------------------
     # Observation
@@ -109,6 +144,7 @@ class Brain:
 
             self.state = BrainState.IDLE
 
+
     # -------------------------------------------------
     # Inference
     # -------------------------------------------------
@@ -124,6 +160,7 @@ class Brain:
         finally:
 
             self.state = BrainState.IDLE
+
 
     # -------------------------------------------------
     # Reflection
@@ -141,6 +178,7 @@ class Brain:
 
             self.state = BrainState.IDLE
 
+
     # -------------------------------------------------
     # Memory
     # -------------------------------------------------
@@ -148,6 +186,7 @@ class Brain:
     def remember(self):
 
         return self.memory_store.all()
+
 
     # -------------------------------------------------
     # Knowledge
