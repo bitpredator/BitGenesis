@@ -9,6 +9,8 @@ from bitgenesis.dialogue.response_engine import ResponseEngine
 
 from bitgenesis.memory.store import MemoryStore
 from bitgenesis.memory.factory import MemoryFactory
+from bitgenesis.memory.storage.json_backend import JsonMemoryBackend
+from bitgenesis.memory.storage.in_memory_backend import InMemoryBackend
 
 from bitgenesis.knowledge.registry import KnowledgeRegistry
 from bitgenesis.knowledge.inference_engine import InferenceEngine
@@ -28,7 +30,16 @@ class Brain:
         # Core cognitive subsystems
         # -------------------------------------------------
 
-        self.memory_store = MemoryStore()
+        if self.config.memory_backend == "json":
+            backend = JsonMemoryBackend(
+                self.config.memory_path
+            )
+        else:
+            backend = InMemoryBackend()
+
+        self.memory_store = MemoryStore(
+            backend=backend
+        )
 
         self.knowledge_registry = KnowledgeRegistry()
 

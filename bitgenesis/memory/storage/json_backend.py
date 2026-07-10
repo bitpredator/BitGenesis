@@ -1,11 +1,38 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
+from enum import Enum
 from pathlib import Path
+from uuid import UUID
 
 from bitgenesis.memory.object import MemoryObject
 
 from .backend import MemoryBackend
+
+class BitGenesisJSONEncoder(json.JSONEncoder):
+    """
+    JSON encoder for BitGenesis cognitive objects.
+
+    Handles UUIDs, datetime objects,
+    enums and domain objects.
+    """
+
+    def default(self, obj):
+
+        if isinstance(obj, UUID):
+            return str(obj)
+
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+
+        if isinstance(obj, Enum):
+            return obj.value
+
+        if hasattr(obj, "to_dict"):
+            return obj.to_dict()
+
+        return super().default(obj)
 
 
 class JsonMemoryBackend(MemoryBackend):
@@ -61,9 +88,10 @@ class JsonMemoryBackend(MemoryBackend):
 
         self._path.write_text(
             json.dumps(
-                data,
-                indent=4,
-                ensure_ascii=False,
+            data,
+            indent=4,
+            ensure_ascii=False,
+            cls=BitGenesisJSONEncoder,
             ),
             encoding="utf-8",
         )

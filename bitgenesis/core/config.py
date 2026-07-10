@@ -13,3 +13,10 @@ class BrainConfig:
     auto_inference: bool = False
 
     auto_consolidation: bool = False
+
+
+    # Memory configuration
+
+    memory_backend: str = "memory"
+
+    memory_path: str = "data/memories.json"
