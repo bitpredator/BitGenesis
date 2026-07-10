@@ -1,18 +1,16 @@
 from enum import Enum
 
 
-class BrainState(str, Enum):
+class BrainState(Enum):
 
     IDLE = "idle"
 
     OBSERVING = "observing"
 
-    CONSOLIDATING = "consolidating"
+    RESPONDING = "responding"
 
     INFERRING = "inferring"
 
     REFLECTING = "reflecting"
 
-    RESPONDING = "responding"
-
-    SHUTDOWN = "shutdown"
+    THINKING = "thinking"
