@@ -1,0 +1,103 @@
+name: Dependency Audit
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+
+    name: Check dependencies and deprecations
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
+
+
+      - name: Check outdated dependencies
+        id: outdated
+        continue-on-error: true
+        run: |
+          pip list --outdated > outdated.txt
+          cat outdated.txt
+
+
+      - name: Run deprecation audit
+        id: deprecations
+        continue-on-error: true
+        run: |
+          pytest -W error::DeprecationWarning > deprecation_report.txt 2>&1
+
+
+      - name: Create issue on findings
+        if: steps.outdated.outcome == 'failure' || steps.deprecations.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          script: |
+            const fs = require("fs");
+
+            let body = `
+            ## Dependency Audit Report
+
+            Sono state rilevate possibili dipendenze obsolete o deprecazioni.
+
+            ### Outdated dependencies
+
+            `;
+
+            if (fs.existsSync("outdated.txt")) {
+              body += "```\n";
+              body += fs.readFileSync("outdated.txt", "utf8");
+              body += "\n```\n";
+            }
+
+            body += `
+            ### Deprecation warnings
+
+            `;
+
+            if (fs.existsSync("deprecation_report.txt")) {
+              body += "```\n";
+              body += fs.readFileSync("deprecation_report.txt", "utf8");
+              body += "\n```\n";
+            }
+
+            body += `
+            ---
+            Generated automatically by GitHub Actions.
+            `;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "Dependency audit detected deprecated components",
+              body: body,
+              labels: [
+                "dependencies",
+                "maintenance"
+              ]
+            });
