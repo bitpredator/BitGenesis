@@ -3,6 +3,7 @@ from __future__ import annotations
 from bitgenesis.events.event import Event
 from bitgenesis.events.event_bus import EventBus
 from bitgenesis.kernel.service import KernelService
+from bitgenesis.kernel.registry import ServiceRegistry
 
 
 class Kernel:
@@ -19,6 +20,7 @@ class Kernel:
 
         self.running = False
 
+        self.registry = ServiceRegistry()
         self._services: list[KernelService] = []
 
 
@@ -33,7 +35,7 @@ class Kernel:
 
         self.running = True
 
-        for service in self._services:
+        for service in self.registry.all():
             service.start()
 
 
@@ -42,7 +44,7 @@ class Kernel:
         if not self.running:
             return
 
-        for service in reversed(self._services):
+        for service in reversed(self.registry.all()):
             service.stop()
 
         self.running = False
@@ -57,7 +59,7 @@ class Kernel:
         if not self.running:
             return
 
-        for service in self._services:
+        for service in self.registry.all():
             service.tick()
 
 
@@ -83,16 +85,24 @@ class Kernel:
         self,
         service: KernelService,
     ) -> None:
-        if service not in self._services:
-            self._services.append(service)
+        self.registry.register(service)
+        self._services.append(service)
 
     def unregister(self, service: KernelService) -> None:
 
-        if service in self._services:
-            self._services.remove(service)
+        self.registry.unregister(type(service))
+        self._services.remove(service)
 
 
     @property
     def services(self):
-
-        return tuple(self._services)
+    
+        return self.registry.all()
+    
+    def get_service(
+        self,
+        service_type: type[KernelService],
+    ):
+        return self.registry.get(
+            service_type
+        )

@@ -3,19 +3,18 @@ from bitgenesis.events.enums import EventCategory, EventType
 from bitgenesis.events.event import Event
 
 from bitgenesis.kernel.kernel import Kernel
-from bitgenesis.memory.store import MemoryStore
-from bitgenesis.memory.listener import MemoryListener
+from bitgenesis.memory.service import MemoryService
 
 
 def bootstrap():
     bus = EventBus()
     kernel = Kernel(bus)
 
-    store = MemoryStore()
-    memory_listener = MemoryListener(store)
+    memory_service = MemoryService(bus)
 
-    # memory listens to system events
-    bus.subscribe(EventCategory.SYSTEM, memory_listener.handle)
+    kernel.register(
+        memory_service
+    )
 
     kernel.start()
 
@@ -32,4 +31,8 @@ def bootstrap():
         )
     )
 
-    return bus, kernel, store
+    return (
+        bus,
+        kernel,
+        memory_service.store,
+    )

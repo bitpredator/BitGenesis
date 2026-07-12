@@ -19,6 +19,7 @@ class EventCategory(Enum):
     REASONING = "reasoning"
     PLANNING = "planning"
     MEMORY = "memory"
+    IDENTITY = "identity"
     KNOWLEDGE = "knowledge"
     LEARNING = "learning"
     LANGUAGE = "language"
@@ -68,6 +69,13 @@ class EventType(Enum):
     MEMORY_CREATED = "memory.created"
     MEMORY_UPDATED = "memory.updated"
     MEMORY_REMOVED = "memory.removed"
+    
+    #
+    # Identity
+    #
+    IDENTITY_INITIALIZED = "identity.initialized"
+    IDENTITY_UPDATED = "identity.updated"
+    IDENTITY_LOADED = "identity.loaded"
 
     #
     # Perception
