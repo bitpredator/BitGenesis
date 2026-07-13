@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from bitgenesis.events.event import Event
 from bitgenesis.events.event_bus import EventBus
+from bitgenesis.events.enums import (
+    EventCategory,
+    EventType,
+)
+
 from bitgenesis.kernel.service import KernelService
 from bitgenesis.kernel.registry import ServiceRegistry
 
@@ -10,18 +15,21 @@ class Kernel:
     """
     Core orchestration layer of BitGenesis.
 
-    The Kernel is responsible for managing the system
-    lifecycle and coordinating all runtime services.
+    The Kernel manages lifecycle of runtime services
+    and coordinates system execution.
     """
 
-    def __init__(self, event_bus: EventBus):
+
+    def __init__(
+        self,
+        event_bus: EventBus,
+    ):
 
         self.event_bus = event_bus
 
         self.running = False
 
         self.registry = ServiceRegistry()
-        self._services: list[KernelService] = []
 
 
     # --------------------------------------------------
@@ -33,10 +41,39 @@ class Kernel:
         if self.running:
             return
 
+
         self.running = True
 
+
         for service in self.registry.all():
-            service.start()
+
+            if hasattr(service, "start"):
+                service.start()
+
+
+        self.event_bus.publish(
+            Event(
+                category=EventCategory.KERNEL,
+                type=EventType.KERNEL_INITIALIZED,
+                source="kernel",
+                payload={
+                    "services": len(self.registry.all()),
+                },
+            )
+        )
+
+
+        self.event_bus.publish(
+            Event(
+                category=EventCategory.SYSTEM,
+                type=EventType.SYSTEM_STARTED,
+                source="kernel",
+                payload={
+                    "status": "running",
+                    "services": len(self.registry.all()),
+                },
+            )
+        )
 
 
     def stop(self) -> None:
@@ -44,10 +81,26 @@ class Kernel:
         if not self.running:
             return
 
+
         for service in reversed(self.registry.all()):
-            service.stop()
+
+            if hasattr(service, "stop"):
+                service.stop()
+
 
         self.running = False
+
+
+        self.event_bus.publish(
+            Event(
+                category=EventCategory.KERNEL,
+                type=EventType.KERNEL_SHUTDOWN,
+                source="kernel",
+                payload={
+                    "status": "stopped",
+                },
+            )
+        )
 
 
     # --------------------------------------------------
@@ -59,20 +112,29 @@ class Kernel:
         if not self.running:
             return
 
+
         for service in self.registry.all():
-            service.tick()
+
+            if hasattr(service, "tick"):
+                service.tick()
 
 
     # --------------------------------------------------
     # Events
     # --------------------------------------------------
 
-    def publish(self, event: Event) -> None:
+    def publish(
+        self,
+        event: Event,
+    ) -> None:
 
         self.event_bus.publish(event)
 
 
-    def emit(self, event: Event) -> None:
+    def emit(
+        self,
+        event: Event,
+    ) -> None:
 
         self.publish(event)
 
@@ -85,24 +147,33 @@ class Kernel:
         self,
         service: KernelService,
     ) -> None:
-        self.registry.register(service)
-        self._services.append(service)
 
-    def unregister(self, service: KernelService) -> None:
+        self.registry.register(
+            service
+        )
 
-        self.registry.unregister(type(service))
-        self._services.remove(service)
+
+    def unregister(
+        self,
+        service: KernelService,
+    ) -> None:
+
+        self.registry.unregister(
+            type(service)
+        )
 
 
     @property
     def services(self):
-    
+
         return self.registry.all()
-    
+
+
     def get_service(
         self,
         service_type: type[KernelService],
     ):
+
         return self.registry.get(
             service_type
         )

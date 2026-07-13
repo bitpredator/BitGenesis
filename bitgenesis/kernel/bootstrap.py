@@ -3,22 +3,53 @@ from bitgenesis.events.enums import EventCategory, EventType
 from bitgenesis.events.event import Event
 
 from bitgenesis.kernel.kernel import Kernel
+
 from bitgenesis.memory.service import MemoryService
+from bitgenesis.identity.service import IdentityService
 
 
 def bootstrap():
-    bus = EventBus()
-    kernel = Kernel(bus)
 
-    memory_service = MemoryService(bus)
+    bus = EventBus()
+
+    kernel = Kernel(
+        bus
+    )
+
+
+    # --------------------------------------------------
+    # Runtime Services
+    # --------------------------------------------------
+
+    memory_service = MemoryService(
+        bus
+    )
+
+    identity_service = IdentityService(
+        bus
+    )
+
 
     kernel.register(
         memory_service
     )
 
+    kernel.register(
+        identity_service
+    )
+
+
+    # --------------------------------------------------
+    # Start Kernel
+    # --------------------------------------------------
+
     kernel.start()
 
-    # 🔥 FIRST MEMORY EVENT (SYSTEM BIRTH)
+
+    # --------------------------------------------------
+    # System Birth Event
+    # --------------------------------------------------
+
     bus.publish(
         Event(
             category=EventCategory.MEMORY,
@@ -26,10 +57,11 @@ def bootstrap():
             source="bootstrap",
             payload={
                 "message": "BitGenesis system initialized",
-                "phase": "birth"
-            }
+                "phase": "birth",
+            },
         )
     )
+
 
     return (
         bus,

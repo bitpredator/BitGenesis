@@ -1,18 +1,24 @@
 from __future__ import annotations
 
+from bitgenesis.events.event import Event
 from bitgenesis.events.event_bus import EventBus
-
-from bitgenesis.kernel.service import KernelService
+from bitgenesis.events.enums import (
+    EventCategory,
+    EventType,
+)
 
 from bitgenesis.identity.manager import IdentityManager
+from bitgenesis.kernel.service import KernelService
 
 
 class IdentityService(KernelService):
     """
-    Kernel service responsible for identity management.
+    Runtime service responsible for identity lifecycle.
 
-    Handles identity lifecycle and exposes the
-    IdentityManager to the cognitive system.
+    Handles:
+    - IdentityManager ownership
+    - Identity lifecycle events
+    - Runtime integration with Kernel
     """
 
 
@@ -40,6 +46,18 @@ class IdentityService(KernelService):
         self.running = True
 
 
+        self.event_bus.publish(
+            Event(
+                category=EventCategory.IDENTITY,
+                type=EventType.IDENTITY_INITIALIZED,
+                source="identity_service",
+                payload={
+                    "message": "Identity subsystem initialized",
+                },
+            )
+        )
+
+
     def stop(self) -> None:
 
         if not self.running:
@@ -47,10 +65,6 @@ class IdentityService(KernelService):
 
         self.running = False
 
-
-    # --------------------------------------------------
-    # Runtime
-    # --------------------------------------------------
 
     def tick(self) -> None:
 
@@ -63,6 +77,6 @@ class IdentityService(KernelService):
     # --------------------------------------------------
 
     @property
-    def profile(self):
+    def identity(self):
 
         return self.manager.profile
