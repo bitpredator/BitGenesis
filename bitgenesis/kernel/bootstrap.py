@@ -9,9 +9,12 @@ from bitgenesis.identity.service import IdentityService
 from bitgenesis.runtime.service import RuntimeService
 
 
-def bootstrap():
+def bootstrap(
+    bus: EventBus | None = None,
+):
 
-    bus = EventBus()
+    if bus is None:
+        bus = EventBus()
 
     kernel = Kernel(
         bus
