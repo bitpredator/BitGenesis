@@ -144,6 +144,7 @@ def test_runtime_memory_action():
     action_result = result.results[0]
 
 
-    assert action_result["status"] == "stored"
+    assert action_result.success is True
+    assert action_result.data["content"] == "runtime-memory-test"
 
     assert action_result["action"] == "store_memory"

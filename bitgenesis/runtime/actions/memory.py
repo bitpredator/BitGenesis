@@ -1,14 +1,23 @@
+from bitgenesis.runtime.result import ActionResult
+
 from bitgenesis.memory.object import MemoryObject
 
 
-def store_memory(context):
+
+def store_memory(context) -> ActionResult:
+    """
+    Store a new memory object.
+    """
+
+    action_name = "store_memory"
+
 
     if context.memory_store is None:
 
-        return {
-            "action": context.step.action,
-            "status": "memory_unavailable",
-        }
+        return ActionResult.fail(
+            action=action_name,
+            error="Memory store unavailable",
+        )
 
 
     memory = MemoryObject(
@@ -22,18 +31,42 @@ def store_memory(context):
     )
 
 
-    return {
-        "action": context.step.action,
-        "status": "stored",
-        "memory_id": str(memory.id),
-    }
+    return ActionResult.ok(
+        action=action_name,
+        data={
+            "id": str(memory.id),
+            "content": memory.content,
+        },
+        metadata={
+            "status": "stored",
+        },
+    )
 
 
 
-def retrieve_memory_items(context):
+def retrieve_memory_items(context) -> ActionResult:
+    """
+    Retrieve stored memories.
+    """
 
-    return {
-        "action": context.step.action,
-        "status": "retrieved",
-        "data": context.step.target,
-    }
+    action_name = "retrieve_memory"
+
+
+    if context.memory_store is None:
+
+        return ActionResult.fail(
+            action=action_name,
+            error="Memory store unavailable",
+        )
+
+
+    memories = context.memory_store.all()
+
+
+    return ActionResult.ok(
+        action=action_name,
+        data={
+            "items": memories,
+            "count": len(memories),
+        },
+    )

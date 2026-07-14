@@ -1,14 +1,21 @@
+from bitgenesis.runtime.result import ActionResult
+
+
+
 def query_knowledge_graph(context):
 
     if context.graph is None:
 
-        return {
-            "action": context.step.action,
-            "status": "graph_unavailable",
-        }
+        return ActionResult.fail(
+            action=context.step.action,
+            error="Knowledge graph unavailable",
+        )
 
-    return {
-        "action": context.step.action,
-        "status": "queried",
-        "data": context.step.target,
-    }
+
+    return ActionResult.ok(
+        action=context.step.action,
+        data={
+            "status": "queried",
+            "target": context.step.target,
+        },
+    )
