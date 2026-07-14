@@ -12,6 +12,10 @@ from bitgenesis.events.enums import (
 from bitgenesis.runtime.action_registry import ActionRegistry
 from bitgenesis.runtime.runtime_manager import RuntimeManager
 
+from bitgenesis.runtime.actions.bootstrap import (
+    register_default_actions,
+)
+
 
 class RuntimeService(KernelService):
     """
@@ -30,17 +34,46 @@ class RuntimeService(KernelService):
         event_bus: EventBus,
         registry: ActionRegistry | None = None,
         manager: RuntimeManager | None = None,
+        memory_store=None,
+        graph=None,
     ):
 
         self.event_bus = event_bus
 
-        self.registry = registry or ActionRegistry()
 
-        self.manager = manager or RuntimeManager(
-            self.registry
+        # --------------------------------------------------
+        # Action Registry
+        # --------------------------------------------------
+
+        self.registry = (
+            registry
+            or ActionRegistry()
         )
 
+
+        if registry is None:
+
+            register_default_actions(
+                self.registry
+            )
+
+
+        # --------------------------------------------------
+        # Runtime Manager
+        # --------------------------------------------------
+
+        self.manager = (
+            manager
+            or RuntimeManager(
+                registry=self.registry,
+                memory_store=memory_store,
+                graph=graph,
+            )
+        )
+
+
         self.running = False
+
 
 
     # --------------------------------------------------
@@ -68,6 +101,7 @@ class RuntimeService(KernelService):
         )
 
 
+
     def stop(self) -> None:
 
         if not self.running:
@@ -89,6 +123,7 @@ class RuntimeService(KernelService):
         )
 
 
+
     def tick(self) -> None:
         """
         Runtime maintenance cycle.
@@ -106,23 +141,27 @@ class RuntimeService(KernelService):
         self.manager.tick()
 
 
+
     # --------------------------------------------------
     # Execution
     # --------------------------------------------------
 
     def execute(
         self,
-        action: str,
-        context,
+        plan,
+        decision=None,
+        event=None,
     ):
 
         if not self.running:
+
             raise RuntimeError(
                 "Runtime service is not running"
             )
 
 
         return self.manager.execute(
-            action,
-            context,
+            plan,
+            decision,
+            event,
         )

@@ -34,9 +34,9 @@ def bootstrap(
     )
 
     runtime_service = RuntimeService(
-        bus
+        bus,
+        memory_store=memory_service.store,
     )
-
 
     kernel.register(
         memory_service

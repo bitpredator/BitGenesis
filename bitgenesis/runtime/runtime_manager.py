@@ -15,6 +15,7 @@ class RuntimeManager:
 
     def __init__(
         self,
+        registry: ActionRegistry | None = None,
         memory_store=None,
         graph=None,
     ):
@@ -23,17 +24,22 @@ class RuntimeManager:
 
         self.graph = graph
 
-        self.registry = ActionRegistry()
+
+        self.registry = (
+            registry
+            or ActionRegistry()
+        )
 
 
         self.executor = Executor(
+            registry=self.registry,
             memory_store=self.memory_store,
             graph=self.graph,
-            registry=self.registry,
         )
 
 
         self.running = False
+
 
 
     # --------------------------------------------------
@@ -54,3 +60,32 @@ class RuntimeManager:
             return
 
         self.running = False
+
+
+
+    # --------------------------------------------------
+    # Execution
+    # --------------------------------------------------
+
+    def execute(
+        self,
+        plan,
+        decision=None,
+        event=None,
+    ):
+
+        return self.executor.execute(
+            plan,
+            decision,
+            event,
+        )
+
+
+    # --------------------------------------------------
+    # Runtime
+    # --------------------------------------------------
+
+    def tick(self):
+
+        if not self.running:
+            return
