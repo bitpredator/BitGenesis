@@ -43,7 +43,7 @@ def test_response_engine_returns_version():
 
     response = engine.respond("What is your version?")
 
-    assert response == "I am currently running version 0.1.0."
+    assert response == "I am currently running version 0.2.0."
 
 
 def test_response_engine_returns_description():

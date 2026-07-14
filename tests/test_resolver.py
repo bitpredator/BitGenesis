@@ -59,7 +59,7 @@ def test_resolver_returns_version():
 
     resolution = resolver.resolve(intent)
 
-    assert resolution.value == "0.1.0"
+    assert resolution.value == "0.2.0"
 
 
 def test_resolver_returns_none_for_unknown_domain():
