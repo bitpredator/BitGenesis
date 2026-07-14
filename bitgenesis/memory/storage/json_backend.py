@@ -9,6 +9,8 @@ from uuid import UUID
 from bitgenesis.memory.object import MemoryObject
 
 from .backend import MemoryBackend
+from .version import CURRENT_MEMORY_SCHEMA
+
 
 class BitGenesisJSONEncoder(json.JSONEncoder):
     """
@@ -42,6 +44,7 @@ class JsonMemoryBackend(MemoryBackend):
     Stores MemoryObject instances inside a JSON file.
     """
 
+
     def __init__(
         self,
         path: str | Path = "data/memories.json",
@@ -65,20 +68,55 @@ class JsonMemoryBackend(MemoryBackend):
     def _initialize_file(self) -> None:
 
         data = {
-            "version": "1.0",
+            "schema_version": CURRENT_MEMORY_SCHEMA,
             "memories": [],
         }
 
         self._write(data)
 
 
+
     def _read(self) -> dict:
 
-        return json.loads(
+        data = json.loads(
             self._path.read_text(
                 encoding="utf-8"
             )
         )
+
+        return self._normalize_schema(
+            data
+        )
+
+
+
+    def _normalize_schema(
+        self,
+        data: dict,
+    ) -> dict:
+        """
+        Normalize legacy storage formats.
+
+        Older versions used:
+            "version": "1.0"
+
+        New format uses:
+            "schema_version": "1.0"
+        """
+
+        if "schema_version" not in data:
+
+            if "version" in data:
+
+                data["schema_version"] = data["version"]
+
+            else:
+
+                data["schema_version"] = CURRENT_MEMORY_SCHEMA
+
+
+        return data
+
 
 
     def _write(
@@ -88,10 +126,10 @@ class JsonMemoryBackend(MemoryBackend):
 
         self._path.write_text(
             json.dumps(
-            data,
-            indent=4,
-            ensure_ascii=False,
-            cls=BitGenesisJSONEncoder,
+                data,
+                indent=4,
+                ensure_ascii=False,
+                cls=BitGenesisJSONEncoder,
             ),
             encoding="utf-8",
         )
@@ -128,6 +166,7 @@ class JsonMemoryBackend(MemoryBackend):
         self._write(data)
 
 
+
     def get(
         self,
         memory_id: str,
@@ -146,6 +185,7 @@ class JsonMemoryBackend(MemoryBackend):
         return None
 
 
+
     def remove(
         self,
         memory_id: str,
@@ -162,12 +202,14 @@ class JsonMemoryBackend(MemoryBackend):
         self._write(data)
 
 
+
     def exists(
         self,
         memory_id: str,
     ) -> bool:
 
         return self.get(memory_id) is not None
+
 
 
     # ---------------------------------------------------------
@@ -184,11 +226,12 @@ class JsonMemoryBackend(MemoryBackend):
         ]
 
 
+
     def clear(self) -> None:
 
         self._write(
             {
-                "version": "1.0",
+                "schema_version": CURRENT_MEMORY_SCHEMA,
                 "memories": [],
             }
         )
