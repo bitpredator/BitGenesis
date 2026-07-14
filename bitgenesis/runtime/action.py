@@ -10,15 +10,35 @@ class RuntimeAction(ABC):
     """
     Base class for executable runtime actions.
 
-    An action represents an operation that can be executed
-    by the BitGenesis runtime.
+    Runtime actions are atomic executable capabilities
+    exposed through the BitGenesis runtime layer.
 
-    Actions are resolved by the ActionRegistry and executed
-    by the RuntimeExecutor.
+    Lifecycle:
+
+    ActionRegistry
+        ↓
+    RuntimeExecutor
+        ↓
+    RuntimeAction.execute()
+        ↓
+    ActionResult
     """
 
 
-    name: str = ""
+    name: str | None = None
+
+
+    def __init_subclass__(cls, **kwargs):
+        """
+        Validate action definition.
+        """
+
+        super().__init_subclass__(**kwargs)
+
+        if not cls.name:
+            raise TypeError(
+                f"RuntimeAction {cls.__name__} must define a name"
+            )
 
 
     @abstractmethod

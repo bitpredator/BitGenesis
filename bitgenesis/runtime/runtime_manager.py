@@ -29,6 +29,7 @@ class RuntimeManager:
         self.executor = Executor(
             memory_store=self.memory_store,
             graph=self.graph,
+            registry=self.registry,
         )
 
 

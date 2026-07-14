@@ -1,13 +1,8 @@
 from bitgenesis.runtime.action_registry import ActionRegistry
 from bitgenesis.runtime.action_context import ActionContext
 
-from bitgenesis.runtime.actions.memory import (
-    store_memory,
-    retrieve_memory_items,
-)
-
-from bitgenesis.runtime.actions.knowledge import (
-    query_knowledge_graph,
+from bitgenesis.runtime.actions.bootstrap import (
+    register_default_actions,
 )
 
 
@@ -21,29 +16,23 @@ class ExecutionResult:
 
 class Executor:
 
-    def __init__(self, memory_store=None, graph=None):
+    def __init__(
+        self,
+        memory_store=None,
+        graph=None,
+        registry: ActionRegistry | None = None,
+    ):
 
         self.memory_store = memory_store
         self.graph = graph
 
-        self.registry = ActionRegistry()
+        self.registry = registry or ActionRegistry()
 
-        # Memory actions
-        self.registry.register(
-            "store_memory",
-            store_memory,
-        )
+        if registry is None:
+            register_default_actions(
+                self.registry
+            )
 
-        self.registry.register(
-            "retrieve_memory_items",
-            retrieve_memory_items,
-        )
-
-        # Knowledge actions
-        self.registry.register(
-            "query_knowledge_graph",
-            query_knowledge_graph,
-        )
 
     def execute(self, plan, decision=None, event=None):
 
