@@ -28,6 +28,7 @@ class EventCategory(Enum):
     SECURITY = "security"
 
 
+
 class EventPriority(Enum):
     """
     Event scheduling priority.
@@ -39,107 +40,171 @@ class EventPriority(Enum):
     CRITICAL = 40
 
 
+
 class EventType(Enum):
     """
     Specific event that occurred inside the system.
     """
 
-    #
+
+    # ======================================================
     # System
-    #
+    # ======================================================
+
     SYSTEM_STARTED = "system.started"
     SYSTEM_STOPPED = "system.stopped"
 
 
-    #
+
+    # ======================================================
     # Kernel
-    #
+    # ======================================================
+
     KERNEL_INITIALIZED = "kernel.initialized"
     KERNEL_SHUTDOWN = "kernel.shutdown"
 
 
-    #
+
+    # ======================================================
     # Services
-    #
+    # ======================================================
+
     SERVICE_REGISTERED = "service.registered"
     SERVICE_UNREGISTERED = "service.unregistered"
+
     SERVICE_STARTED = "service.started"
     SERVICE_STOPPED = "service.stopped"
+
     SERVICE_TICKED = "service.ticked"
 
 
-    #
+
+    # ======================================================
     # Event Bus
-    #
+    # ======================================================
+
     EVENT_PUBLISHED = "event.published"
     EVENT_DISPATCHED = "event.dispatched"
     EVENT_CONSUMED = "event.consumed"
 
 
-    #
+
+    # ======================================================
     # Memory
-    #
+    # ======================================================
+
     MEMORY_BOOTSTRAP = "memory.bootstrap"
+
     MEMORY_CREATED = "memory.created"
     MEMORY_UPDATED = "memory.updated"
     MEMORY_REMOVED = "memory.removed"
-    MEMORY_CONSOLIDATED = "memory.consolidated"
+
     MEMORY_RETRIEVED = "memory.retrieved"
 
+    MEMORY_CONSOLIDATED = "memory.consolidated"
 
-    #
+
+
+    # ======================================================
     # Identity
-    #
+    # ======================================================
+
     IDENTITY_INITIALIZED = "identity.initialized"
     IDENTITY_UPDATED = "identity.updated"
     IDENTITY_LOADED = "identity.loaded"
 
 
-    #
+
+    # ======================================================
     # Perception
-    #
+    # ======================================================
+
     PERCEPTION_RECEIVED = "perception.received"
     PERCEPTION_PROCESSED = "perception.processed"
 
 
-    #
+
+    # ======================================================
     # Reasoning
-    #
+    # ======================================================
+
     REASONING_STARTED = "reasoning.started"
     REASONING_COMPLETED = "reasoning.completed"
 
 
-    #
+
+    # ======================================================
     # Planning
-    #
+    # ======================================================
+
     PLAN_CREATED = "planning.created"
     PLAN_COMPLETED = "planning.completed"
 
 
-    #
+
+    # ======================================================
     # Learning
-    #
+    # ======================================================
+
     LEARNING_STARTED = "learning.started"
     LEARNING_COMPLETED = "learning.completed"
 
 
-    #
+
+    # ======================================================
     # Runtime
-    #
+    # ======================================================
+
     RUNTIME_STARTED = "runtime.started"
     RUNTIME_STOPPED = "runtime.stopped"
+
+
+    #
+    # Execution lifecycle
+    #
+
+    EXECUTION_STARTED = "runtime.execution.started"
+    EXECUTION_COMPLETED = "runtime.execution.completed"
+    EXECUTION_FAILED = "runtime.execution.failed"
+
+
+    #
+    # Action lifecycle
+    #
+
+    ACTION_STARTED = "runtime.action.started"
+    ACTION_COMPLETED = "runtime.action.completed"
+    ACTION_FAILED = "runtime.action.failed"
+
+
+    #
+    # Step lifecycle
+    #
+
+    STEP_STARTED = "runtime.step.started"
+    STEP_COMPLETED = "runtime.step.completed"
+    STEP_FAILED = "runtime.step.failed"
+
+
+    #
+    # Legacy compatibility
+    #
 
     TASK_STARTED = "runtime.task_started"
     TASK_COMPLETED = "runtime.task_completed"
 
 
-    #
+
+    # ======================================================
     # Tooling
-    #
+    # ======================================================
+
     TOOL_EXECUTED = "tool.executed"
 
 
-    #
+
+    # ======================================================
     # Security
-    #
+    # ======================================================
+
     SECURITY_ALERT = "security.alert"
