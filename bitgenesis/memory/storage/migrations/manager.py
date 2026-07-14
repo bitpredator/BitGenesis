@@ -8,12 +8,6 @@ from bitgenesis.memory.storage.version import (
 class MemoryMigrationManager:
     """
     Coordinates memory storage schema migrations.
-
-    Future responsibilities:
-
-    - detect storage schema
-    - execute migrations
-    - upgrade persisted memories
     """
 
     def migrate(
@@ -22,8 +16,30 @@ class MemoryMigrationManager:
     ) -> dict:
         """
         Upgrade storage data to the current schema.
+        """
 
-        Currently no migrations are required.
+        version = data.get(
+            "schema_version",
+            CURRENT_MEMORY_SCHEMA,
+        )
+
+        if version == CURRENT_MEMORY_SCHEMA:
+            return data
+
+        return self._upgrade(
+            data,
+            version,
+        )
+
+    def _upgrade(
+        self,
+        data: dict,
+        version: str,
+    ) -> dict:
+        """
+        Apply schema upgrades.
+
+        Placeholder for future migrations.
         """
 
         data["schema_version"] = CURRENT_MEMORY_SCHEMA

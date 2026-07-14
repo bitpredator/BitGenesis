@@ -10,6 +10,7 @@ from bitgenesis.memory.object import MemoryObject
 
 from .backend import MemoryBackend
 from .version import CURRENT_MEMORY_SCHEMA
+from .migrations import MemoryMigrationManager
 
 
 class BitGenesisJSONEncoder(json.JSONEncoder):
@@ -51,6 +52,7 @@ class JsonMemoryBackend(MemoryBackend):
     ) -> None:
 
         self._path = Path(path)
+        self._migration_manager = MemoryMigrationManager()
 
         self._path.parent.mkdir(
             parents=True,
@@ -77,18 +79,15 @@ class JsonMemoryBackend(MemoryBackend):
 
 
     def _read(self) -> dict:
-
         data = json.loads(
             self._path.read_text(
                 encoding="utf-8"
             )
         )
 
-        return self._normalize_schema(
-            data
-        )
+        data = self._normalize_schema(data)
 
-
+        return self._migration_manager.migrate(data)
 
     def _normalize_schema(
         self,
