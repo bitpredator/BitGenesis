@@ -6,6 +6,7 @@ from bitgenesis.kernel.kernel import Kernel
 
 from bitgenesis.memory.service import MemoryService
 from bitgenesis.identity.service import IdentityService
+from bitgenesis.runtime.service import RuntimeService
 
 
 def bootstrap():
@@ -29,6 +30,10 @@ def bootstrap():
         bus
     )
 
+    runtime_service = RuntimeService(
+        bus
+    )
+
 
     kernel.register(
         memory_service
@@ -36,6 +41,10 @@ def bootstrap():
 
     kernel.register(
         identity_service
+    )
+
+    kernel.register(
+        runtime_service
     )
 
 

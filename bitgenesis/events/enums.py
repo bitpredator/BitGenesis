@@ -50,11 +50,23 @@ class EventType(Enum):
     SYSTEM_STARTED = "system.started"
     SYSTEM_STOPPED = "system.stopped"
 
+
     #
     # Kernel
     #
     KERNEL_INITIALIZED = "kernel.initialized"
     KERNEL_SHUTDOWN = "kernel.shutdown"
+
+
+    #
+    # Services
+    #
+    SERVICE_REGISTERED = "service.registered"
+    SERVICE_UNREGISTERED = "service.unregistered"
+    SERVICE_STARTED = "service.started"
+    SERVICE_STOPPED = "service.stopped"
+    SERVICE_TICKED = "service.ticked"
+
 
     #
     # Event Bus
@@ -63,13 +75,18 @@ class EventType(Enum):
     EVENT_DISPATCHED = "event.dispatched"
     EVENT_CONSUMED = "event.consumed"
 
+
     #
     # Memory
     #
+    MEMORY_BOOTSTRAP = "memory.bootstrap"
     MEMORY_CREATED = "memory.created"
     MEMORY_UPDATED = "memory.updated"
     MEMORY_REMOVED = "memory.removed"
-    
+    MEMORY_CONSOLIDATED = "memory.consolidated"
+    MEMORY_RETRIEVED = "memory.retrieved"
+
+
     #
     # Identity
     #
@@ -77,11 +94,13 @@ class EventType(Enum):
     IDENTITY_UPDATED = "identity.updated"
     IDENTITY_LOADED = "identity.loaded"
 
+
     #
     # Perception
     #
     PERCEPTION_RECEIVED = "perception.received"
     PERCEPTION_PROCESSED = "perception.processed"
+
 
     #
     # Reasoning
@@ -89,11 +108,13 @@ class EventType(Enum):
     REASONING_STARTED = "reasoning.started"
     REASONING_COMPLETED = "reasoning.completed"
 
+
     #
     # Planning
     #
     PLAN_CREATED = "planning.created"
     PLAN_COMPLETED = "planning.completed"
+
 
     #
     # Learning
@@ -101,16 +122,22 @@ class EventType(Enum):
     LEARNING_STARTED = "learning.started"
     LEARNING_COMPLETED = "learning.completed"
 
+
     #
     # Runtime
     #
+    RUNTIME_STARTED = "runtime.started"
+    RUNTIME_STOPPED = "runtime.stopped"
+
     TASK_STARTED = "runtime.task_started"
     TASK_COMPLETED = "runtime.task_completed"
+
 
     #
     # Tooling
     #
     TOOL_EXECUTED = "tool.executed"
+
 
     #
     # Security

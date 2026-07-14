@@ -19,18 +19,16 @@ class Kernel:
     and coordinates system execution.
     """
 
-
     def __init__(
         self,
         event_bus: EventBus,
-    ):
+    ) -> None:
 
         self.event_bus = event_bus
 
         self.running = False
 
         self.registry = ServiceRegistry()
-
 
     # --------------------------------------------------
     # Lifecycle
@@ -41,15 +39,24 @@ class Kernel:
         if self.running:
             return
 
-
         self.running = True
-
 
         for service in self.registry.all():
 
             if hasattr(service, "start"):
+
                 service.start()
 
+                self.event_bus.publish(
+                    Event(
+                        category=EventCategory.KERNEL,
+                        type=EventType.SERVICE_STARTED,
+                        source="kernel",
+                        payload={
+                            "service": type(service).__name__,
+                        },
+                    )
+                )
 
         self.event_bus.publish(
             Event(
@@ -61,7 +68,6 @@ class Kernel:
                 },
             )
         )
-
 
         self.event_bus.publish(
             Event(
@@ -75,21 +81,29 @@ class Kernel:
             )
         )
 
-
     def stop(self) -> None:
 
         if not self.running:
             return
 
-
         for service in reversed(self.registry.all()):
 
             if hasattr(service, "stop"):
+
                 service.stop()
 
+                self.event_bus.publish(
+                    Event(
+                        category=EventCategory.KERNEL,
+                        type=EventType.SERVICE_STOPPED,
+                        source="kernel",
+                        payload={
+                            "service": type(service).__name__,
+                        },
+                    )
+                )
 
         self.running = False
-
 
         self.event_bus.publish(
             Event(
@@ -102,7 +116,6 @@ class Kernel:
             )
         )
 
-
     # --------------------------------------------------
     # Runtime
     # --------------------------------------------------
@@ -112,12 +125,11 @@ class Kernel:
         if not self.running:
             return
 
-
         for service in self.registry.all():
 
             if hasattr(service, "tick"):
-                service.tick()
 
+                service.tick()
 
     # --------------------------------------------------
     # Events
@@ -130,14 +142,12 @@ class Kernel:
 
         self.event_bus.publish(event)
 
-
     def emit(
         self,
         event: Event,
     ) -> None:
 
         self.publish(event)
-
 
     # --------------------------------------------------
     # Services
@@ -148,32 +158,51 @@ class Kernel:
         service: KernelService,
     ) -> None:
 
-        self.registry.register(
-            service
-        )
+        if service in self.registry.all():
+            return
 
+        self.registry.register(service)
+
+        self.event_bus.publish(
+            Event(
+                category=EventCategory.KERNEL,
+                type=EventType.SERVICE_REGISTERED,
+                source="kernel",
+                payload={
+                    "service": type(service).__name__,
+                },
+            )
+        )
 
     def unregister(
         self,
         service: KernelService,
     ) -> None:
 
-        self.registry.unregister(
-            type(service)
-        )
+        if service not in self.registry.all():
+            return
 
+        self.registry.unregister(type(service))
+
+        self.event_bus.publish(
+            Event(
+                category=EventCategory.KERNEL,
+                type=EventType.SERVICE_UNREGISTERED,
+                source="kernel",
+                payload={
+                    "service": type(service).__name__,
+                },
+            )
+        )
 
     @property
     def services(self):
 
         return self.registry.all()
 
-
     def get_service(
         self,
         service_type: type[KernelService],
     ):
 
-        return self.registry.get(
-            service_type
-        )
+        return self.registry.get(service_type)
