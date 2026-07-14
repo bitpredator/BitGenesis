@@ -86,3 +86,13 @@ def test_identity_service_exposes_identity_manager():
     )
 
     assert service.manager is not None
+    
+    
+def test_identity_service_exposes_persistent_identity():
+
+    service = IdentityService(
+        event_bus=EventBus()
+    )
+
+    assert service.identity.name == "BitGenesis"
+    assert service.identity.version == "0.2.0"    

@@ -25,11 +25,12 @@ class IdentityService(KernelService):
     def __init__(
         self,
         event_bus: EventBus,
+        manager: IdentityManager | None = None,
     ) -> None:
 
         self.event_bus = event_bus
 
-        self.manager = IdentityManager()
+        self.manager = manager or IdentityManager()
 
         self.running = False
 
@@ -43,6 +44,7 @@ class IdentityService(KernelService):
         if self.running:
             return
 
+
         self.running = True
 
 
@@ -53,6 +55,7 @@ class IdentityService(KernelService):
                 source="identity_service",
                 payload={
                     "message": "Identity subsystem initialized",
+                    "identity": self.manager.as_dict(),
                 },
             )
         )
@@ -62,6 +65,7 @@ class IdentityService(KernelService):
 
         if not self.running:
             return
+
 
         self.running = False
 
