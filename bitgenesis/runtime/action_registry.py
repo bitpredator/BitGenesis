@@ -2,6 +2,13 @@ from __future__ import annotations
 
 from typing import Type
 
+from bitgenesis.events.event_bus import EventBus
+from bitgenesis.events.event import Event
+from bitgenesis.events.enums import (
+    EventCategory,
+    EventType,
+)
+
 
 class ActionRegistry:
     """
@@ -11,12 +18,41 @@ class ActionRegistry:
     - class based actions
     - function based actions
     - dynamic execution
+    - action lifecycle events
     """
 
-
-    def __init__(self):
+    def __init__(
+        self,
+        event_bus: EventBus | None = None,
+    ):
 
         self._actions: dict[str, Type | callable] = {}
+
+        self.event_bus = event_bus
+
+
+    # --------------------------------------------------
+    # Events
+    # --------------------------------------------------
+
+    def _emit(
+        self,
+        event_type,
+        payload,
+    ):
+
+        if not self.event_bus:
+            return
+
+
+        self.event_bus.emit(
+            Event(
+                category=EventCategory.RUNTIME,
+                type=event_type,
+                source="action_registry",
+                payload=payload,
+            )
+        )
 
 
     # --------------------------------------------------
@@ -82,13 +118,11 @@ class ActionRegistry:
             return None
 
 
-        # class based action
         if isinstance(action, type):
 
             return action()
 
 
-        # function based action
         return action
 
 
@@ -103,6 +137,7 @@ class ActionRegistry:
         context,
     ):
 
+
         action = self.create(name)
 
 
@@ -113,25 +148,61 @@ class ActionRegistry:
             )
 
 
-        # object action
-        if hasattr(action, "execute"):
-
-            return action.execute(
-                context
-            )
-
-
-        # function action
-        if callable(action):
-
-            return action(
-                context
-            )
-
-
-        raise TypeError(
-            f"Invalid action: {name}"
+        self._emit(
+            EventType.ACTION_STARTED,
+            {
+                "action": name,
+            },
         )
+
+
+        try:
+
+            if hasattr(action, "execute"):
+
+                result = action.execute(
+                    context
+                )
+
+
+            elif callable(action):
+
+                result = action(
+                    context
+                )
+
+
+            else:
+
+                raise TypeError(
+                    f"Invalid action: {name}"
+                )
+
+
+        except Exception as exc:
+
+            self._emit(
+                EventType.ACTION_FAILED,
+                {
+                    "action": name,
+                    "error": str(exc),
+                },
+            )
+
+            raise
+
+
+
+        self._emit(
+            EventType.ACTION_COMPLETED,
+            {
+                "action": name,
+            },
+        )
+
+
+        return result
+
 
 
     # --------------------------------------------------
@@ -143,6 +214,7 @@ class ActionRegistry:
         return tuple(
             self._actions.keys()
         )
+
 
 
     def clear(self):

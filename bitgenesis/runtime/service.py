@@ -28,7 +28,6 @@ class RuntimeService(KernelService):
     - expose execution layer to Kernel
     """
 
-
     def __init__(
         self,
         event_bus: EventBus,
@@ -40,7 +39,6 @@ class RuntimeService(KernelService):
 
         self.event_bus = event_bus
 
-
         # --------------------------------------------------
         # Action Registry
         # --------------------------------------------------
@@ -50,13 +48,11 @@ class RuntimeService(KernelService):
             or ActionRegistry()
         )
 
-
         if registry is None:
 
             register_default_actions(
                 self.registry
             )
-
 
         # --------------------------------------------------
         # Runtime Manager
@@ -68,13 +64,11 @@ class RuntimeService(KernelService):
                 registry=self.registry,
                 memory_store=memory_store,
                 graph=graph,
+                event_bus=self.event_bus,
             )
         )
 
-
         self.running = False
-
-
 
     # --------------------------------------------------
     # Lifecycle
@@ -85,9 +79,7 @@ class RuntimeService(KernelService):
         if self.running:
             return
 
-
         self.running = True
-
 
         self.event_bus.publish(
             Event(
@@ -100,16 +92,12 @@ class RuntimeService(KernelService):
             )
         )
 
-
-
     def stop(self) -> None:
 
         if not self.running:
             return
 
-
         self.running = False
-
 
         self.event_bus.publish(
             Event(
@@ -121,8 +109,6 @@ class RuntimeService(KernelService):
                 },
             )
         )
-
-
 
     def tick(self) -> None:
         """
@@ -137,10 +123,7 @@ class RuntimeService(KernelService):
         if not self.running:
             return
 
-
         self.manager.tick()
-
-
 
     # --------------------------------------------------
     # Execution
@@ -158,7 +141,6 @@ class RuntimeService(KernelService):
             raise RuntimeError(
                 "Runtime service is not running"
             )
-
 
         return self.manager.execute(
             plan,

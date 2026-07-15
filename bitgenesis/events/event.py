@@ -7,6 +7,7 @@ from datetime import datetime, UTC
 from typing import Any
 
 from bitgenesis.core.identifiers import generate_id
+from bitgenesis.events.enums import EventCategory
 
 from .enums import EventCategory
 from .enums import EventPriority

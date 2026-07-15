@@ -192,8 +192,7 @@ class EventType(Enum):
 
     TASK_STARTED = "runtime.task_started"
     TASK_COMPLETED = "runtime.task_completed"
-
-
+    
 
     # ======================================================
     # Tooling

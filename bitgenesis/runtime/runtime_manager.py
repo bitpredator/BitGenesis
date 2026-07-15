@@ -1,3 +1,10 @@
+from bitgenesis.events.event_bus import EventBus
+from bitgenesis.events.event import Event
+from bitgenesis.events.enums import (
+    EventCategory,
+    EventType,
+)
+
 from bitgenesis.runtime.action_registry import ActionRegistry
 from bitgenesis.runtime.executor import Executor
 
@@ -9,6 +16,7 @@ class RuntimeManager:
     Responsibilities:
     - own action registry
     - own executor
+    - manage execution lifecycle events
     - expose lifecycle state
     """
 
@@ -18,16 +26,19 @@ class RuntimeManager:
         registry: ActionRegistry | None = None,
         memory_store=None,
         graph=None,
+        event_bus: EventBus | None = None,
     ):
 
         self.memory_store = memory_store
-
         self.graph = graph
+        self.event_bus = event_bus
 
 
         self.registry = (
             registry
-            or ActionRegistry()
+            or ActionRegistry(
+                event_bus=self.event_bus
+            )
         )
 
 
@@ -35,6 +46,7 @@ class RuntimeManager:
             registry=self.registry,
             memory_store=self.memory_store,
             graph=self.graph,
+            event_bus=self.event_bus,
         )
 
 
@@ -52,6 +64,7 @@ class RuntimeManager:
             return
 
         self.running = True
+
 
 
     def stop(self):
@@ -74,11 +87,72 @@ class RuntimeManager:
         event=None,
     ):
 
-        return self.executor.execute(
-            plan,
-            decision,
-            event,
-        )
+
+        if self.event_bus:
+
+            self.event_bus.emit(
+                Event(
+                    category=EventCategory.RUNTIME,
+                    type=EventType.EXECUTION_STARTED,
+                    source="runtime_manager",
+                    payload={
+                        "plan": str(plan),
+                    },
+                )
+            )
+
+
+        try:
+
+            result = self.executor.execute(
+                plan,
+                decision,
+                event,
+            )
+
+
+        except Exception as exc:
+
+            if self.event_bus:
+
+                self.event_bus.emit(
+                    Event(
+                        category=EventCategory.RUNTIME,
+                        type=EventType.EXECUTION_FAILED,
+                        source="runtime_manager",
+                        payload={
+                            "error": str(exc),
+                        },
+                    )
+                )
+
+            raise
+
+
+
+        if self.event_bus:
+
+            self.event_bus.emit(
+                Event(
+                    category=EventCategory.RUNTIME,
+                    type=(
+                        EventType.EXECUTION_COMPLETED
+                        if result.success
+                        else EventType.EXECUTION_FAILED
+                    ),
+                    source="runtime_manager",
+                    payload={
+                        "success": result.success,
+                        "actions_executed": (
+                            result.actions_executed
+                        ),
+                    },
+                )
+            )
+
+
+        return result
+
 
 
     # --------------------------------------------------
