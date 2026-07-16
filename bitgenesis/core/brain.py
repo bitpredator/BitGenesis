@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from bitgenesis.core.config import BrainConfig
 from bitgenesis.core.lifecycle import BrainState
 from bitgenesis.core.stats import BrainStats
@@ -19,29 +21,84 @@ from bitgenesis.reasoning.reflection_engine import ReflectionEngine
 
 
 class Brain:
+    """
+    Central cognitive container.
 
-    def __init__(self, config=None):
+    The Brain coordinates all cognitive subsystems:
+    - memory
+    - knowledge
+    - reasoning
+    - reflection
+    - dialogue
+    - runtime services
+    - event infrastructure
+
+    Services can be injected externally to allow
+    modular composition and testing.
+    """
+
+    def __init__(
+        self,
+        config=None,
+        *,
+        event_bus=None,
+        runtime=None,
+        memory_store=None,
+        episode_manager=None,
+        identity=None,
+        knowledge=None,
+    ):
 
         self.config = config or BrainConfig()
 
         self.state = BrainState.IDLE
 
         # -------------------------------------------------
-        # Core cognitive subsystems
+        # External services
         # -------------------------------------------------
 
-        if self.config.memory_backend == "json":
-            backend = JsonMemoryBackend(
-                self.config.memory_path
-            )
-        else:
-            backend = InMemoryBackend()
+        self.event_bus = event_bus
+        self.runtime = runtime
+        self.episode_manager = episode_manager
+        self.identity = identity
 
-        self.memory_store = MemoryStore(
-            backend=backend
+
+        # -------------------------------------------------
+        # Memory subsystem
+        # -------------------------------------------------
+
+        if memory_store is not None:
+
+            self.memory_store = memory_store
+
+        else:
+
+            if self.config.memory_backend == "json":
+
+                backend = JsonMemoryBackend(
+                    self.config.memory_path
+                )
+
+            else:
+
+                backend = InMemoryBackend()
+
+
+            self.memory_store = MemoryStore(
+                backend=backend
+            )
+
+
+        # -------------------------------------------------
+        # Knowledge subsystem
+        # -------------------------------------------------
+
+        self.knowledge_registry = (
+            knowledge
+            if knowledge is not None
+            else KnowledgeRegistry()
         )
 
-        self.knowledge_registry = KnowledgeRegistry()
 
         self.memory_factory = MemoryFactory()
 
@@ -49,9 +106,15 @@ class Brain:
 
         self.reflection_engine = ReflectionEngine()
 
+
+        # -------------------------------------------------
+        # Dialogue subsystem
+        # -------------------------------------------------
+
         self.response_engine = ResponseEngine(
             memory_store=self.memory_store,
         )
+
 
         # -------------------------------------------------
         # Cognitive runtime
@@ -65,6 +128,7 @@ class Brain:
             response_engine=self.response_engine,
             memory_factory=self.memory_factory,
         )
+
 
     # -------------------------------------------------
     # Information
@@ -82,13 +146,49 @@ class Brain:
         return self.cognitive_manager.last_context
 
 
+    @property
+    def bus(self):
+
+        return self.event_bus
+
+
+    @property
+    def runtime_manager(self):
+
+        return self.runtime
+
+
+    @property
+    def episodes(self):
+
+        if self.episode_manager is None:
+
+            return []
+
+        return self.episode_manager.episodes
+
+
+    # -------------------------------------------------
+    # Statistics
+    # -------------------------------------------------
+
     def stats(self):
 
         return BrainStats(
-            memories=len(self.memory_store.all()),
-            episodes=0,
-            knowledge=len(self.knowledge_registry.all()),
+            memories=len(
+                self.memory_store.all()
+            ),
+
+            episodes=len(
+                self.episodes
+            ),
+
+            knowledge=len(
+                self.knowledge_registry.all()
+            ),
+
             state=self.state.value,
+
             version=self.version,
         )
 
@@ -97,13 +197,13 @@ class Brain:
     # Cognition
     # -------------------------------------------------
 
-    def think(self, input_data=None):
+    def think(
+        self,
+        input_data=None,
+    ):
 
         """
         Executes a complete cognitive cycle.
-
-        This is the primary entry point for the
-        cognitive architecture.
         """
 
         self.state = BrainState.THINKING
@@ -123,13 +223,18 @@ class Brain:
     # Dialogue
     # -------------------------------------------------
 
-    def ask(self, question: str):
+    def ask(
+        self,
+        question: str,
+    ):
 
         self.state = BrainState.RESPONDING
 
         try:
 
-            return self.response_engine.respond(question)
+            return self.response_engine.respond(
+                question
+            )
 
         finally:
 
@@ -140,15 +245,22 @@ class Brain:
     # Observation
     # -------------------------------------------------
 
-    def observe(self, event):
+    def observe(
+        self,
+        event,
+    ):
 
         self.state = BrainState.OBSERVING
 
         try:
 
-            memory = self.memory_factory.from_event(event)
+            memory = self.memory_factory.from_event(
+                event
+            )
 
-            self.memory_store.add(memory)
+            self.memory_store.add(
+                memory
+            )
 
             return memory
 
@@ -161,13 +273,18 @@ class Brain:
     # Inference
     # -------------------------------------------------
 
-    def infer(self, facts):
+    def infer(
+        self,
+        facts,
+    ):
 
         self.state = BrainState.INFERRING
 
         try:
 
-            return self.inference_engine.infer(facts)
+            return self.inference_engine.infer(
+                facts
+            )
 
         finally:
 
@@ -178,13 +295,18 @@ class Brain:
     # Reflection
     # -------------------------------------------------
 
-    def reflect(self, facts):
+    def reflect(
+        self,
+        facts,
+    ):
 
         self.state = BrainState.REFLECTING
 
         try:
 
-            return self.reflection_engine.reflect(facts)
+            return self.reflection_engine.reflect(
+                facts
+            )
 
         finally:
 

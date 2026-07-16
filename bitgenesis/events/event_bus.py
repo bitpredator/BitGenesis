@@ -1,76 +1,159 @@
+from __future__ import annotations
+
 from collections import defaultdict
-from typing import Callable, Dict, List, Union
+from typing import Callable
 
 from bitgenesis.events.event import Event
-from bitgenesis.events.enums import EventCategory, EventType
 
 
 class EventBus:
     """
     Central event dispatcher.
+
+    Supports:
+    - publish(Event)
+    - emit(EventType, payload)
+    - subscribe()
+    - unsubscribe()
     """
 
     def __init__(self):
-        self._by_category: Dict[EventCategory, List] = defaultdict(list)
-        self._by_type: Dict[EventType, List] = defaultdict(list)
 
-    # -------------------------
-    # Subscription
-    # -------------------------
+        self._listeners = defaultdict(list)
 
-    def subscribe(self, key: Union[EventCategory, EventType], subscriber):
-        if isinstance(key, EventCategory):
-            self._by_category[key].append(subscriber)
-        elif isinstance(key, EventType):
-            self._by_type[key].append(subscriber)
-        else:
-            raise TypeError("Invalid subscription key")
 
-    def unsubscribe(self, key: Union[EventCategory, EventType], subscriber):
-        if isinstance(key, EventCategory):
-            if subscriber in self._by_category[key]:
-                self._by_category[key].remove(subscriber)
-        elif isinstance(key, EventType):
-            if subscriber in self._by_type[key]:
-                self._by_type[key].remove(subscriber)
+    # --------------------------------------------------
+    # Subscribe
+    # --------------------------------------------------
 
-    def clear(self):
-        self._by_category.clear()
-        self._by_type.clear()
+    def subscribe(
+        self,
+        event_type,
+        callback: Callable,
+    ):
 
-    def subscriber_count(self) -> int:
-        return (
-            sum(len(v) for v in self._by_category.values()) +
-            sum(len(v) for v in self._by_type.values())
+        self._listeners[event_type].append(
+            callback
         )
 
-    # -------------------------
-    # Publish / Emit
-    # -------------------------
 
-    def publish(self, event: Event):
-        self._dispatch(event)
+    def unsubscribe(
+        self,
+        event_type,
+        callback,
+    ):
 
-    def emit(self, event: Event):
-        """Alias for compatibility"""
-        self._dispatch(event)
+        if callback in self._listeners.get(event_type, []):
 
-    def _dispatch(self, event: Event):
-        for sub in self._by_category.get(event.category, []):
-            self._call(sub, event)
+            self._listeners[event_type].remove(
+                callback
+            )
 
-        for sub in self._by_type.get(event.type, []):
-            self._call(sub, event)
 
-    def _call(self, subscriber, event: Event):
-        """
-        Supports:
-        - callable(event)
-        - object with handle(event)
-        """
-        if callable(subscriber):
-            subscriber(event)
-        elif hasattr(subscriber, "handle"):
-            subscriber.handle(event)
-        else:
-            raise TypeError("Subscriber must be callable or have handle(event)")
+    # --------------------------------------------------
+    # New API
+    # --------------------------------------------------
+
+    def publish(
+        self,
+        event: Event,
+    ):
+
+        targets = []
+
+
+        targets.extend(
+            self._listeners.get(
+                event.type,
+                []
+            )
+        )
+
+
+        targets.extend(
+            self._listeners.get(
+                event.category,
+                []
+            )
+        )
+
+
+        for callback in targets:
+
+            if callable(callback):
+
+                callback(event)
+
+            elif hasattr(callback, "handle"):
+
+                callback.handle(event)
+
+
+
+    # --------------------------------------------------
+    # Compatibility API
+    # --------------------------------------------------
+
+    def emit(
+        self,
+        event_or_type,
+        payload=None,
+    ):
+
+        # New style:
+        # emit(Event(...))
+
+        if isinstance(event_or_type, Event):
+
+            return self.publish(
+                event_or_type
+            )
+
+
+        # Old style:
+        # emit(EventType.X, payload)
+
+        from bitgenesis.events.enums import EventCategory
+
+
+        event = Event(
+            category=EventCategory.SYSTEM,
+            type=event_or_type,
+            source="event_bus",
+            payload=payload,
+        )
+
+
+        self.publish(
+            event
+        )
+
+
+    # --------------------------------------------------
+    # Utilities
+    # --------------------------------------------------
+
+    def subscriber_count(
+        self,
+        event_type=None,
+    ):
+
+        if event_type:
+
+            return len(
+                self._listeners.get(
+                    event_type,
+                    []
+                )
+            )
+
+
+        return sum(
+            len(x)
+            for x in self._listeners.values()
+        )
+
+
+    def clear(self):
+
+        self._listeners.clear()

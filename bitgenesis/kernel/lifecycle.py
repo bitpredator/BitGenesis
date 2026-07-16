@@ -1,13 +1,9 @@
-from dataclasses import dataclass
-
-from .state import KernelState
+from enum import Enum
 
 
-@dataclass(slots=True)
-class KernelLifecycle:
-
-    state: KernelState = KernelState.STOPPED
-
-    cycles: int = 0
-
-    started: bool = False
+class KernelState(str, Enum):
+    CREATED = "created"
+    READY = "ready"
+    RUNNING = "running"
+    STOPPING = "stopping"
+    STOPPED = "stopped"

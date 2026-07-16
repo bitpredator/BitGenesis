@@ -1,14 +1,26 @@
+"""
+Kernel state definitions.
+
+Compatibility layer for BitGenesis kernel lifecycle.
+"""
+
 from enum import Enum
 
 
 class KernelState(str, Enum):
+    """
+    Current state of the BitGenesis Kernel.
+    """
 
-    STOPPED = "stopped"
+    CREATED = "created"
 
-    STARTING = "starting"
+    READY = "ready"
 
     RUNNING = "running"
 
-    PAUSED = "paused"
+    STOPPED = "stopped"
 
-    SHUTTING_DOWN = "shutting_down"
+
+__all__ = [
+    "KernelState",
+]

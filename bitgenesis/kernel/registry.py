@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Type, TypeVar
+from typing import TypeVar
 
 from bitgenesis.kernel.service import KernelService
 
@@ -14,12 +14,41 @@ T = TypeVar(
 class ServiceRegistry:
     """
     Registry for Kernel services.
+
+    Stores and manages kernel-level services.
+    Provides backward compatible access through
+    the services property.
     """
+
 
     def __init__(self):
 
         self._services: dict[type[KernelService], KernelService] = {}
 
+
+    # --------------------------------------------------
+    # Compatibility API
+    # --------------------------------------------------
+
+    @property
+    def services(self):
+        """
+        Backward compatible service collection access.
+
+        Allows:
+            registry.services
+
+        while keeping internal storage private.
+        """
+
+        return tuple(
+            self._services.values()
+        )
+
+
+    # --------------------------------------------------
+    # Registration
+    # --------------------------------------------------
 
     def register(
         self,
@@ -31,13 +60,22 @@ class ServiceRegistry:
 
     def unregister(
         self,
-        service_type: type[KernelService],
+        service: KernelService | type[KernelService],
     ) -> None:
 
-        self._services.pop(
-            service_type,
-            None,
-        )
+        if isinstance(service, type):
+
+            self._services.pop(
+                service,
+                None,
+            )
+
+        else:
+
+            self._services.pop(
+                type(service),
+                None,
+            )
 
 
     def get(

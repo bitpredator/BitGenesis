@@ -1,169 +1,57 @@
 from __future__ import annotations
 
-from bitgenesis.events.event import Event
 from bitgenesis.events.event_bus import EventBus
-from bitgenesis.events.enums import (
-    EventCategory,
-    EventType,
-)
+from bitgenesis.events.enums import EventType, EventCategory
+from bitgenesis.events.event import Event
 
-from bitgenesis.kernel.service import KernelService
+from bitgenesis.core.brain_builder import BrainBuilder
+from bitgenesis.core.config import BrainConfig
+
 from bitgenesis.kernel.registry import ServiceRegistry
+from bitgenesis.kernel.state import KernelState
 
 
 class Kernel:
-    """
-    Core orchestration layer of BitGenesis.
-
-    The Kernel manages lifecycle of runtime services
-    and coordinates system execution.
-    """
 
     def __init__(
         self,
-        event_bus: EventBus,
-    ) -> None:
+        bus: EventBus | None = None,
+        config: BrainConfig | None = None,
+    ):
 
-        self.event_bus = event_bus
+        self.bus = bus or EventBus()
 
-        self.running = False
+        self.config = config or BrainConfig()
 
         self.registry = ServiceRegistry()
 
-    # --------------------------------------------------
-    # Lifecycle
-    # --------------------------------------------------
+        # compatibilità legacy
+        self.services = ()
 
-    def start(self) -> None:
-
-        if self.running:
-            return
-
-        self.running = True
-
-        for service in self.registry.all():
-
-            if hasattr(service, "start"):
-
-                service.start()
-
-                self.event_bus.publish(
-                    Event(
-                        category=EventCategory.KERNEL,
-                        type=EventType.SERVICE_STARTED,
-                        source="kernel",
-                        payload={
-                            "service": type(service).__name__,
-                        },
-                    )
-                )
-
-        self.event_bus.publish(
-            Event(
-                category=EventCategory.KERNEL,
-                type=EventType.KERNEL_INITIALIZED,
-                source="kernel",
-                payload={
-                    "services": len(self.registry.all()),
-                },
-            )
-        )
-
-        self.event_bus.publish(
-            Event(
-                category=EventCategory.SYSTEM,
-                type=EventType.SYSTEM_STARTED,
-                source="kernel",
-                payload={
-                    "status": "running",
-                    "services": len(self.registry.all()),
-                },
-            )
-        )
-
-    def stop(self) -> None:
-
-        if not self.running:
-            return
-
-        for service in reversed(self.registry.all()):
-
-            if hasattr(service, "stop"):
-
-                service.stop()
-
-                self.event_bus.publish(
-                    Event(
-                        category=EventCategory.KERNEL,
-                        type=EventType.SERVICE_STOPPED,
-                        source="kernel",
-                        payload={
-                            "service": type(service).__name__,
-                        },
-                    )
-                )
+        self.state = KernelState.CREATED
 
         self.running = False
 
-        self.event_bus.publish(
-            Event(
-                category=EventCategory.KERNEL,
-                type=EventType.KERNEL_SHUTDOWN,
-                source="kernel",
-                payload={
-                    "status": "stopped",
-                },
-            )
+        self.brain = None
+
+
+    # --------------------------------------------------
+    # Service compatibility API
+    # --------------------------------------------------
+
+    def _refresh_services(self):
+        self.services = self.registry.all()
+
+
+    def register(self, service):
+
+        result = self.registry.register(
+            service
         )
 
-    # --------------------------------------------------
-    # Runtime
-    # --------------------------------------------------
+        self._refresh_services()
 
-    def tick(self) -> None:
-
-        if not self.running:
-            return
-
-        for service in self.registry.all():
-
-            if hasattr(service, "tick"):
-
-                service.tick()
-
-    # --------------------------------------------------
-    # Events
-    # --------------------------------------------------
-
-    def publish(
-        self,
-        event: Event,
-    ) -> None:
-
-        self.event_bus.publish(event)
-
-    def emit(
-        self,
-        event: Event,
-    ) -> None:
-
-        self.publish(event)
-
-    # --------------------------------------------------
-    # Services
-    # --------------------------------------------------
-
-    def register(
-        self,
-        service: KernelService,
-    ) -> None:
-
-        if service in self.registry.all():
-            return
-
-        self.registry.register(service)
-
-        self.event_bus.publish(
+        self.bus.emit(
             Event(
                 category=EventCategory.KERNEL,
                 type=EventType.SERVICE_REGISTERED,
@@ -174,17 +62,18 @@ class Kernel:
             )
         )
 
-    def unregister(
-        self,
-        service: KernelService,
-    ) -> None:
+        return result
 
-        if service not in self.registry.all():
-            return
 
-        self.registry.unregister(type(service))
+    def unregister(self, service):
 
-        self.event_bus.publish(
+        result = self.registry.unregister(
+            type(service)
+        )
+
+        self._refresh_services()
+
+        self.bus.emit(
             Event(
                 category=EventCategory.KERNEL,
                 type=EventType.SERVICE_UNREGISTERED,
@@ -195,14 +84,117 @@ class Kernel:
             )
         )
 
-    @property
-    def services(self):
+        return result
 
-        return self.registry.all()
 
-    def get_service(
-        self,
-        service_type: type[KernelService],
-    ):
+    def get_service(self, service_type):
 
-        return self.registry.get(service_type)
+        return self.registry.get(
+            service_type
+        )
+
+
+    def get_brain(self):
+
+        return self.brain
+
+
+    # --------------------------------------------------
+    # Lifecycle
+    # --------------------------------------------------
+
+    def bootstrap(self):
+
+        builder = BrainBuilder(
+            self.config
+        )
+
+        self.brain = builder.build()
+
+        return self.brain
+
+
+    def start(self):
+
+        if self.running:
+            return
+
+
+        self.bootstrap()
+
+
+        for service in self.registry.all():
+
+            service.start()
+
+
+        self.state = KernelState.RUNNING
+
+        self.running = True
+
+
+        self.bus.emit(
+            Event(
+                category=EventCategory.KERNEL,
+                type=EventType.KERNEL_INITIALIZED,
+                source="kernel",
+                payload={
+                    "brain": self.brain,
+                },
+            )
+        )
+
+
+        self.bus.emit(
+            Event(
+                category=EventCategory.SYSTEM,
+                type=EventType.SYSTEM_STARTED,
+                source="kernel",
+                payload={
+                    "status": "running",
+                },
+            )
+        )
+
+
+    def stop(self):
+
+        if not self.running:
+            return
+
+
+        for service in reversed(
+            self.registry.all()
+        ):
+
+            service.stop()
+
+
+        self.state = KernelState.STOPPED
+
+        self.running = False
+
+
+        self.bus.emit(
+            Event(
+                category=EventCategory.KERNEL,
+                type=EventType.KERNEL_SHUTDOWN,
+                source="kernel",
+                payload={
+                    "status": "stopped",
+                },
+            )
+        )
+
+
+    # --------------------------------------------------
+    # Runtime tick
+    # --------------------------------------------------
+
+    def tick(self):
+
+        for service in self.registry.all():
+
+            if hasattr(service, "tick"):
+
+                service.tick()
