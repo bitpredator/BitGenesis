@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from bitgenesis.cognition.context import CognitiveContext
 
 from bitgenesis.cognition.stages import (
@@ -14,11 +16,18 @@ from bitgenesis.cognition.stages import (
 
 class CognitiveLoop:
     """
-    Executes the cognitive pipeline by orchestrating
-    the registered cognitive stages.
+    Executes a single cognitive pipeline.
 
-    Stages are injected with shared dependencies through
-    the CognitiveContext.
+    The CognitiveLoop is responsible only for orchestrating the
+    registered cognitive stages.
+
+    It does not implement a persistent runtime loop.
+    Runtime scheduling, lifecycle and execution policies belong to
+    CognitiveRuntime.
+
+    The hook methods are intentionally designed to be overridden or
+    extended in future versions (events, tracing, metrics, profiling,
+    debugging, etc.).
     """
 
     def __init__(self, stages=None):
@@ -34,33 +43,98 @@ class CognitiveLoop:
             ConsolidationStage(),
         ]
 
+        self._execution_count = 0
 
     @property
     def stages(self):
 
         return tuple(self._stages)
 
+    @property
+    def execution_count(self) -> int:
+        """
+        Number of successfully executed cognitive cycles.
+        """
+
+        return self._execution_count
+
+    # --------------------------------------------------
+    # Hooks
+    # --------------------------------------------------
+
+    def before_cycle(
+        self,
+        context: CognitiveContext,
+    ) -> None:
+        """
+        Called before a cognitive cycle starts.
+
+        Intended for subclasses and future runtime extensions.
+        """
+
+    def after_cycle(
+        self,
+        context: CognitiveContext,
+    ) -> None:
+        """
+        Called after a cognitive cycle completes successfully.
+        """
+
+    def before_stage(
+        self,
+        stage,
+        context: CognitiveContext,
+    ) -> None:
+        """
+        Called immediately before a stage executes.
+        """
+
+    def after_stage(
+        self,
+        stage,
+        context: CognitiveContext,
+    ) -> None:
+        """
+        Called immediately after a stage completes.
+        """
+
+    def on_stage_failed(
+        self,
+        stage,
+        context: CognitiveContext,
+        exception: Exception,
+    ) -> None:
+        """
+        Called when a stage raises an exception.
+        """
+
+    # --------------------------------------------------
+    # Pipeline execution
+    # --------------------------------------------------
 
     def execute(
         self,
-        context: CognitiveContext
+        context: CognitiveContext,
     ) -> CognitiveContext:
         """
-        Executes a complete cognitive cycle.
+        Executes one complete cognitive cycle.
         """
+
+        self.before_cycle(context)
 
         try:
 
             for stage in self._stages:
 
-                stage_name = (
-                    stage.__class__.__name__
+                self.before_stage(
+                    stage,
+                    context,
                 )
 
-                execution = (
-                    context.start_stage(
-                        stage_name
-                    )
+                stage_name = stage.__class__.__name__
+
+                execution = context.start_stage(
+                    stage_name
                 )
 
                 try:
@@ -73,20 +147,35 @@ class CognitiveLoop:
                         execution
                     )
 
+                    self.after_stage(
+                        stage,
+                        context,
+                    )
+
                 except Exception as exc:
 
                     context.fail_stage(
                         execution,
-                        exc
+                        exc,
+                    )
+
+                    self.on_stage_failed(
+                        stage,
+                        context,
+                        exc,
                     )
 
                     raise
 
-
             context.complete_cycle()
 
-            return context
+            self._execution_count += 1
 
+            self.after_cycle(
+                context
+            )
+
+            return context
 
         except Exception as exc:
 
