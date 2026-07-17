@@ -12,6 +12,13 @@ class KernelService(ABC):
     """
 
 
+    name: str | None = None
+
+    version: str = "0.0.0"
+
+    dependencies: list[type] = []
+
+
     def start(self) -> None:
         """
         Called when the Kernel starts the service.
@@ -31,3 +38,15 @@ class KernelService(ABC):
         Called during Kernel runtime cycles.
         """
         pass
+
+
+    def metadata(self) -> dict:
+        """
+        Returns service metadata.
+        """
+
+        return {
+            "name": self.name or type(self).__name__,
+            "version": self.version,
+            "type": type(self).__name__,
+        }

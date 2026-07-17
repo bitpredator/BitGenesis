@@ -63,6 +63,8 @@ class EventType(Enum):
     KERNEL_INITIALIZED = "kernel.initialized"
     KERNEL_SHUTDOWN = "kernel.shutdown"
 
+    KERNEL_READY = "kernel.ready"
+
 
 
     # ======================================================
@@ -71,6 +73,10 @@ class EventType(Enum):
 
     SERVICE_REGISTERED = "service.registered"
     SERVICE_UNREGISTERED = "service.unregistered"
+
+    SERVICE_DISCOVERED = "service.discovered"
+    SERVICE_READY = "service.ready"
+    SERVICE_FAILED = "service.failed"
 
     SERVICE_STARTED = "service.started"
     SERVICE_STOPPED = "service.stopped"
