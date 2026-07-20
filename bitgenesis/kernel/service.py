@@ -5,48 +5,40 @@ from abc import ABC
 
 class KernelService(ABC):
     """
-    Base lifecycle contract for all BitGenesis runtime services.
+    Base lifecycle contract for every Kernel service.
 
-    Every service managed by the Kernel must implement
-    this lifecycle interface.
+    Services may override every method.
     """
 
+    name = None
 
-    name: str | None = None
+    version = "0.1.0"
 
-    version: str = "0.0.0"
+    enabled = True
 
-    dependencies: list[type] = []
+
+    @property
+    def service_name(self) -> str:
+
+        return self.name or self.__class__.__name__
+
+
+    def metadata(self) -> dict:
+
+        return {
+            "name": self.service_name,
+            "version": self.version,
+            "enabled": self.enabled,
+        }
 
 
     def start(self) -> None:
-        """
-        Called when the Kernel starts the service.
-        """
         pass
 
 
     def stop(self) -> None:
-        """
-        Called when the Kernel stops the service.
-        """
         pass
 
 
     def tick(self) -> None:
-        """
-        Called during Kernel runtime cycles.
-        """
         pass
-
-
-    def metadata(self) -> dict:
-        """
-        Returns service metadata.
-        """
-
-        return {
-            "name": self.name or type(self).__name__,
-            "version": self.version,
-            "type": type(self).__name__,
-        }

@@ -15,28 +15,15 @@ class ServiceRegistry:
     """
     Registry for Kernel services.
 
-    Supports:
-    - registration
-    - lookup
-    - discovery
-    - backward compatibility
+    Stores services by both type and logical name while
+    remaining backward compatible with legacy services.
     """
-
 
     def __init__(self):
 
-        self._services: dict[
-            type[KernelService],
-            KernelService
-        ] = {}
+        self._services: dict[type[KernelService], KernelService] = {}
 
-
-        self._names: dict[
-            str,
-            KernelService
-        ] = {}
-
-
+        self._names: dict[str, KernelService] = {}
 
     # --------------------------------------------------
     # Compatibility API
@@ -49,7 +36,31 @@ class ServiceRegistry:
             self._services.values()
         )
 
+    # --------------------------------------------------
+    # Internal helpers
+    # --------------------------------------------------
 
+    @staticmethod
+    def _service_name(service) -> str:
+        """
+        Returns the logical service name.
+
+        Priority:
+
+        1. service.service_name
+        2. service.name
+        3. ClassName
+        """
+
+        return getattr(
+            service,
+            "service_name",
+            getattr(
+                service,
+                "name",
+                type(service).__name__,
+            ),
+        )
 
     # --------------------------------------------------
     # Registration
@@ -60,37 +71,18 @@ class ServiceRegistry:
         service: KernelService,
     ) -> None:
 
-
         self._services[
             type(service)
         ] = service
 
-
-
-        name = getattr(
-            service,
-            "name",
-            None,
-        )
-
-
-        if not name:
-
-            name = type(service).__name__
-
-
-
         self._names[
-            name
+            self._service_name(service)
         ] = service
-
-
 
     def unregister(
         self,
         service: KernelService | type[KernelService],
     ) -> None:
-
 
         if isinstance(service, type):
 
@@ -99,66 +91,54 @@ class ServiceRegistry:
                 None,
             )
 
+            if instance is None:
+                return
+
         else:
 
-            instance = self._services.pop(
+            instance = service
+
+            self._services.pop(
                 type(service),
                 None,
             )
 
+        self._names.pop(
+            self._service_name(instance),
+            None,
+        )
 
-        if instance:
-
-            name = getattr(
-                instance,
-                "name",
-                None,
-            )
-
-
-            if not name:
-
-                name = type(instance).__name__
-
-
-            self._names.pop(
-                name,
-                None,
-            )
-
-
+    # --------------------------------------------------
+    # Lookup
+    # --------------------------------------------------
 
     def get(
         self,
         service_type: type[T],
     ) -> T | None:
 
-
         return self._services.get(
             service_type
         )
-
-
 
     def get_by_name(
         self,
         name: str,
     ) -> KernelService | None:
 
-
         return self._names.get(
             name
         )
 
-
+    # --------------------------------------------------
+    # Utilities
+    # --------------------------------------------------
 
     def all(self):
 
         return tuple(
             self._services.values()
         )
-
-
 
     def clear(self):
 

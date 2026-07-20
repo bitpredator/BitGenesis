@@ -1,26 +1,20 @@
 from __future__ import annotations
 
-
-from bitgenesis.events.event_bus import EventBus
-from bitgenesis.events.enums import (
-    EventType,
-    EventCategory,
-)
-
-from bitgenesis.events.event import Event
-
-
 from bitgenesis.core.brain_builder import BrainBuilder
 from bitgenesis.core.config import BrainConfig
 
+from bitgenesis.events.event import Event
+from bitgenesis.events.event_bus import EventBus
+from bitgenesis.events.enums import (
+    EventCategory,
+    EventType,
+)
 
 from bitgenesis.kernel.registry import ServiceRegistry
 from bitgenesis.kernel.state import KernelState
 
 
-
 class Kernel:
-
 
     def __init__(
         self,
@@ -28,191 +22,94 @@ class Kernel:
         config: BrainConfig | None = None,
     ):
 
-
         self.bus = bus or EventBus()
 
         self.config = config or BrainConfig()
 
-
         self.registry = ServiceRegistry()
 
-
-        # legacy compatibility
-
+        # Legacy compatibility
         self.services = ()
-
 
         self.state = KernelState.CREATED
 
-
         self.running = False
-
 
         self.brain = None
 
-
-
-    # --------------------------------------------------
+    # ==================================================
     # Services
-    # --------------------------------------------------
-
+    # ==================================================
 
     def _refresh_services(self):
 
         self.services = self.registry.all()
 
+    def register(self, service):
 
-
-    def register(
-        self,
-        service,
-    ):
-
-
-        self.registry.register(
-            service
-        )
-
+        self.registry.register(service)
 
         self._refresh_services()
 
-
-
-        self.bus.emit(
-            Event(
-                category=EventCategory.KERNEL,
-                type=EventType.SERVICE_REGISTERED,
-                source="kernel",
-                payload={
-                    "service": type(service).__name__,
-                    **self._service_metadata(service),
-                },
-            )
+        self._emit_service_event(
+            EventType.SERVICE_REGISTERED,
+            service,
         )
 
+    def unregister(self, service):
 
-
-    def unregister(
-        self,
-        service,
-    ):
-
-
-        self.registry.unregister(
-            service
-        )
-
+        self.registry.unregister(service)
 
         self._refresh_services()
 
-
-
-        self.bus.emit(
-            Event(
-                category=EventCategory.KERNEL,
-                type=EventType.SERVICE_UNREGISTERED,
-                source="kernel",
-                payload={
-                    "service": type(service).__name__,
-                },
-            )
+        self._emit_service_event(
+            EventType.SERVICE_UNREGISTERED,
+            service,
         )
 
+    def get_service(self, service_type):
 
+        return self.registry.get(service_type)
 
-    def get_service(
-        self,
-        service_type,
-    ):
+    def get_service_by_name(self, name):
 
-        return self.registry.get(
-            service_type
-        )
-
-
-
-    def get_service_by_name(
-        self,
-        name,
-    ):
-
-        return self.registry.get_by_name(
-            name
-        )
-
-
+        return self.registry.get_by_name(name)
 
     def get_brain(self):
 
         return self.brain
 
-
-
-    # --------------------------------------------------
+    # ==================================================
     # Lifecycle
-    # --------------------------------------------------
-
+    # ==================================================
 
     def bootstrap(self):
 
-
-        builder = BrainBuilder(
-            self.config
-        )
-
+        builder = BrainBuilder(self.config)
 
         self.brain = builder.build()
 
-
         return self.brain
-
-
-
 
     def start(self):
 
-
         if self.running:
-
             return
-
-
 
         self.bootstrap()
 
-
-
         for service in self.registry.all():
-
 
             service.start()
 
-
-
-            self.bus.emit(
-                Event(
-                    category=EventCategory.KERNEL,
-                    type=EventType.SERVICE_STARTED,
-                    source="kernel",
-                    payload={
-                        "service": type(service).__name__,
-                        **self._service_metadata(service),
-                    },
-                )
+            self._emit_service_event(
+                EventType.SERVICE_STARTED,
+                service,
             )
-
-
 
         self.state = KernelState.RUNNING
 
-
         self.running = True
-
-
-
-        # ----------------------------------------------
-        # Legacy events
-        # ----------------------------------------------
 
         self.bus.emit(
             Event(
@@ -225,7 +122,6 @@ class Kernel:
             )
         )
 
-
         self.bus.emit(
             Event(
                 category=EventCategory.SYSTEM,
@@ -236,12 +132,6 @@ class Kernel:
                 },
             )
         )
-
-
-
-        # ----------------------------------------------
-        # New architecture event
-        # ----------------------------------------------
 
         self.bus.emit(
             Event(
@@ -256,46 +146,25 @@ class Kernel:
             )
         )
 
-
-
     def stop(self):
 
-
         if not self.running:
-
             return
-
-
 
         for service in reversed(
             self.registry.all()
         ):
 
-
             service.stop()
 
-
-
-            self.bus.emit(
-                Event(
-                    category=EventCategory.KERNEL,
-                    type=EventType.SERVICE_STOPPED,
-                    source="kernel",
-                    payload={
-                        "service": type(service).__name__,
-                        **self._service_metadata(service),
-                    },
-                )
+            self._emit_service_event(
+                EventType.SERVICE_STOPPED,
+                service,
             )
-
-
-
-        self.state = KernelState.STOPPED
-
 
         self.running = False
 
-
+        self.state = KernelState.STOPPED
 
         self.bus.emit(
             Event(
@@ -308,44 +177,62 @@ class Kernel:
             )
         )
 
-
-
-    # --------------------------------------------------
+    # ==================================================
     # Runtime
-    # --------------------------------------------------
-
+    # ==================================================
 
     def tick(self):
 
-
         for service in self.registry.all():
-
 
             service.tick()
 
-
-
-            self.bus.emit(
-                Event(
-                    category=EventCategory.KERNEL,
-                    type=EventType.SERVICE_TICKED,
-                    source="kernel",
-                    payload={
-                        "service": type(service).__name__,
-                        **self._service_metadata(service),
-                    },
-                )
+            self._emit_service_event(
+                EventType.SERVICE_TICKED,
+                service,
             )
+
+    # ==================================================
+    # Helpers
+    # ==================================================
+
+    def _emit_service_event(
+        self,
+        event_type,
+        service,
+    ):
+
+        self.bus.emit(
+            Event(
+                category=EventCategory.KERNEL,
+                type=event_type,
+                source="kernel",
+                payload=self._service_payload(service),
+            )
+        )
+
+    def _service_payload(
+        self,
+        service,
+    ) -> dict:
+
+        payload = {
+            "service": type(service).__name__,
+        }
+
+        payload.update(
+            self._service_metadata(service)
+        )
+
+        return payload
 
     def _service_metadata(
         self,
         service,
     ) -> dict:
         """
-        Returns service metadata.
-
         Supports both modern KernelService
-        and legacy plain service objects.
+        and legacy services.
         """
 
         if hasattr(service, "metadata"):
@@ -363,4 +250,4 @@ class Kernel:
                 "0.0.0",
             ),
             "type": type(service).__name__,
-        }        
+        }
