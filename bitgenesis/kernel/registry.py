@@ -15,15 +15,20 @@ class ServiceRegistry:
     """
     Registry for Kernel services.
 
-    Stores services by both type and logical name while
-    remaining backward compatible with legacy services.
+    Supports:
+    - multiple instances of the same service type
+    - lookup by type
+    - lookup by logical name
+    - backward compatibility
     """
+
 
     def __init__(self):
 
-        self._services: dict[type[KernelService], KernelService] = {}
+        self._services: list[KernelService] = []
 
         self._names: dict[str, KernelService] = {}
+
 
     # --------------------------------------------------
     # Compatibility API
@@ -33,24 +38,18 @@ class ServiceRegistry:
     def services(self):
 
         return tuple(
-            self._services.values()
+            self._services
         )
 
+
     # --------------------------------------------------
-    # Internal helpers
+    # Helpers
     # --------------------------------------------------
 
     @staticmethod
-    def _service_name(service) -> str:
-        """
-        Returns the logical service name.
-
-        Priority:
-
-        1. service.service_name
-        2. service.name
-        3. ClassName
-        """
+    def _service_name(
+        service,
+    ) -> str:
 
         return getattr(
             service,
@@ -62,6 +61,7 @@ class ServiceRegistry:
             ),
         )
 
+
     # --------------------------------------------------
     # Registration
     # --------------------------------------------------
@@ -71,42 +71,63 @@ class ServiceRegistry:
         service: KernelService,
     ) -> None:
 
-        self._services[
-            type(service)
-        ] = service
+
+        if service not in self._services:
+
+            self._services.append(
+                service
+            )
+
 
         self._names[
             self._service_name(service)
         ] = service
+
+
 
     def unregister(
         self,
         service: KernelService | type[KernelService],
     ) -> None:
 
-        if isinstance(service, type):
 
-            instance = self._services.pop(
-                service,
-                None,
+        if isinstance(
+            service,
+            type,
+        ):
+
+            matches = [
+                item
+                for item in self._services
+                if isinstance(
+                    item,
+                    service,
+                )
+            ]
+
+            for item in matches:
+
+                self.unregister(
+                    item
+                )
+
+            return
+
+
+
+        if service in self._services:
+
+            self._services.remove(
+                service
             )
 
-            if instance is None:
-                return
-
-        else:
-
-            instance = service
-
-            self._services.pop(
-                type(service),
-                None,
-            )
 
         self._names.pop(
-            self._service_name(instance),
+            self._service_name(service),
             None,
         )
+
+
 
     # --------------------------------------------------
     # Lookup
@@ -117,9 +138,36 @@ class ServiceRegistry:
         service_type: type[T],
     ) -> T | None:
 
-        return self._services.get(
-            service_type
+
+        for service in self._services:
+
+            if isinstance(
+                service,
+                service_type,
+            ):
+
+                return service
+
+
+        return None
+
+
+
+    def get_all(
+        self,
+        service_type: type[T],
+    ) -> tuple[T, ...]:
+
+        return tuple(
+            service
+            for service in self._services
+            if isinstance(
+                service,
+                service_type,
+            )
         )
+
+
 
     def get_by_name(
         self,
@@ -130,6 +178,8 @@ class ServiceRegistry:
             name
         )
 
+
+
     # --------------------------------------------------
     # Utilities
     # --------------------------------------------------
@@ -137,8 +187,10 @@ class ServiceRegistry:
     def all(self):
 
         return tuple(
-            self._services.values()
+            self._services
         )
+
+
 
     def clear(self):
 
