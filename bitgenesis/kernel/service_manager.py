@@ -5,24 +5,23 @@ from bitgenesis.kernel.registry import ServiceRegistry
 from bitgenesis.kernel.service import KernelService
 from bitgenesis.kernel.descriptor import ServiceDescriptor
 
+from bitgenesis.events.bus import EventBus
+from bitgenesis.events.event import Event
+from bitgenesis.events.enums import (
+    EventCategory,
+    EventType,
+)
 
 
 class ServiceManager:
     """
     Manages Kernel service lifecycle.
-
-    Responsibilities:
-    - registration
-    - metadata management
-    - startup ordering
-    - shutdown ordering
-    - runtime ticking
     """
-
 
     def __init__(
         self,
         registry: ServiceRegistry | None = None,
+        event_bus: EventBus | None = None,
     ):
 
         self.registry = (
@@ -30,18 +29,38 @@ class ServiceManager:
             or ServiceRegistry()
         )
 
+        self.event_bus = event_bus
 
-        self._descriptors: dict[
-            int,
-            ServiceDescriptor,
-        ] = {}
 
+    # --------------------------------------------------
+    # Events
+    # --------------------------------------------------
+
+    def _emit(
+        self,
+        event_type: EventType,
+        service: KernelService,
+    ):
+
+        if self.event_bus is None:
+            return
+
+
+        self.event_bus.publish(
+            Event(
+                category=EventCategory.KERNEL,
+                type=event_type,
+                source=type(self).__name__,
+                payload={
+                    "service": type(service).__name__
+                },
+            )
+        )
 
 
     # --------------------------------------------------
     # Registration
     # --------------------------------------------------
-
 
     def register(
         self,
@@ -49,31 +68,23 @@ class ServiceManager:
         descriptor: ServiceDescriptor | None = None,
     ):
 
-
         if descriptor is None:
 
             descriptor = ServiceDescriptor(
-                name=(
-                    getattr(
-                        service,
-                        "name",
-                        None,
-                    )
-                    or type(service).__name__
-                ),
-                version="1.0.0",
+                name=type(service).__name__,
             )
 
 
         self.registry.register(
-            service
+            service,
+            descriptor,
         )
 
 
-        self._descriptors[
-            id(service)
-        ] = descriptor
-
+        self._emit(
+            EventType.SERVICE_REGISTERED,
+            service,
+        )
 
 
     def unregister(
@@ -81,23 +92,20 @@ class ServiceManager:
         service: KernelService,
     ):
 
-
         self.registry.unregister(
             service
         )
 
 
-        self._descriptors.pop(
-            id(service),
-            None,
+        self._emit(
+            EventType.SERVICE_UNREGISTERED,
+            service,
         )
 
 
-
     # --------------------------------------------------
-    # Lookup
+    # Discovery
     # --------------------------------------------------
-
 
     def get(
         self,
@@ -108,6 +116,35 @@ class ServiceManager:
             service_type
         )
 
+
+    def get_all(
+        self,
+        service_type,
+    ):
+
+        return self.registry.get_all(
+            service_type
+        )
+
+
+    def require(
+        self,
+        service_type,
+    ):
+
+        return self.registry.require(
+            service_type
+        )
+
+
+    def contains(
+        self,
+        service_type,
+    ):
+
+        return self.registry.contains(
+            service_type
+        )
 
 
     def get_by_name(
@@ -120,96 +157,102 @@ class ServiceManager:
         )
 
 
-
-    def all(self):
+    def discover(self):
 
         return self.registry.all()
 
 
+    def all(self):
+
+        return self.discover()
+
+
+    # --------------------------------------------------
+    # Metadata
+    # --------------------------------------------------
 
     def descriptor(
         self,
         service,
     ):
 
-
+        # support class lookup
         if isinstance(
             service,
             type,
         ):
 
-            for instance in self.registry.all():
-
-                if type(instance) is service:
-
-                    return self._descriptors.get(
-                        id(instance)
-                    )
-
-            return None
+            service = self.registry.get(
+                service
+            )
 
 
-        return self._descriptors.get(
-            id(service)
+            if service is None:
+                return None
+
+
+        return self.registry.descriptor(
+            service
         )
-
 
 
     # --------------------------------------------------
     # Ordering
     # --------------------------------------------------
 
-
-    def _ordered_services(self):
+    def _ordered_entries(self):
 
         return sorted(
-            self.registry.all(),
-            key=lambda service:
-                self._descriptors[
-                    id(service)
-                ].priority,
+            self.registry.entries(),
+            key=lambda entry:
+                entry.descriptor.priority,
         )
-
 
 
     # --------------------------------------------------
     # Lifecycle
     # --------------------------------------------------
 
-
     def start_all(self):
 
+        for entry in self._ordered_entries():
 
-        for service in self._ordered_services():
-
-            descriptor = self._descriptors[
-                id(service)
-            ]
-
-
-            if not descriptor.auto_start:
-
+            if not entry.descriptor.auto_start:
                 continue
 
 
-            service.start()
+            entry.service.start()
 
+
+            self._emit(
+                EventType.SERVICE_STARTED,
+                entry.service,
+            )
 
 
     def stop_all(self):
 
-
-        for service in reversed(
-            self._ordered_services()
+        for entry in reversed(
+            self._ordered_entries()
         ):
 
-            service.stop()
+            entry.service.stop()
 
+
+            self._emit(
+                EventType.SERVICE_STOPPED,
+                entry.service,
+            )
 
 
     def tick_all(self):
 
+        for entry in self.registry.entries():
 
-        for service in self.registry.all():
+            entry.service.tick()
 
-            service.tick()
+
+            self._emit(
+                EventType.SERVICE_TICKED,
+                entry.service,
+            )
