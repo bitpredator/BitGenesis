@@ -1,79 +1,89 @@
 from __future__ import annotations
 
+from typing import Any
+
 from bitgenesis.kernel.service import KernelService
-
-from bitgenesis.events.event_bus import EventBus
-from bitgenesis.events.enums import EventCategory
-
 from bitgenesis.memory.store import MemoryStore
-from bitgenesis.memory.listener import MemoryListener
 
 
 class MemoryService(KernelService):
     """
-    Kernel service responsible for memory lifecycle.
+    Core memory service.
 
-    Handles:
-    - MemoryStore ownership
-    - EventBus subscription
-    - Memory event processing
+    Gestisce il backend di memoria di BitGenesis.
     """
 
+    version = "2.0.0"
 
     def __init__(
         self,
-        event_bus: EventBus,
+        event_bus=None,
         store: MemoryStore | None = None,
     ):
 
-        self.event_bus = event_bus
+        super().__init__("memory")
 
+        self.event_bus = event_bus
         self.store = store or MemoryStore()
 
-        self.listener = MemoryListener(
-            self.store
-        )
+    def start(self):
+        """
+        Avvio servizio memoria.
+        """
 
-        self.running = False
+        return None
 
+    def stop(self):
+        """
+        Arresto servizio memoria.
+        """
 
-    # --------------------------------------------------
-    # Lifecycle
-    # --------------------------------------------------
+        return None
 
-    def start(self) -> None:
+    def tick(self):
+        """
+        Ciclo runtime memoria.
+        """
 
-        if self.running:
+        return None
+
+    def remember(
+        self,
+        key: str,
+        value: Any,
+    ):
+        """
+        Salva un ricordo.
+        """
+
+        if self.store is None:
             return
 
-        self.event_bus.subscribe(
-            EventCategory.MEMORY,
-            self.listener.handle,
-        )
+        if hasattr(self.store, "set"):
+            self.store.set(key, value)
 
-        self.running = True
-
-
-    def stop(self) -> None:
-
-        if not self.running:
-            return
-
-        self.event_bus.unsubscribe(
-            EventCategory.MEMORY,
-            self.listener.handle,
-        )
-
-        self.running = False
-
-
-    def tick(self) -> None:
+    def recall(
+        self,
+        key: str,
+        default=None,
+    ):
         """
-        Reserved for future memory maintenance.
-
-        Examples:
-        - decay
-        - consolidation
-        - cleanup
+        Recupera un ricordo.
         """
-        pass
+
+        if self.store is None:
+            return default
+
+        if hasattr(self.store, "get"):
+            return self.store.get(key, default)
+
+        return default
+
+    def metadata(self):
+
+        return {
+            "name": self.name,
+            "version": self.version,
+            "enabled": True,
+            "type": "memory",
+        }

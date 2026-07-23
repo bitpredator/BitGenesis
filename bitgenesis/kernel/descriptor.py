@@ -1,17 +1,8 @@
-from __future__ import annotations
-
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
-@dataclass(slots=True)
+@dataclass
 class ServiceDescriptor:
-    """
-    Describes a Kernel service.
-
-    The descriptor contains static metadata used
-    by the Kernel to discover, validate and order
-    services before startup.
-    """
 
     name: str
 
@@ -19,12 +10,6 @@ class ServiceDescriptor:
 
     priority: int = 100
 
+    tags: tuple = ()
+
     auto_start: bool = True
-
-    dependencies: tuple[str, ...] = field(
-        default_factory=tuple
-    )
-
-    tags: tuple[str, ...] = field(
-        default_factory=tuple
-    )

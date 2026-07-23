@@ -1,9 +1,11 @@
 from bitgenesis.events.event_bus import EventBus
 from bitgenesis.kernel.kernel import Kernel
+from bitgenesis.kernel.service import KernelService
 
 
-class DummyService:
+class DummyService(KernelService):
     def __init__(self):
+        super().__init__("DummyService")
         self.started = False
         self.stopped = False
         self.ticked = False

@@ -1,86 +1,150 @@
 from __future__ import annotations
 
-from bitgenesis.events.event import Event
-from bitgenesis.events.event_bus import EventBus
-from bitgenesis.events.enums import (
-    EventCategory,
-    EventType,
-)
-
-from bitgenesis.identity.manager import IdentityManager
 from bitgenesis.kernel.service import KernelService
+from bitgenesis.identity.profile import IdentityProfile
+from bitgenesis.identity.manager import IdentityManager
 
 
 class IdentityService(KernelService):
-    """
-    Runtime service responsible for identity lifecycle.
 
-    Handles:
-    - IdentityManager ownership
-    - Identity lifecycle events
-    - Runtime integration with Kernel
-    """
+    version = "0.2.0"
 
 
     def __init__(
         self,
-        event_bus: EventBus,
-        manager: IdentityManager | None = None,
-    ) -> None:
+        event_bus=None,
+        identity_store=None,
+        **kwargs,
+    ):
+
+        super().__init__(
+            "identity"
+        )
 
         self.event_bus = event_bus
 
-        self.manager = manager or IdentityManager()
+        self.identity_store = identity_store
+
+        self.manager = IdentityManager()
+
+        self.identity = IdentityProfile(
+            name="BitGenesis",
+            creator="Bitpredator",
+            project="BitGenesis",
+            version=self.version,
+            description=(
+                "Artificial Cognitive Architecture "
+                "built from scratch."
+            ),
+        )
 
         self.running = False
 
 
-    # --------------------------------------------------
-    # Lifecycle
-    # --------------------------------------------------
 
-    def start(self) -> None:
-
-        if self.running:
-            return
-
+    def start(self):
 
         self.running = True
 
 
-        self.event_bus.publish(
-            Event(
-                category=EventCategory.IDENTITY,
-                type=EventType.IDENTITY_INITIALIZED,
-                source="identity_service",
-                payload={
-                    "message": "Identity subsystem initialized",
-                    "identity": self.manager.as_dict(),
-                },
+        if self.identity_store and hasattr(
+            self.identity_store,
+            "load"
+        ):
+
+            loaded = self.identity_store.load()
+
+            if isinstance(
+                loaded,
+                dict
+            ):
+
+                self.identity = IdentityProfile(
+                    **loaded
+                )
+
+        if self.event_bus:
+
+            from bitgenesis.events.event import Event
+            from bitgenesis.events.enums import (
+                EventCategory,
+                EventType,
             )
-        )
+
+            self.event_bus.publish(
+                Event(
+                    category=EventCategory.IDENTITY,
+                    type=EventType.IDENTITY_INITIALIZED,
+                    source="identity_service",
+                    payload={
+                        "service": self.name,
+                        "identity": self.identity.name,
+                    },
+                )
+            )
 
 
-    def stop(self) -> None:
 
-        if not self.running:
-            return
+    def stop(self):
+
+        if self.identity_store and hasattr(
+            self.identity_store,
+            "save"
+        ):
+
+            if hasattr(
+                self.identity,
+                "__dict__"
+            ):
+
+                self.identity_store.save(
+                    self.identity.__dict__
+                )
 
 
         self.running = False
 
 
-    def tick(self) -> None:
 
-        if not self.running:
-            return
+    def tick(self):
+
+        return None
 
 
-    # --------------------------------------------------
-    # Identity access
-    # --------------------------------------------------
 
-    @property
-    def identity(self):
+    def set(
+        self,
+        key,
+        value
+    ):
 
-        return self.manager.profile
+        setattr(
+            self.identity,
+            key,
+            value
+        )
+
+
+
+    def get(
+        self,
+        key,
+        default=None
+    ):
+
+        return getattr(
+            self.identity,
+            key,
+            default
+        )
+
+
+
+    def metadata(self):
+
+        return {
+            "name": self.name,
+            "version": self.version,
+            "enabled": True,
+            "type": "identity",
+        }

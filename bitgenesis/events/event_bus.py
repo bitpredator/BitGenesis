@@ -11,7 +11,10 @@ class EventBus:
     Central event dispatcher.
 
     Supports:
+
     - publish(Event)
+    - publish(EventType, payload)
+    - emit(Event)
     - emit(EventType, payload)
     - subscribe()
     - unsubscribe()
@@ -43,24 +46,70 @@ class EventBus:
         callback,
     ):
 
-        if callback in self._listeners.get(event_type, []):
+        listeners = self._listeners.get(
+            event_type,
+            []
+        )
 
-            self._listeners[event_type].remove(
+        if callback in listeners:
+
+            listeners.remove(
                 callback
             )
 
 
     # --------------------------------------------------
-    # New API
+    # Publish
     # --------------------------------------------------
 
     def publish(
         self,
-        event: Event,
+        event_or_type,
+        payload=None,
     ):
+        """
+        Publish event.
+
+        Supports:
+
+        publish(Event)
+
+        publish(EventType, payload)
+        """
+
+
+        # ------------------------------
+        # Native Event
+        # ------------------------------
+
+        if isinstance(
+            event_or_type,
+            Event,
+        ):
+
+            event = event_or_type
+
+
+        # ------------------------------
+        # Compatibility API
+        # ------------------------------
+
+        else:
+
+            from bitgenesis.events.enums import EventCategory
+
+            event = Event(
+                category=EventCategory.SYSTEM,
+                type=event_or_type,
+                source="event_bus",
+                payload=payload or {},
+            )
+
 
         targets = []
 
+
+        # EventType listeners
 
         targets.extend(
             self._listeners.get(
@@ -70,28 +119,36 @@ class EventBus:
         )
 
 
-        targets.extend(
-            self._listeners.get(
-                event.category,
-                []
+        # Category listeners
+
+        if event.category:
+
+            targets.extend(
+                self._listeners.get(
+                    event.category,
+                    []
+                )
             )
-        )
 
 
-        for callback in targets:
+        for callback in list(targets):
 
             if callable(callback):
 
                 callback(event)
 
-            elif hasattr(callback, "handle"):
+            elif hasattr(
+                callback,
+                "handle",
+            ):
 
-                callback.handle(event)
-
+                callback.handle(
+                    event
+                )
 
 
     # --------------------------------------------------
-    # Compatibility API
+    # Compatibility
     # --------------------------------------------------
 
     def emit(
@@ -100,32 +157,9 @@ class EventBus:
         payload=None,
     ):
 
-        # New style:
-        # emit(Event(...))
-
-        if isinstance(event_or_type, Event):
-
-            return self.publish(
-                event_or_type
-            )
-
-
-        # Old style:
-        # emit(EventType.X, payload)
-
-        from bitgenesis.events.enums import EventCategory
-
-
-        event = Event(
-            category=EventCategory.SYSTEM,
-            type=event_or_type,
-            source="event_bus",
-            payload=payload,
-        )
-
-
-        self.publish(
-            event
+        return self.publish(
+            event_or_type,
+            payload,
         )
 
 

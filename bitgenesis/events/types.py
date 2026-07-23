@@ -1,17 +1,28 @@
-from dataclasses import dataclass, field
-from typing import Any, Dict
-import time
-import uuid
+"""
+Legacy compatibility module.
+
+The BitGenesis event system was migrated to:
+
+- bitgenesis.events.event.Event
+- bitgenesis.events.enums.EventType
+- bitgenesis.events.enums.EventCategory
+
+This module only re-exports the new implementation.
+"""
 
 
-@dataclass
-class Event:
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    type: str = ""
-    source: str = "unknown"
-    payload: Dict[str, Any] = field(default_factory=dict)
-    timestamp: float = field(default_factory=time.time)
+from bitgenesis.events.event import Event
 
-    # tracing fields
-    trace_id: str = ""
-    parent_id: str = ""
+from bitgenesis.events.enums import (
+    EventType,
+    EventCategory,
+    EventPriority,
+)
+
+
+__all__ = [
+    "Event",
+    "EventType",
+    "EventCategory",
+    "EventPriority",
+]

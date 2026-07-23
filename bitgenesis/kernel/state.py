@@ -1,26 +1,19 @@
-"""
-Kernel state definitions.
-
-Compatibility layer for BitGenesis kernel lifecycle.
-"""
-
 from enum import Enum
 
 
-class KernelState(str, Enum):
+class KernelState(Enum):
     """
-    Current state of the BitGenesis Kernel.
+    Represents the lifecycle state of the BitGenesis kernel.
     """
 
     CREATED = "created"
 
-    READY = "ready"
+    INITIALIZING = "initializing"
 
     RUNNING = "running"
 
+    STOPPING = "stopping"
+
     STOPPED = "stopped"
 
-
-__all__ = [
-    "KernelState",
-]
+    FAILED = "failed"

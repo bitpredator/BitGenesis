@@ -15,6 +15,7 @@ from bitgenesis.core.config import BrainConfig
 
 
 from bitgenesis.kernel.service_manager import ServiceManager
+from bitgenesis.kernel.runtime_loop import RuntimeLoop
 from bitgenesis.kernel.state import KernelState
 
 
@@ -36,6 +37,12 @@ class Kernel:
 
 
         self.service_manager = ServiceManager()
+
+
+
+        self.runtime_loop = RuntimeLoop(
+            service_manager=self.service_manager,
+        )
 
 
 
@@ -186,6 +193,10 @@ class Kernel:
 
 
 
+        self.runtime_loop.start()
+
+
+
         self.state = KernelState.RUNNING
 
         self.running = True
@@ -225,6 +236,10 @@ class Kernel:
 
 
 
+        self.runtime_loop.stop()
+
+
+
         self.service_manager.stop_all()
 
 
@@ -241,7 +256,7 @@ class Kernel:
                 type=EventType.KERNEL_SHUTDOWN,
                 source="kernel",
                 payload={
-                    "status":"stopped",
+                    "status": "stopped",
                 },
             )
         )
@@ -255,7 +270,7 @@ class Kernel:
 
     def tick(self):
 
-        self.service_manager.tick_all()
+        self.runtime_loop.step()
 
 
 
@@ -267,6 +282,7 @@ class Kernel:
         if hasattr(service, "metadata"):
 
             return service.metadata()
+
 
 
         return {

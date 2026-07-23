@@ -5,13 +5,16 @@ from typing import Dict, Optional, Type
 from bitgenesis.kernel.service import KernelService
 from bitgenesis.kernel.descriptor import ServiceDescriptor
 from bitgenesis.kernel.service_state import ServiceState
-from bitgenesis.kernel.exceptions import ServiceNotFoundError
 
 from bitgenesis.events.event import Event
 from bitgenesis.events.enums import (
     EventCategory,
     EventType,
 )
+
+
+class ServiceNotFoundError(Exception):
+    pass
 
 
 
@@ -32,8 +35,6 @@ class ServiceManager:
         self._states: Dict[str, ServiceState] = {}
 
         self._type_index: Dict[Type[KernelService], list[str]] = {}
-
-        self._registration_order = 0
 
 
 
@@ -91,9 +92,6 @@ class ServiceManager:
         self._descriptors[service_name] = descriptor
 
         self._states[service_name] = ServiceState.CREATED
-
-        self._registration_order += 1
-        descriptor._registration_order = self._registration_order
 
         if service_type not in self._type_index:
             self._type_index[service_type] = []
@@ -307,10 +305,9 @@ class ServiceManager:
 
         services = sorted(
             self._services.items(),
-            key=lambda item: (
-                -self._descriptors[item[0]].priority,
-                -getattr(self._descriptors[item[0]], '_registration_order', 0)
-            ),
+            key=lambda item:
+                self._descriptors[item[0]].priority,
+            reverse=True,
         )
 
 
