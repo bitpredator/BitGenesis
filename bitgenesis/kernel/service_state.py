@@ -14,7 +14,7 @@ class ServiceState(Enum):
 
     RUNNING = "running"
 
-    STOPPING = "stoppping"
+    STOPPING = "stopping"
 
     STOPPED = "stopped"
 

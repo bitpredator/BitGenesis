@@ -66,7 +66,6 @@ class EventType(Enum):
     KERNEL_READY = "kernel.ready"
 
 
-
     # ======================================================
     # Services
     # ======================================================
@@ -75,15 +74,17 @@ class EventType(Enum):
     SERVICE_UNREGISTERED = "service.unregistered"
 
     SERVICE_DISCOVERED = "service.discovered"
-    SERVICE_READY = "service.ready"
-    SERVICE_FAILED = "service.failed"
 
+    SERVICE_STARTING = "service.starting"
+    SERVICE_READY = "service.ready"
     SERVICE_STARTED = "service.started"
+
+    SERVICE_STOPPING = "service.stopping"
     SERVICE_STOPPED = "service.stopped"
 
+    SERVICE_FAILED = "service.failed"
+
     SERVICE_TICKED = "service.ticked"
-
-
 
     # ======================================================
     # Event Bus

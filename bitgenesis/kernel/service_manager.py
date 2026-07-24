@@ -14,9 +14,7 @@ from bitgenesis.events.enums import (
 )
 
 
-
 class ServiceManager:
-
 
     def __init__(
         self,
@@ -36,7 +34,6 @@ class ServiceManager:
         self._registration_order = 0
 
 
-
     # -------------------------------------------------
     # EVENTS
     # -------------------------------------------------
@@ -50,7 +47,6 @@ class ServiceManager:
         if self.event_bus is None:
             return
 
-
         self.event_bus.publish(
             Event(
                 category=EventCategory.KERNEL,
@@ -61,7 +57,6 @@ class ServiceManager:
                 },
             )
         )
-
 
 
     # -------------------------------------------------
@@ -76,7 +71,6 @@ class ServiceManager:
 
         service_type = type(service)
 
-
         if descriptor is None:
 
             descriptor = ServiceDescriptor(
@@ -86,23 +80,34 @@ class ServiceManager:
 
         service_name = descriptor.name
 
+
         self._services[service_name] = service
 
         self._descriptors[service_name] = descriptor
 
         self._states[service_name] = ServiceState.CREATED
 
+
         self._registration_order += 1
-        descriptor._registration_order = self._registration_order
+
+        descriptor._registration_order = (
+            self._registration_order
+        )
+
 
         if service_type not in self._type_index:
+
             self._type_index[service_type] = []
-        self._type_index[service_type].append(service_name)
+
+
+        self._type_index[service_type].append(
+            service_name
+        )
 
 
         self._emit(
             EventType.SERVICE_REGISTERED,
-            descriptor.name,
+            service_name,
         )
 
 
@@ -117,30 +122,45 @@ class ServiceManager:
 
         service_type = type(service)
 
-        service_names = self._type_index.get(service_type, [])
+        service_names = self._type_index.get(
+            service_type,
+            [],
+        )
+
 
         if not service_names:
             return
 
+
         service_name = service_names[0]
 
-        descriptor = self._descriptors.get(service_name)
 
-        descriptor_name = descriptor.name if descriptor else service_type.__name__
+        descriptor = self._descriptors.get(
+            service_name
+        )
+
 
         del self._services[service_name]
+
         del self._descriptors[service_name]
+
         del self._states[service_name]
 
-        self._type_index[service_type].remove(service_name)
+
+        self._type_index[service_type].remove(
+            service_name
+        )
+
+
         if not self._type_index[service_type]:
+
             del self._type_index[service_type]
+
 
         self._emit(
             EventType.SERVICE_UNREGISTERED,
-            descriptor_name,
+            descriptor.name if descriptor else service_name,
         )
-
 
 
     # -------------------------------------------------
@@ -152,12 +172,19 @@ class ServiceManager:
         service_type,
     ):
 
-        service_names = self._type_index.get(service_type, [])
-        if not service_names:
+        services = self._type_index.get(
+            service_type,
+            [],
+        )
+
+
+        if not services:
             return None
 
-        return self._services.get(service_names[0])
 
+        return self._services.get(
+            services[0]
+        )
 
 
     def get_by_name(
@@ -165,7 +192,9 @@ class ServiceManager:
         name: str,
     ):
 
-        return self._services.get(name)
+        return self._services.get(
+            name
+        )
 
 
 
@@ -220,12 +249,19 @@ class ServiceManager:
         service_type,
     ):
 
-        service_names = self._type_index.get(service_type, [])
-        if not service_names:
+        services = self._type_index.get(
+            service_type,
+            [],
+        )
+
+
+        if not services:
             return None
 
-        return self._descriptors.get(service_names[0])
 
+        return self._descriptors.get(
+            services[0]
+        )
 
 
     # -------------------------------------------------
@@ -237,12 +273,18 @@ class ServiceManager:
         service_type,
     ):
 
-        service_names = self._type_index.get(service_type, [])
-        if not service_names:
+        services = self._type_index.get(
+            service_type,
+            [],
+        )
+
+
+        if not services:
             return ServiceState.CREATED
 
+
         return self._states.get(
-            service_names[0],
+            services[0],
             ServiceState.CREATED,
         )
 
@@ -252,10 +294,10 @@ class ServiceManager:
 
         return tuple(
             service
-            for service_name, service in self._services.items()
-            if self._states.get(service_name) == ServiceState.RUNNING
+            for name, service in self._services.items()
+            if self._states.get(name)
+            == ServiceState.RUNNING
         )
-
 
 
     # -------------------------------------------------
@@ -273,7 +315,6 @@ class ServiceManager:
 
         for service_name, service in services:
 
-
             descriptor = self._descriptors[
                 service_name
             ]
@@ -284,16 +325,33 @@ class ServiceManager:
 
 
             try:
+
+                self._states[
+                    service_name
+                ] = ServiceState.STARTING
+
+
                 service.start()
+
 
                 self._states[
                     service_name
                 ] = ServiceState.RUNNING
+
+
             except Exception:
+
                 self._states[
                     service_name
                 ] = ServiceState.FAILED
+
+                self._emit(
+                    EventType.SERVICE_FAILED,
+                    descriptor.name,
+                )
+
                 raise
+
 
 
             self._emit(
@@ -309,7 +367,11 @@ class ServiceManager:
             self._services.items(),
             key=lambda item: (
                 -self._descriptors[item[0]].priority,
-                -getattr(self._descriptors[item[0]], '_registration_order', 0)
+                -getattr(
+                    self._descriptors[item[0]],
+                    "_registration_order",
+                    0,
+                ),
             ),
         )
 
@@ -320,16 +382,28 @@ class ServiceManager:
                 service_name
             ]
 
+
             try:
+
+                self._states[
+                    service_name
+                ] = ServiceState.STOPPING
+
+
                 service.stop()
+
 
                 self._states[
                     service_name
                 ] = ServiceState.STOPPED
+
+
             except Exception:
+
                 self._states[
                     service_name
                 ] = ServiceState.FAILED
+
 
 
             self._emit(
@@ -338,19 +412,47 @@ class ServiceManager:
             )
 
 
+    # -------------------------------------------------
+    # TICK
+    # -------------------------------------------------
 
     def tick_all(self):
 
-        for service_name, service in self._services.items():
+        for service_name, service in tuple(
+            self._services.items()
+        ):
 
-            descriptor = self._descriptors[
+            descriptor = self._descriptors.get(
                 service_name
-            ]
-
-            service.tick()
-
-
-            self._emit(
-                EventType.SERVICE_TICKED,
-                descriptor.name,
             )
+
+
+            try:
+
+                service.tick()
+
+
+                self._emit(
+                    EventType.SERVICE_TICKED,
+                    descriptor.name
+                    if descriptor
+                    else service_name,
+                )
+
+
+            except Exception:
+
+                self._states[
+                    service_name
+                ] = ServiceState.FAILED
+
+
+                self._emit(
+                    EventType.SERVICE_FAILED,
+                    descriptor.name
+                    if descriptor
+                    else service_name,
+                )
+
+
+                raise
