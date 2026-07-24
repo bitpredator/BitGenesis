@@ -1,18 +1,12 @@
 from __future__ import annotations
 
-from typing import Dict, Type
+from typing import Type
 
 from bitgenesis.kernel.service import KernelService
-from bitgenesis.kernel.exceptions import ServiceNotFoundError
+
 
 
 class DependencyResolver:
-    """
-    Resolves dependencies between kernel services.
-
-    This component builds the dependency order
-    required for service initialization.
-    """
 
 
     def __init__(
@@ -22,16 +16,17 @@ class DependencyResolver:
 
         self.service_manager = service_manager
 
-        self._dependencies: Dict[
+        self._dependencies: dict[
             Type[KernelService],
             list[Type[KernelService]]
         ] = {}
 
 
 
-    # -------------------------------------------------
-    # REGISTRATION
-    # -------------------------------------------------
+    # =================================================
+    # MANUAL DEPENDENCIES
+    # =================================================
+
 
     def add_dependency(
         self,
@@ -44,29 +39,21 @@ class DependencyResolver:
             self._dependencies[service_type] = []
 
 
-        self._dependencies[
-            service_type
-        ].append(
+        self._dependencies[service_type].append(
             dependency_type
         )
 
 
 
-    # -------------------------------------------------
+    # =================================================
     # RESOLUTION
-    # -------------------------------------------------
+    # =================================================
+
 
     def resolve(
         self,
         service_type: Type[KernelService],
     ):
-
-        if not self.service_manager.contains(
-            service_type
-        ):
-            raise ServiceNotFoundError(
-                service_type.__name__
-            )
 
 
         resolved = []
@@ -74,7 +61,7 @@ class DependencyResolver:
         visited = set()
 
 
-        self._resolve_recursive(
+        self._resolve(
             service_type,
             resolved,
             visited,
@@ -85,14 +72,16 @@ class DependencyResolver:
 
 
 
-    def _resolve_recursive(
+    def _resolve(
         self,
         service_type,
         resolved,
         visited,
     ):
 
+
         if service_type in visited:
+
             return
 
 
@@ -101,20 +90,62 @@ class DependencyResolver:
         )
 
 
-        dependencies = self._dependencies.get(
-            service_type,
-            []
+
+        dependencies = []
+
+
+
+        # -----------------------------
+        # Descriptor dependencies
+        # -----------------------------
+
+        descriptor = self.service_manager.descriptor(
+            service_type
         )
 
 
+        if descriptor is not None:
+
+            dependencies.extend(
+                getattr(
+                    descriptor,
+                    "dependencies",
+                    (),
+                )
+            )
+
+
+
+        # -----------------------------
+        # Runtime dependencies
+        # -----------------------------
+
+        dependencies.extend(
+            self._dependencies.get(
+                service_type,
+                [],
+            )
+        )
+
+
+
+        # -----------------------------
+        # Resolve children
+        # -----------------------------
+
         for dependency in dependencies:
 
-            self._resolve_recursive(
+            self._resolve(
                 dependency,
                 resolved,
                 visited,
             )
 
+
+
+        # -----------------------------
+        # Add service
+        # -----------------------------
 
         service = self.service_manager.get(
             service_type
@@ -126,27 +157,3 @@ class DependencyResolver:
             resolved.append(
                 service
             )
-
-
-
-    # -------------------------------------------------
-    # BULK RESOLUTION
-    # -------------------------------------------------
-
-    def resolve_all(self):
-
-        result = []
-
-        visited = set()
-
-
-        for service_type in self._dependencies:
-
-            self._resolve_recursive(
-                service_type,
-                result,
-                visited,
-            )
-
-
-        return result

@@ -6,6 +6,7 @@ from bitgenesis.kernel.service import KernelService
 from bitgenesis.kernel.descriptor import ServiceDescriptor
 from bitgenesis.kernel.service_state import ServiceState
 from bitgenesis.kernel.exceptions import ServiceNotFoundError
+from bitgenesis.kernel.dependency_resolver import DependencyResolver
 
 from bitgenesis.events.event import Event
 from bitgenesis.events.enums import (
@@ -15,6 +16,7 @@ from bitgenesis.events.enums import (
 
 
 class ServiceManager:
+
 
     def __init__(
         self,
@@ -29,14 +31,24 @@ class ServiceManager:
 
         self._states: Dict[str, ServiceState] = {}
 
-        self._type_index: Dict[Type[KernelService], list[str]] = {}
+        self._type_index: Dict[
+            Type[KernelService],
+            list[str]
+        ] = {}
 
         self._registration_order = 0
 
 
-    # =====================================================
+        self.dependency_resolver = DependencyResolver(
+            self
+        )
+
+
+
+    # =================================================
     # EVENTS
-    # =====================================================
+    # =================================================
+
 
     def _emit(
         self,
@@ -47,21 +59,24 @@ class ServiceManager:
         if self.event_bus is None:
             return
 
+
         self.event_bus.publish(
             Event(
                 category=EventCategory.KERNEL,
                 type=event_type,
                 source="service_manager",
                 payload={
-                    "service": payload,
+                    "service": payload
                 },
             )
         )
 
 
-    # =====================================================
+
+    # =================================================
     # REGISTRATION
-    # =====================================================
+    # =================================================
+
 
     def register(
         self,
@@ -71,41 +86,45 @@ class ServiceManager:
 
         service_type = type(service)
 
+
         if descriptor is None:
+
             descriptor = ServiceDescriptor(
-                name=service_type.__name__,
+                name=service.name
             )
 
-
-        service_name = descriptor.name
-
-
-        self._services[service_name] = service
-
-        self._descriptors[service_name] = descriptor
-
-        self._states[service_name] = ServiceState.CREATED
-
-
-        self._registration_order += 1
 
         descriptor._registration_order = (
             self._registration_order
         )
 
+        self._registration_order += 1
+
+
+        name = descriptor.name
+
+
+        self._services[name] = service
+
+        self._descriptors[name] = descriptor
+
+        self._states[name] = ServiceState.CREATED
+
+
 
         if service_type not in self._type_index:
+
             self._type_index[service_type] = []
 
 
         self._type_index[service_type].append(
-            service_name
+            name
         )
 
 
         self._emit(
             EventType.SERVICE_REGISTERED,
-            service_name,
+            name,
         )
 
 
@@ -118,11 +137,13 @@ class ServiceManager:
         service: KernelService,
     ):
 
+
         service_type = type(service)
+
 
         names = self._type_index.get(
             service_type,
-            [],
+            []
         )
 
 
@@ -130,57 +151,79 @@ class ServiceManager:
             return
 
 
-        service_name = names[0]
+        name = names[0]
 
 
-        descriptor = self._descriptors.get(
-            service_name
-        )
+        del self._services[name]
+
+        del self._descriptors[name]
+
+        del self._states[name]
 
 
-        del self._services[service_name]
-
-        del self._descriptors[service_name]
-
-        del self._states[service_name]
-
-
-        names.remove(
-            service_name
-        )
+        names.remove(name)
 
 
         if not names:
+
             del self._type_index[service_type]
+
 
 
         self._emit(
             EventType.SERVICE_UNREGISTERED,
-            descriptor.name if descriptor else service_name,
+            name,
         )
 
 
-    # =====================================================
+
+    # =================================================
     # DISCOVERY
-    # =====================================================
+    # =================================================
+
 
     def get(
         self,
         service_type,
     ):
 
+
         names = self._type_index.get(
             service_type,
-            [],
+            []
         )
 
+
         if not names:
+
             return None
 
 
         return self._services.get(
             names[0]
         )
+
+
+
+    def require(
+        self,
+        service_type,
+    ):
+
+
+        service = self.get(
+            service_type
+        )
+
+
+        if service is None:
+
+            raise ServiceNotFoundError(
+                service_type.__name__
+            )
+
+
+        return service
 
 
 
@@ -192,26 +235,6 @@ class ServiceManager:
         return self._services.get(
             name
         )
-
-
-
-    def require(
-        self,
-        service_type,
-    ):
-
-        service = self.get(
-            service_type
-        )
-
-
-        if service is None:
-            raise ServiceNotFoundError(
-                service_type.__name__
-            )
-
-
-        return service
 
 
 
@@ -245,13 +268,15 @@ class ServiceManager:
         service_type,
     ):
 
+
         names = self._type_index.get(
             service_type,
-            [],
+            []
         )
 
 
         if not names:
+
             return None
 
 
@@ -260,22 +285,26 @@ class ServiceManager:
         )
 
 
-    # =====================================================
+
+    # =================================================
     # STATE
-    # =====================================================
+    # =================================================
+
 
     def state(
         self,
         service_type,
     ):
 
+
         names = self._type_index.get(
             service_type,
-            [],
+            []
         )
 
 
         if not names:
+
             return ServiceState.CREATED
 
 
@@ -296,25 +325,30 @@ class ServiceManager:
         )
 
 
-    # =====================================================
+
+    # =================================================
     # LIFECYCLE
-    # =====================================================
+    # =================================================
+
 
     def start_all(self):
 
-        services = sorted(
+
+        ordered = sorted(
             self._services.items(),
             key=lambda item:
-                self._descriptors[item[0]].priority,
+                self._descriptors[item[0]].priority
         )
 
 
-        for name, service in services:
+        for name, service in ordered:
+
 
             descriptor = self._descriptors[name]
 
 
             if not descriptor.auto_start:
+
                 continue
 
 
@@ -333,45 +367,42 @@ class ServiceManager:
                 )
 
 
-                self._emit(
-                    EventType.SERVICE_STARTED,
-                    descriptor.name,
-                )
-
-
             except Exception:
+
 
                 self._states[name] = (
                     ServiceState.FAILED
-                )
-
-                self._emit(
-                    EventType.SERVICE_FAILED,
-                    descriptor.name,
                 )
 
                 raise
 
 
 
+            self._emit(
+                EventType.SERVICE_STARTED,
+                name,
+            )
+
+
+
     def stop_all(self):
 
-        services = sorted(
+
+        ordered = sorted(
             self._services.items(),
-            key=lambda item: (
-                -self._descriptors[item[0]].priority,
-                -getattr(
-                    self._descriptors[item[0]],
-                    "_registration_order",
-                    0,
+            key=lambda item:
+                (
+                    -self._descriptors[item[0]].priority,
+                    -getattr(
+                        self._descriptors[item[0]],
+                        "_registration_order",
+                        0,
+                    ),
                 ),
-            ),
         )
 
 
-        for name, service in services:
-
-            descriptor = self._descriptors[name]
+        for name, service in ordered:
 
 
             try:
@@ -391,23 +422,24 @@ class ServiceManager:
 
             except Exception:
 
+
                 self._states[name] = (
                     ServiceState.FAILED
                 )
 
 
+
             self._emit(
                 EventType.SERVICE_STOPPED,
-                descriptor.name,
+                name,
             )
 
 
 
     def tick_all(self):
 
-        for name, service in self._services.items():
 
-            descriptor = self._descriptors[name]
+        for name, service in self._services.items():
 
 
             service.tick()
@@ -415,5 +447,5 @@ class ServiceManager:
 
             self._emit(
                 EventType.SERVICE_TICKED,
-                descriptor.name,
+                name,
             )

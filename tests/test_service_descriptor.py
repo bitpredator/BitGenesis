@@ -321,3 +321,22 @@ def test_service_stop_reverse_priority():
         "high",
         "low",
     ]
+    
+def test_service_descriptor_dependencies():
+
+    descriptor = ServiceDescriptor(
+        name="brain",
+        dependencies=(
+            BasicService,
+        ),
+    )
+
+
+    assert descriptor.requires(
+        BasicService
+    )
+
+
+    assert len(
+        descriptor.dependencies
+    ) == 1
