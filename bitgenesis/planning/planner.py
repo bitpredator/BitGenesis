@@ -1,80 +1,165 @@
-from dataclasses import dataclass
+from __future__ import annotations
+
+from dataclasses import dataclass, field
 from typing import Any
 
 
-@dataclass
+# --------------------------------------------------
+# Planning objects
+# --------------------------------------------------
+
+@dataclass(slots=True)
 class PlanStep:
+    """
+    Single executable planning step.
+    """
+
     action: str
+
     target: Any = None
-    metadata: dict = None
+
+    metadata: dict = field(
+        default_factory=dict
+    )
 
 
-@dataclass
+@dataclass(slots=True)
 class ExecutionPlan:
-    steps: list
+    """
+    Runtime execution plan.
+
+    A plan is an ordered list of executable steps.
+    """
+
+    steps: list[PlanStep]
+
     intent: str
+
     confidence: float
 
+    metadata: dict = field(
+        default_factory=dict
+    )
+
+
+# --------------------------------------------------
+# Planner
+# --------------------------------------------------
 
 class Planner:
+    """
+    Converts a reasoning decision into an execution plan.
 
-    def build(self, decision, context=None):
+    Future versions will support:
+    - multi-step plans
+    - conditional branches
+    - retries
+    - dynamic planning
+    """
 
-        steps = []
+    def build(
+        self,
+        decision,
+        context=None,
+    ) -> ExecutionPlan:
 
-        # --------------------------
-        # MEMORY ACTIONS
-        # --------------------------
-        if decision.action == "use_memory":
+        steps: list[PlanStep] = []
 
-            steps.append(
-                PlanStep(
-                    action="retrieve_memory_items",
-                    target=decision.data,
-                    metadata={"source": "memory"}
+        action = decision.action
+
+        if action == "use_memory":
+
+            steps.extend(
+                self._plan_memory(
+                    decision
                 )
             )
 
-        # --------------------------
-        # KNOWLEDGE ACTIONS
-        # --------------------------
-        elif decision.action == "use_knowledge":
+        elif action == "use_knowledge":
 
-            steps.append(
-                PlanStep(
-                    action="query_knowledge_graph",
-                    target=decision.data,
-                    metadata={"source": "knowledge"}
+            steps.extend(
+                self._plan_knowledge(
+                    decision
                 )
             )
 
-        # --------------------------
-        # STORE / PERCEPTION
-        # --------------------------
-        elif decision.action == "store_information":
+        elif action == "store_information":
 
-            steps.append(
-                PlanStep(
-                    action="store_memory",
-                    target=decision.data,
-                    metadata={"source": "event"}
+            steps.extend(
+                self._plan_storage(
+                    decision
                 )
             )
 
-        # --------------------------
-        # DEFAULT FALLBACK
-        # --------------------------
         else:
 
             steps.append(
                 PlanStep(
                     action="no_op",
-                    metadata={"reason": decision.explanation}
+                    metadata={
+                        "reason": getattr(
+                            decision,
+                            "explanation",
+                            "",
+                        )
+                    },
                 )
             )
 
         return ExecutionPlan(
             steps=steps,
-            intent=decision.action,
+            intent=action,
             confidence=decision.confidence,
+            metadata={
+                "planner": "default",
+            },
         )
+
+    # --------------------------------------------------
+    # Planning strategies
+    # --------------------------------------------------
+
+    def _plan_memory(
+        self,
+        decision,
+    ) -> list[PlanStep]:
+
+        return [
+            PlanStep(
+                action="retrieve_memory_items",
+                target=decision.data,
+                metadata={
+                    "source": "memory",
+                },
+            )
+        ]
+
+    def _plan_knowledge(
+        self,
+        decision,
+    ) -> list[PlanStep]:
+
+        return [
+            PlanStep(
+                action="query_knowledge_graph",
+                target=decision.data,
+                metadata={
+                    "source": "knowledge",
+                },
+            )
+        ]
+
+    def _plan_storage(
+        self,
+        decision,
+    ) -> list[PlanStep]:
+
+        return [
+            PlanStep(
+                action="store_memory",
+                target=decision.data,
+                metadata={
+                    "source": "event",
+                },
+            )
+        ]
