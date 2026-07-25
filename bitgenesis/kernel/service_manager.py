@@ -1,21 +1,34 @@
 from __future__ import annotations
 
-from typing import Dict, Optional, Type
-
-from bitgenesis.kernel.service import KernelService
-from bitgenesis.kernel.descriptor import ServiceDescriptor
-from bitgenesis.kernel.service_state import ServiceState
-from bitgenesis.kernel.exceptions import ServiceNotFoundError
-from bitgenesis.kernel.dependency_resolver import DependencyResolver
 
 from bitgenesis.events.event import Event
 from bitgenesis.events.enums import (
-    EventCategory,
     EventType,
+    EventCategory,
 )
 
 
+from bitgenesis.kernel.registry import ServiceRegistry
+from bitgenesis.kernel.dependency_resolver import DependencyResolver
+
+from bitgenesis.kernel.service_state import ServiceState
+from bitgenesis.kernel.descriptor import ServiceDescriptor
+
+
+
 class ServiceManager:
+    """
+    Central service orchestration layer.
+
+    Responsibilities:
+    - service registration
+    - service discovery
+    - dependency resolution
+    - lifecycle execution
+    - runtime ticking
+    - state tracking
+    - lifecycle events
+    """
 
 
     def __init__(
@@ -23,163 +36,91 @@ class ServiceManager:
         event_bus=None,
     ):
 
+
         self.event_bus = event_bus
 
-        self._services: Dict[str, KernelService] = {}
 
-        self._descriptors: Dict[str, ServiceDescriptor] = {}
-
-        self._states: Dict[str, ServiceState] = {}
-
-        self._type_index: Dict[
-            Type[KernelService],
-            list[str]
-        ] = {}
-
-        self._registration_order = 0
+        self.registry = ServiceRegistry()
 
 
         self.dependency_resolver = DependencyResolver(
-            self
+            self.registry
         )
 
 
-
-    # =================================================
-    # EVENTS
-    # =================================================
-
-
-    def _emit(
-        self,
-        event_type,
-        payload,
-    ):
-
-        if self.event_bus is None:
-            return
-
-
-        self.event_bus.publish(
-            Event(
-                category=EventCategory.KERNEL,
-                type=event_type,
-                source="service_manager",
-                payload={
-                    "service": payload
-                },
-            )
-        )
+        self._states = {}
 
 
 
-    # =================================================
-    # REGISTRATION
-    # =================================================
+    # --------------------------------------------------
+    # Registration
+    # --------------------------------------------------
 
 
     def register(
         self,
-        service: KernelService,
-        descriptor: Optional[ServiceDescriptor] = None,
+        service,
+        descriptor: ServiceDescriptor | None = None,
     ):
 
-        service_type = type(service)
 
-
-        if descriptor is None:
-
-            descriptor = ServiceDescriptor(
-                name=service.name
-            )
-
-
-        descriptor._registration_order = (
-            self._registration_order
+        self.registry.register(
+            service,
+            descriptor,
         )
 
-        self._registration_order += 1
 
-
-        name = descriptor.name
-
-
-        self._services[name] = service
-
-        self._descriptors[name] = descriptor
-
-        self._states[name] = ServiceState.CREATED
-
-
-
-        if service_type not in self._type_index:
-
-            self._type_index[service_type] = []
-
-
-        self._type_index[service_type].append(
-            name
+        self._states[type(service)] = (
+            ServiceState.CREATED
         )
 
 
         self._emit(
             EventType.SERVICE_REGISTERED,
-            name,
+            service,
         )
-
-
-        return service
 
 
 
     def unregister(
         self,
-        service: KernelService,
+        service,
     ):
 
 
-        service_type = type(service)
-
-
-        names = self._type_index.get(
-            service_type,
-            []
+        self.registry.unregister(
+            service
         )
 
 
-        if not names:
-            return
-
-
-        name = names[0]
-
-
-        del self._services[name]
-
-        del self._descriptors[name]
-
-        del self._states[name]
-
-
-        names.remove(name)
-
-
-        if not names:
-
-            del self._type_index[service_type]
-
+        self._states.pop(
+            type(service),
+            None,
+        )
 
 
         self._emit(
             EventType.SERVICE_UNREGISTERED,
-            name,
+            service,
         )
 
 
 
-    # =================================================
-    # DISCOVERY
-    # =================================================
+    # --------------------------------------------------
+    # Discovery
+    # --------------------------------------------------
+
+
+    def contains(
+        self,
+        service_type,
+    ):
+
+
+        return self.registry.contains(
+            service_type
+        )
+
 
 
     def get(
@@ -188,19 +129,8 @@ class ServiceManager:
     ):
 
 
-        names = self._type_index.get(
-            service_type,
-            []
-        )
-
-
-        if not names:
-
-            return None
-
-
-        return self._services.get(
-            names[0]
+        return self.registry.get(
+            service_type
         )
 
 
@@ -211,84 +141,233 @@ class ServiceManager:
     ):
 
 
-        service = self.get(
+        return self.registry.require(
             service_type
         )
-
-
-        if service is None:
-
-            raise ServiceNotFoundError(
-                service_type.__name__
-            )
-
-
-        return service
 
 
 
     def get_by_name(
         self,
-        name: str,
+        name,
     ):
 
-        return self._services.get(
+
+        return self.registry.get_by_name(
             name
-        )
-
-
-
-    def contains(
-        self,
-        service_type,
-    ):
-
-        return service_type in self._type_index
-
-
-
-    def discover(self):
-
-        return tuple(
-            self._services.values()
         )
 
 
 
     def all(self):
 
-        return tuple(
-            self._services.values()
+
+        return self.registry.all()
+
+
+
+    def discover(self):
+
+
+        return self.registry.all()
+
+
+
+    @property
+    def count(self):
+
+
+        return len(
+            self.registry.all()
         )
 
 
 
     def descriptor(
         self,
-        service_type,
+        service,
     ):
 
 
-        names = self._type_index.get(
-            service_type,
-            []
-        )
-
-
-        if not names:
-
-            return None
-
-
-        return self._descriptors.get(
-            names[0]
+        return self.registry.descriptor(
+            service
         )
 
 
 
-    # =================================================
-    # STATE
-    # =================================================
+    # --------------------------------------------------
+    # Lifecycle
+    # --------------------------------------------------
+
+
+    def start_all(self):
+
+
+        entries = sorted(
+            self.registry.entries(),
+            key=lambda entry: (
+                entry.descriptor.priority
+                if entry.descriptor
+                else 0
+            ),
+        )
+
+
+        for entry in entries:
+
+
+            if entry.descriptor:
+
+                if not entry.descriptor.auto_start:
+                    continue
+
+
+            self._start_service(
+                entry.service
+            )
+
+
+
+    def stop_all(self):
+
+
+        entries = list(
+            reversed(
+                self.registry.entries()
+            )
+        )
+
+
+        for entry in entries:
+
+
+            self._stop_service(
+                entry.service
+            )
+
+
+
+    def tick_all(self):
+
+
+        for service in self.registry.all():
+
+
+            self._tick_service(
+                service
+            )
+
+
+
+    # --------------------------------------------------
+    # Internal lifecycle
+    # --------------------------------------------------
+
+
+    def _start_service(
+        self,
+        service,
+    ):
+
+
+        service_type = type(service)
+
+
+        try:
+
+
+            self._states[service_type] = (
+                ServiceState.STARTING
+            )
+
+
+            service.start()
+
+
+
+            self._states[service_type] = (
+                ServiceState.RUNNING
+            )
+
+
+
+            self._emit(
+                EventType.SERVICE_STARTED,
+                service,
+            )
+
+
+        except Exception:
+
+
+            self._states[service_type] = (
+                ServiceState.FAILED
+            )
+
+
+
+    def _stop_service(
+        self,
+        service,
+    ):
+
+
+        service_type = type(service)
+
+
+        try:
+
+
+            self._states[service_type] = (
+                ServiceState.STOPPING
+            )
+
+
+            service.stop()
+
+
+
+            self._states[service_type] = (
+                ServiceState.STOPPED
+            )
+
+
+
+            self._emit(
+                EventType.SERVICE_STOPPED,
+                service,
+            )
+
+
+        except Exception:
+
+
+            self._states[service_type] = (
+                ServiceState.FAILED
+            )
+
+
+
+    def _tick_service(
+        self,
+        service,
+    ):
+
+
+        service.tick()
+
+
+
+        self._emit(
+            EventType.SERVICE_TICKED,
+            service,
+        )
+
+
+
+    # --------------------------------------------------
+    # State
+    # --------------------------------------------------
 
 
     def state(
@@ -297,19 +376,8 @@ class ServiceManager:
     ):
 
 
-        names = self._type_index.get(
-            service_type,
-            []
-        )
-
-
-        if not names:
-
-            return ServiceState.CREATED
-
-
         return self._states.get(
-            names[0],
+            service_type,
             ServiceState.CREATED,
         )
 
@@ -317,135 +385,83 @@ class ServiceManager:
 
     def running_services(self):
 
+
         return tuple(
             service
-            for name, service in self._services.items()
-            if self._states.get(name)
+            for service in self.registry.all()
+            if self.state(type(service))
             == ServiceState.RUNNING
         )
 
 
 
-    # =================================================
-    # LIFECYCLE
-    # =================================================
+    # --------------------------------------------------
+    # Events
+    # --------------------------------------------------
 
 
-    def start_all(self):
+    def _emit(
+        self,
+        event_type,
+        service,
+    ):
 
 
-        ordered = sorted(
-            self._services.items(),
-            key=lambda item:
-                self._descriptors[item[0]].priority
+        if self.event_bus is None:
+            return
+
+
+
+        self.event_bus.emit(
+            Event(
+                category=EventCategory.KERNEL,
+                type=event_type,
+                source="service_manager",
+                payload={
+                    "service": type(service).__name__,
+                    **self._metadata(service),
+                },
+            )
         )
 
 
-        for name, service in ordered:
+
+    # --------------------------------------------------
+    # Metadata
+    # --------------------------------------------------
 
 
-            descriptor = self._descriptors[name]
+    def _metadata(
+        self,
+        service,
+    ):
 
 
-            if not descriptor.auto_start:
-
-                continue
-
-
-            try:
-
-                self._states[name] = (
-                    ServiceState.STARTING
-                )
+        if hasattr(
+            service,
+            "metadata",
+        ):
 
 
-                service.start()
-
-
-                self._states[name] = (
-                    ServiceState.RUNNING
-                )
-
-
-            except Exception:
-
-
-                self._states[name] = (
-                    ServiceState.FAILED
-                )
-
-                raise
+            return service.metadata()
 
 
 
-            self._emit(
-                EventType.SERVICE_STARTED,
-                name,
-            )
+        return {
+
+            "name": getattr(
+                service,
+                "name",
+                type(service).__name__,
+            ),
 
 
-
-    def stop_all(self):
-
-
-        ordered = sorted(
-            self._services.items(),
-            key=lambda item:
-                (
-                    -self._descriptors[item[0]].priority,
-                    -getattr(
-                        self._descriptors[item[0]],
-                        "_registration_order",
-                        0,
-                    ),
-                ),
-        )
+            "version": getattr(
+                service,
+                "version",
+                "0.0.0",
+            ),
 
 
-        for name, service in ordered:
-
-
-            try:
-
-                self._states[name] = (
-                    ServiceState.STOPPING
-                )
-
-
-                service.stop()
-
-
-                self._states[name] = (
-                    ServiceState.STOPPED
-                )
-
-
-            except Exception:
-
-
-                self._states[name] = (
-                    ServiceState.FAILED
-                )
-
-
-
-            self._emit(
-                EventType.SERVICE_STOPPED,
-                name,
-            )
-
-
-
-    def tick_all(self):
-
-
-        for name, service in self._services.items():
-
-
-            service.tick()
-
-
-            self._emit(
-                EventType.SERVICE_TICKED,
-                name,
-            )
+            "type": type(service).__name__,
+        }

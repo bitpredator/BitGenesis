@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+
 from typing import Type
+
 
 from bitgenesis.kernel.exceptions import ServiceNotFoundError
 from bitgenesis.kernel.service import KernelService
@@ -8,11 +10,15 @@ from bitgenesis.kernel.descriptor import ServiceDescriptor
 from bitgenesis.kernel.service_entry import ServiceEntry
 
 
+
 class ServiceRegistry:
     """
     Registry for Kernel services.
 
-    Supports multiple instances of the same service type.
+    Supports:
+    - multiple instances of the same service type
+    - descriptor metadata
+    - service discovery
     """
 
 
@@ -26,15 +32,18 @@ class ServiceRegistry:
         ] = {}
 
 
+
     # --------------------------------------------------
     # Registration
     # --------------------------------------------------
+
 
     def register(
         self,
         service: KernelService,
         descriptor: ServiceDescriptor | None = None,
     ):
+
 
         if descriptor is None:
 
@@ -46,7 +55,7 @@ class ServiceRegistry:
                         None,
                     )
                     or type(service).__name__
-                ),
+                )
             )
 
 
@@ -69,10 +78,12 @@ class ServiceRegistry:
         )
 
 
+
     def unregister(
         self,
         service: KernelService,
     ):
+
 
         entries = self._type_index.get(
             type(service),
@@ -84,15 +95,19 @@ class ServiceRegistry:
 
             if entry.service is service:
 
+
                 entries.remove(
                     entry
                 )
+
 
                 self._entries.remove(
                     entry
                 )
 
+
                 break
+
 
 
         if not entries:
@@ -103,14 +118,17 @@ class ServiceRegistry:
             )
 
 
+
     # --------------------------------------------------
     # Lookup
     # --------------------------------------------------
 
+
     def get(
         self,
-        service_type,
-    ):
+        service_type: Type[KernelService],
+    ) -> KernelService | None:
+
 
         entries = self._type_index.get(
             service_type,
@@ -119,7 +137,9 @@ class ServiceRegistry:
 
 
         if not entries:
+
             return None
+
 
 
         return entries[0].service
@@ -128,8 +148,9 @@ class ServiceRegistry:
 
     def get_all(
         self,
-        service_type,
-    ):
+        service_type: Type[KernelService],
+    ) -> tuple[KernelService, ...]:
+
 
         return tuple(
             entry.service
@@ -143,8 +164,9 @@ class ServiceRegistry:
 
     def require(
         self,
-        service_type,
-    ):
+        service_type: Type[KernelService],
+    ) -> KernelService:
+
 
         service = self.get(
             service_type
@@ -164,8 +186,9 @@ class ServiceRegistry:
 
     def contains(
         self,
-        service_type,
-    ):
+        service_type: Type[KernelService],
+    ) -> bool:
+
 
         return bool(
             self._type_index.get(
@@ -178,22 +201,31 @@ class ServiceRegistry:
     def get_by_name(
         self,
         name: str,
-    ):
+    ) -> KernelService | None:
+
 
         for entry in self._entries:
 
+
             if entry.descriptor.name == name:
+
                 return entry.service
 
 
+
         return None
+
 
 
     # --------------------------------------------------
     # Discovery
     # --------------------------------------------------
 
-    def all(self):
+
+    def all(
+        self,
+    ) -> tuple[KernelService, ...]:
+
 
         return tuple(
             entry.service
@@ -202,7 +234,10 @@ class ServiceRegistry:
 
 
 
-    def entries(self):
+    def entries(
+        self,
+    ) -> tuple[ServiceEntry, ...]:
+
 
         return tuple(
             self._entries
@@ -214,16 +249,49 @@ class ServiceRegistry:
     # Metadata
     # --------------------------------------------------
 
+
     def descriptor(
         self,
-        service,
-    ):
+        service_or_type,
+    ) -> ServiceDescriptor | None:
 
-        for entry in self._entries:
 
-            if entry.service is service:
+        # Support:
+        # descriptor(instance)
+        # descriptor(ServiceClass)
 
-                return entry.descriptor
+        if isinstance(
+            service_or_type,
+            type,
+        ):
+
+
+            entries = self._type_index.get(
+                service_or_type,
+                [],
+            )
+
+
+            if not entries:
+
+                return None
+
+
+
+            return entries[0].descriptor
+
+
+
+        else:
+
+
+            for entry in self._entries:
+
+
+                if entry.service is service_or_type:
+
+                    return entry.descriptor
+
 
 
         return None
@@ -234,7 +302,11 @@ class ServiceRegistry:
     # Utility
     # --------------------------------------------------
 
-    def clear(self):
+
+    def clear(
+        self,
+    ):
+
 
         self._entries.clear()
 

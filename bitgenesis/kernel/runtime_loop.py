@@ -7,7 +7,7 @@ from datetime import datetime, UTC
 from typing import Callable
 
 
-from bitgenesis.kernel.manager import ServiceManager
+from bitgenesis.kernel.service_manager import ServiceManager
 
 from bitgenesis.events.event_bus import EventBus
 from bitgenesis.events.event import Event

@@ -6,7 +6,6 @@ from bitgenesis.events.enums import (
     EventType,
     EventCategory,
 )
-
 from bitgenesis.events.event import Event
 
 
@@ -35,9 +34,9 @@ class Kernel:
         self.config = config or BrainConfig()
 
 
-
-        self.service_manager = ServiceManager()
-
+        self.service_manager = ServiceManager(
+            event_bus=self.bus,
+        )
 
 
         self.runtime_loop = RuntimeLoop(
@@ -45,11 +44,8 @@ class Kernel:
         )
 
 
-
-        # compatibility
-
+        # compatibility layer
         self.services = ()
-
 
 
         self.state = KernelState.CREATED
@@ -61,7 +57,7 @@ class Kernel:
 
 
     # --------------------------------------------------
-    # Services compatibility
+    # Services
     # --------------------------------------------------
 
 
@@ -74,29 +70,17 @@ class Kernel:
     def register(
         self,
         service,
+        descriptor=None,
     ):
 
 
         self.service_manager.register(
-            service
+            service,
+            descriptor,
         )
 
 
         self._refresh_services()
-
-
-
-        self.bus.emit(
-            Event(
-                category=EventCategory.KERNEL,
-                type=EventType.SERVICE_REGISTERED,
-                source="kernel",
-                payload={
-                    "service": type(service).__name__,
-                    **self._service_metadata(service),
-                },
-            )
-        )
 
 
 
@@ -115,23 +99,11 @@ class Kernel:
 
 
 
-        self.bus.emit(
-            Event(
-                category=EventCategory.KERNEL,
-                type=EventType.SERVICE_UNREGISTERED,
-                source="kernel",
-                payload={
-                    "service": type(service).__name__,
-                },
-            )
-        )
-
-
-
     def get_service(
         self,
         service_type,
     ):
+
 
         return self.service_manager.get(
             service_type
@@ -143,6 +115,7 @@ class Kernel:
         self,
         name,
     ):
+
 
         return self.service_manager.get_by_name(
             name
@@ -163,11 +136,14 @@ class Kernel:
 
     def bootstrap(self):
 
+
         builder = BrainBuilder(
             self.config
         )
 
+
         self.brain = builder.build()
+
 
         return self.brain
 
@@ -179,6 +155,7 @@ class Kernel:
 
 
     def start(self):
+
 
         if self.running:
             return
@@ -231,6 +208,7 @@ class Kernel:
 
     def stop(self):
 
+
         if not self.running:
             return
 
@@ -271,30 +249,3 @@ class Kernel:
     def tick(self):
 
         self.runtime_loop.step()
-
-
-
-    def _service_metadata(
-        self,
-        service,
-    ):
-
-        if hasattr(service, "metadata"):
-
-            return service.metadata()
-
-
-
-        return {
-            "name": getattr(
-                service,
-                "name",
-                type(service).__name__,
-            ),
-            "version": getattr(
-                service,
-                "version",
-                "0.0.0",
-            ),
-            "type": type(service).__name__,
-        }
