@@ -55,6 +55,7 @@ class EventType(Enum):
     """
 
 
+
     # ======================================================
     # System
     # ======================================================
@@ -155,22 +156,12 @@ class EventType(Enum):
     # Planning
     # ======================================================
 
-    #
-    # Planner lifecycle
-    #
-
     PLANNER_STARTED = "planning.started"
     PLANNER_COMPLETED = "planning.completed"
     PLANNER_FAILED = "planning.failed"
 
 
-
-    #
-    # Plan lifecycle
-    #
-    # Compatibility:
-    # PLAN_* already used by existing runtime/tests.
-    #
+    # Compatibility with runtime/tests
 
     PLAN_CREATED = "planning.created"
 
@@ -180,9 +171,9 @@ class EventType(Enum):
 
 
 
-    #
-    # Execution plan lifecycle
-    #
+    # ======================================================
+    # Execution Plan
+    # ======================================================
 
     EXECUTION_PLAN_CREATED = (
         "runtime.execution_plan.created"
@@ -222,9 +213,9 @@ class EventType(Enum):
 
 
 
-    #
-    # Execution lifecycle
-    #
+    # ======================================================
+    # Execution Lifecycle
+    # ======================================================
 
     EXECUTION_STARTED = (
         "runtime.execution.started"
@@ -240,9 +231,9 @@ class EventType(Enum):
 
 
 
-    #
-    # Action lifecycle
-    #
+    # ======================================================
+    # Action Lifecycle
+    # ======================================================
 
     ACTION_STARTED = (
         "runtime.action.started"
@@ -258,9 +249,9 @@ class EventType(Enum):
 
 
 
-    #
-    # Step lifecycle
-    #
+    # ======================================================
+    # Step Lifecycle
+    # ======================================================
 
     STEP_STARTED = (
         "runtime.step.started"
@@ -276,9 +267,27 @@ class EventType(Enum):
 
 
 
-    #
-    # Legacy compatibility
-    #
+    # ======================================================
+    # Feedback Pipeline
+    # ======================================================
+
+    EXECUTION_FEEDBACK_CREATED = (
+        "runtime.execution.feedback.created"
+    )
+
+    FEEDBACK_RECEIVED = (
+        "runtime.feedback.received"
+    )
+
+    FEEDBACK_PROCESSED = (
+        "runtime.feedback.processed"
+    )
+
+
+
+    # ======================================================
+    # Legacy Compatibility
+    # ======================================================
 
     TASK_STARTED = (
         "runtime.task_started"
@@ -307,5 +316,3 @@ class EventType(Enum):
     SECURITY_ALERT = (
         "security.alert"
     )
-    
-    EXECUTION_FEEDBACK_CREATED = "runtime.execution.feedback.created"
