@@ -307,3 +307,5 @@ class EventType(Enum):
     SECURITY_ALERT = (
         "security.alert"
     )
+    
+    EXECUTION_FEEDBACK_CREATED = "runtime.execution.feedback.created"
