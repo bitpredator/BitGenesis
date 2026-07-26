@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime
 
+
 from bitgenesis.runtime.action_registry import ActionRegistry
 from bitgenesis.runtime.action_context import ActionContext
 from bitgenesis.runtime.execution_result import ExecutionResult
 from bitgenesis.runtime.result import ActionResult
+
 
 from bitgenesis.events.event_bus import EventBus
 from bitgenesis.events.event import Event
@@ -13,6 +15,7 @@ from bitgenesis.events.enums import (
     EventCategory,
     EventType,
 )
+
 
 from bitgenesis.runtime.actions.bootstrap import (
     register_default_actions,
@@ -22,14 +25,13 @@ from bitgenesis.runtime.actions.bootstrap import (
 
 class Executor:
     """
-    Executes runtime plans.
+    Executes cognitive execution plans.
 
-    Executor responsibility:
-    - execute plan steps
-    - emit step lifecycle events
+    Responsibilities:
 
-    Action lifecycle belongs to ActionRegistry.
-    Execution lifecycle belongs to RuntimeManager.
+    - execute ExecutionPlan steps
+    - manage action lifecycle
+    - emit execution events
     """
 
 
@@ -52,6 +54,7 @@ class Executor:
                 event_bus=self.event_bus
             )
 
+
             register_default_actions(
                 self.registry
             )
@@ -69,7 +72,7 @@ class Executor:
     def _emit(
         self,
         event_type,
-        payload,
+        payload=None,
     ):
 
         if not self.event_bus:
@@ -81,7 +84,7 @@ class Executor:
                 category=EventCategory.RUNTIME,
                 type=event_type,
                 source="executor",
-                payload=payload,
+                payload=payload or {},
             )
         )
 
@@ -98,11 +101,33 @@ class Executor:
         event=None,
     ):
 
-
         started_at = datetime.now()
 
 
+        if plan is None:
+
+            return ExecutionResult(
+                success=False,
+                results=[],
+                actions_executed=0,
+                started_at=started_at,
+                finished_at=started_at,
+                duration_ms=0,
+            )
+
+
+
+        self._emit(
+            EventType.PLAN_STARTED,
+            {
+                "steps": len(plan.steps),
+            }
+        )
+
+
+
         results = []
+
 
 
         for step in plan.steps:
@@ -116,6 +141,7 @@ class Executor:
             )
 
 
+
             context = ActionContext(
                 step=step,
                 decision=decision,
@@ -124,6 +150,7 @@ class Executor:
                 memory_store=self.memory_store,
                 graph=self.graph,
             )
+
 
 
             try:
@@ -142,9 +169,11 @@ class Executor:
                 )
 
 
+
             results.append(
                 result
             )
+
 
 
             self._emit(
@@ -170,7 +199,7 @@ class Executor:
 
 
 
-        return ExecutionResult(
+        execution_result = ExecutionResult(
             success=all(
                 result.success
                 for result in results
@@ -186,3 +215,17 @@ class Executor:
 
             duration_ms=duration_ms,
         )
+
+
+
+        self._emit(
+            EventType.PLAN_COMPLETED,
+            {
+                "success": execution_result.success,
+                "actions": execution_result.actions_executed,
+            }
+        )
+
+
+
+        return execution_result

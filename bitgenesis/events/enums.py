@@ -7,6 +7,7 @@ This module defines the core vocabulary used by the BitGenesis Event System.
 from enum import Enum
 
 
+
 class EventCategory(Enum):
     """
     High-level domain that generated the event.
@@ -14,18 +15,24 @@ class EventCategory(Enum):
 
     SYSTEM = "system"
     KERNEL = "kernel"
+
     COGNITION = "cognition"
     PERCEPTION = "perception"
     REASONING = "reasoning"
     PLANNING = "planning"
+
     MEMORY = "memory"
     IDENTITY = "identity"
     KNOWLEDGE = "knowledge"
+
     LEARNING = "learning"
     LANGUAGE = "language"
+
     RUNTIME = "runtime"
+
     TOOL = "tool"
     SECURITY = "security"
+
 
 
 
@@ -38,6 +45,7 @@ class EventPriority(Enum):
     NORMAL = 20
     HIGH = 30
     CRITICAL = 40
+
 
 
 
@@ -66,6 +74,7 @@ class EventType(Enum):
     KERNEL_READY = "kernel.ready"
 
 
+
     # ======================================================
     # Services
     # ======================================================
@@ -85,6 +94,8 @@ class EventType(Enum):
     SERVICE_FAILED = "service.failed"
 
     SERVICE_TICKED = "service.ticked"
+
+
 
     # ======================================================
     # Event Bus
@@ -144,8 +155,50 @@ class EventType(Enum):
     # Planning
     # ======================================================
 
+    #
+    # Planner lifecycle
+    #
+
+    PLANNER_STARTED = "planning.started"
+    PLANNER_COMPLETED = "planning.completed"
+    PLANNER_FAILED = "planning.failed"
+
+
+
+    #
+    # Plan lifecycle
+    #
+    # Compatibility:
+    # PLAN_* already used by existing runtime/tests.
+    #
+
     PLAN_CREATED = "planning.created"
+
+    PLAN_STARTED = "planning.started"
     PLAN_COMPLETED = "planning.completed"
+    PLAN_FAILED = "planning.failed"
+
+
+
+    #
+    # Execution plan lifecycle
+    #
+
+    EXECUTION_PLAN_CREATED = (
+        "runtime.execution_plan.created"
+    )
+
+    EXECUTION_PLAN_STARTED = (
+        "runtime.execution_plan.started"
+    )
+
+    EXECUTION_PLAN_COMPLETED = (
+        "runtime.execution_plan.completed"
+    )
+
+    EXECUTION_PLAN_FAILED = (
+        "runtime.execution_plan.failed"
+    )
 
 
 
@@ -165,47 +218,85 @@ class EventType(Enum):
     RUNTIME_STARTED = "runtime.started"
     RUNTIME_STOPPED = "runtime.stopped"
 
+    RUNTIME_TICKED = "runtime.ticked"
+
+
 
     #
     # Execution lifecycle
     #
 
-    EXECUTION_STARTED = "runtime.execution.started"
-    EXECUTION_COMPLETED = "runtime.execution.completed"
-    EXECUTION_FAILED = "runtime.execution.failed"
+    EXECUTION_STARTED = (
+        "runtime.execution.started"
+    )
+
+    EXECUTION_COMPLETED = (
+        "runtime.execution.completed"
+    )
+
+    EXECUTION_FAILED = (
+        "runtime.execution.failed"
+    )
+
 
 
     #
     # Action lifecycle
     #
 
-    ACTION_STARTED = "runtime.action.started"
-    ACTION_COMPLETED = "runtime.action.completed"
-    ACTION_FAILED = "runtime.action.failed"
+    ACTION_STARTED = (
+        "runtime.action.started"
+    )
+
+    ACTION_COMPLETED = (
+        "runtime.action.completed"
+    )
+
+    ACTION_FAILED = (
+        "runtime.action.failed"
+    )
+
 
 
     #
     # Step lifecycle
     #
 
-    STEP_STARTED = "runtime.step.started"
-    STEP_COMPLETED = "runtime.step.completed"
-    STEP_FAILED = "runtime.step.failed"
+    STEP_STARTED = (
+        "runtime.step.started"
+    )
+
+    STEP_COMPLETED = (
+        "runtime.step.completed"
+    )
+
+    STEP_FAILED = (
+        "runtime.step.failed"
+    )
+
 
 
     #
     # Legacy compatibility
     #
 
-    TASK_STARTED = "runtime.task_started"
-    TASK_COMPLETED = "runtime.task_completed"
-    
+    TASK_STARTED = (
+        "runtime.task_started"
+    )
+
+    TASK_COMPLETED = (
+        "runtime.task_completed"
+    )
+
+
 
     # ======================================================
     # Tooling
     # ======================================================
 
-    TOOL_EXECUTED = "tool.executed"
+    TOOL_EXECUTED = (
+        "tool.executed"
+    )
 
 
 
@@ -213,4 +304,6 @@ class EventType(Enum):
     # Security
     # ======================================================
 
-    SECURITY_ALERT = "security.alert"
+    SECURITY_ALERT = (
+        "security.alert"
+    )
