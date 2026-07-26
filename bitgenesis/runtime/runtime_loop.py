@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 
+
 from bitgenesis.events.bus import EventBus
 from bitgenesis.events.event import Event
 from bitgenesis.events.enums import (
@@ -9,7 +10,10 @@ from bitgenesis.events.enums import (
     EventType,
 )
 
+
 from bitgenesis.runtime.runtime_manager import RuntimeManager
+from bitgenesis.runtime.planner import CognitiveExecutionPlanner
+
 
 
 class RuntimeLoop:
@@ -20,6 +24,7 @@ class RuntimeLoop:
 
     - drive runtime ticks
     - coordinate runtime manager
+    - generate cognitive execution plans
     - emit lifecycle events
     - control execution flow
     """
@@ -33,12 +38,22 @@ class RuntimeLoop:
     ):
 
         self.runtime_manager = runtime_manager
+
         self.event_bus = event_bus
 
         self.interval = interval
 
+
         self.running = False
+
         self.tick_count = 0
+
+
+        # Cognitive execution planner
+
+        self.planner = CognitiveExecutionPlanner()
+
+        self.last_plan = None
 
 
 
@@ -80,6 +95,7 @@ class RuntimeLoop:
 
         self.running = True
 
+
         self._emit(
             EventType.RUNTIME_STARTED
         )
@@ -102,6 +118,33 @@ class RuntimeLoop:
 
 
     # --------------------------------------------------
+    # Cognitive Planning
+    # --------------------------------------------------
+
+    def plan(
+        self,
+        decision,
+    ):
+        """
+        Create an execution plan from a cognitive decision.
+        """
+
+
+        result = self.planner.create_plan(
+            decision
+        )
+
+
+        if result.success:
+
+            self.last_plan = result.plan
+
+
+        return result
+
+
+
+    # --------------------------------------------------
     # Execution
     # --------------------------------------------------
 
@@ -115,6 +158,7 @@ class RuntimeLoop:
 
 
         self.runtime_manager.tick()
+
 
 
         self._emit(
