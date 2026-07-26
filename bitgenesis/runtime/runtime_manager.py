@@ -1,12 +1,19 @@
+from __future__ import annotations
+
+
 from bitgenesis.events.event_bus import EventBus
 from bitgenesis.events.event import Event
+
 from bitgenesis.events.enums import (
     EventCategory,
     EventType,
 )
 
+
 from bitgenesis.runtime.action_registry import ActionRegistry
 from bitgenesis.runtime.executor import Executor
+from bitgenesis.runtime.planner import CognitiveExecutionPlanner
+
 
 
 class RuntimeManager:
@@ -14,10 +21,13 @@ class RuntimeManager:
     Coordinates runtime execution.
 
     Responsibilities:
+
     - own action registry
     - own executor
-    - manage execution lifecycle events
-    - expose lifecycle state
+    - own execution planner
+    - create execution plans
+    - execute plans
+    - manage execution lifecycle
     """
 
 
@@ -27,6 +37,7 @@ class RuntimeManager:
         memory_store=None,
         graph=None,
         event_bus: EventBus | None = None,
+        planner: CognitiveExecutionPlanner | None = None,
     ):
 
         self.memory_store = memory_store
@@ -39,6 +50,12 @@ class RuntimeManager:
             or ActionRegistry(
                 event_bus=self.event_bus
             )
+        )
+
+
+        self.planner = (
+            planner
+            or CognitiveExecutionPlanner()
         )
 
 
@@ -63,6 +80,7 @@ class RuntimeManager:
         if self.running:
             return
 
+
         self.running = True
 
 
@@ -72,7 +90,45 @@ class RuntimeManager:
         if not self.running:
             return
 
+
         self.running = False
+
+
+
+    # --------------------------------------------------
+    # Planning
+    # --------------------------------------------------
+
+    def create_plan(
+        self,
+        decision,
+    ):
+
+        result = self.planner.create_plan(
+            decision
+        )
+
+
+        if self.event_bus:
+
+            self.event_bus.emit(
+                Event(
+                    category=EventCategory.PLANNING,
+                    type=(
+                        EventType.PLAN_CREATED
+                        if result.success
+                        else EventType.PLAN_FAILED
+                    ),
+                    source="runtime_manager",
+                    payload={
+                        "success": result.success,
+                        "reason": result.reason,
+                    },
+                )
+            )
+
+
+        return result
 
 
 
@@ -102,6 +158,7 @@ class RuntimeManager:
             )
 
 
+
         try:
 
             result = self.executor.execute(
@@ -126,6 +183,7 @@ class RuntimeManager:
                     )
                 )
 
+
             raise
 
 
@@ -143,15 +201,57 @@ class RuntimeManager:
                     source="runtime_manager",
                     payload={
                         "success": result.success,
-                        "actions_executed": (
-                            result.actions_executed
-                        ),
+                        "actions_executed":
+                            result.actions_executed,
                     },
                 )
             )
 
 
         return result
+
+
+
+    # --------------------------------------------------
+    # Cognitive execution pipeline
+    # --------------------------------------------------
+
+    def execute_decision(
+        self,
+        decision,
+        event=None,
+    ):
+        """
+        Execute a cognitive decision.
+
+        Flow:
+
+        Decision
+            ↓
+        Planner
+            ↓
+        ExecutionPlan
+            ↓
+        Executor
+        """
+
+
+        planning_result = self.create_plan(
+            decision
+        )
+
+
+        if not planning_result.success:
+
+            return None
+
+
+
+        return self.execute(
+            planning_result.plan,
+            decision=decision,
+            event=event,
+        )
 
 
 

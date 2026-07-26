@@ -13,7 +13,7 @@ class CognitiveExecutionPlanner:
     Converts cognitive decisions into executable runtime plans.
 
     The planner does not execute actions.
-    It only creates an ordered execution plan.
+    It only creates ordered execution plans.
     """
 
 
@@ -41,6 +41,7 @@ class CognitiveExecutionPlanner:
             "action",
             None,
         )
+
 
 
         if not action:
