@@ -37,11 +37,11 @@ class RuntimeManager:
     - own executor
     - own execution planner
     - own service orchestrator
-    - manage service lifecycle
     - create execution plans
     - execute plans
+    - orchestrate runtime services
+    - manage execution lifecycle
     """
-
 
 
     def __init__(
@@ -80,26 +80,39 @@ class RuntimeManager:
             graph=self.graph,
             event_bus=self.event_bus,
         )
-
-
-        self.service_orchestrator = (
-            orchestrator
-            or ServiceOrchestrator(
+        
+        if orchestrator is not None:
+            if isinstance(
+                orchestrator,
+                list,
+            ):
+                self.service_orchestrator = ServiceOrchestrator(
+                    services=orchestrator,
+                )
+            else:
+                self.service_orchestrator = orchestrator
+        else:
+            self.service_orchestrator = ServiceOrchestrator(
                 services=services,
-                event_bus=self.event_bus,
             )
-        )
 
 
-        self.service_context = ServiceContext(
+        self.running = False
+
+
+
+    # --------------------------------------------------
+    # Context
+    # --------------------------------------------------
+
+    def _service_context(self):
+
+        return ServiceContext(
             event_bus=self.event_bus,
             memory_store=self.memory_store,
             graph=self.graph,
             runtime_state=self,
         )
-
-
-        self.running = False
 
 
 
@@ -117,7 +130,7 @@ class RuntimeManager:
 
 
         self.service_orchestrator.start_services(
-            self.service_context
+            self._service_context()
         )
 
 
@@ -129,11 +142,57 @@ class RuntimeManager:
 
 
         self.service_orchestrator.stop_services(
-            self.service_context
+            self._service_context()
         )
 
 
         self.running = False
+
+
+
+    # --------------------------------------------------
+    # Service registration
+    # --------------------------------------------------
+
+    def register_service(
+        self,
+        service,
+        name: str | None = None,
+        metadata: dict | None = None,
+    ):
+        
+        return self.service_orchestrator.register(
+            service,
+            name=name,
+            metadata=metadata,
+        )
+
+
+    def unregister_service(
+        self,
+        name: str,
+    ):
+
+        return self.service_orchestrator.unregister(
+            name
+        )
+
+
+
+    def discover_service(
+        self,
+        name: str,
+    ):
+
+        return self.service_orchestrator.registry.discover(
+            name
+        )
+
+
+
+    def discover_services(self):
+
+        return self.service_orchestrator.registry.all()
 
 
 
@@ -264,6 +323,7 @@ class RuntimeManager:
         event=None,
     ):
 
+
         planning_result = self.create_plan(
             decision
         )
@@ -284,28 +344,14 @@ class RuntimeManager:
 
 
     # --------------------------------------------------
-    # Service orchestration
+    # Runtime loop
     # --------------------------------------------------
 
     def orchestrate_services(self):
 
-        return self.service_orchestrator.execute(
-            self.service_context
+        result = self.service_orchestrator.execute(
+            self._service_context()
         )
-
-
-
-    # --------------------------------------------------
-    # Runtime
-    # --------------------------------------------------
-
-    def tick(self):
-
-        if not self.running:
-            return
-
-
-        result = self.orchestrate_services()
 
 
         if self.event_bus:
@@ -322,6 +368,7 @@ class RuntimeManager:
                     payload={
                         "services_executed":
                             result.services_executed,
+
                         "failed_services":
                             result.failed_services,
                     },
@@ -330,3 +377,13 @@ class RuntimeManager:
 
 
         return result
+
+
+
+    def tick(self):
+
+        if not self.running:
+            return None
+
+
+        return self.orchestrate_services()

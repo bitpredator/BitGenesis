@@ -2,15 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from bitgenesis.events.event import Event
-from bitgenesis.events.enums import (
-    EventCategory,
-    EventType,
-)
-
-from bitgenesis.events.event_bus import EventBus
-
-
 from bitgenesis.runtime.service_context import (
     ServiceContext,
 )
@@ -19,78 +10,116 @@ from bitgenesis.runtime.service_execution import (
     ServiceExecution,
 )
 
-from bitgenesis.runtime.service_state import (
-    ServiceState,
-)
-
 from bitgenesis.runtime.orchestration_result import (
     OrchestrationResult,
+)
+
+from bitgenesis.runtime.service_registry import (
+    ServiceRegistry,
 )
 
 
 
 class ServiceOrchestrator:
     """
-    Coordinates runtime service lifecycle and execution.
+    Coordinates execution of runtime services.
 
     Responsibilities:
 
     - register services
-    - manage service lifecycle
+    - unregister services
     - execute ordered services
-    - provide shared context
-    - isolate service failures
+    - manage lifecycle
+    - collect execution results
+    - isolate failures
+
+    Compatibility:
+    - supports ServiceRegistry
+    - supports legacy services list
     """
 
 
 
     def __init__(
         self,
+        registry: ServiceRegistry | None = None,
         services: list[object] | None = None,
-        event_bus: EventBus | None = None,
     ):
 
-        self.services = (
-            services
-            or []
+
+        #
+        # Compatibility:
+        #
+        # Old usage:
+        #
+        # ServiceOrchestrator([service])
+        #
+        # New usage:
+        #
+        # ServiceOrchestrator(
+        #     registry=ServiceRegistry()
+        # )
+        #
+
+        if isinstance(
+            registry,
+            list,
+        ):
+
+            services = registry
+
+            registry = None
+
+
+
+        self.registry = (
+            registry
+            or ServiceRegistry()
         )
 
-        self.event_bus = event_bus
 
 
-        self.states = {
-            service: ServiceState.CREATED
-            for service in self.services
-        }
+        if services:
+
+            for service in services:
+
+                self.register(
+                    service
+                )
 
 
 
     # --------------------------------------------------
-    # Events
+    # Compatibility helpers
     # --------------------------------------------------
 
-    def _emit(
-        self,
-        event_type: EventType,
-        service,
-    ):
+    def _services(self):
 
-        if self.event_bus is None:
-            return
+        #
+        # Extra protection in case
+        # external code injects a list
+        #
+
+        if isinstance(
+            self.registry,
+            list,
+        ):
+
+            return [
+                type(
+                    "ServiceDescriptor",
+                    (),
+                    {
+                        "service": service,
+                        "name": type(service).__name__,
+                    },
+                )
+                for service in self.registry
+            ]
 
 
-        self.event_bus.emit(
-            Event(
-                category=EventCategory.RUNTIME,
-                type=event_type,
-                source="service_orchestrator",
-                payload={
-                    "service": (
-                        type(service).__name__
-                    ),
-                },
-            )
-        )
+
+        return self.registry.all()
 
 
 
@@ -101,49 +130,47 @@ class ServiceOrchestrator:
     def register(
         self,
         service: object,
+        name: str | None = None,
+        metadata: dict | None = None,
     ):
 
-        if service not in self.services:
-
-            self.services.append(
-                service
-            )
-
-
-            self.states[service] = (
-                ServiceState.CREATED
-            )
-
-
-            self._emit(
-                EventType.SERVICE_REGISTERED,
-                service,
-            )
+        return self.registry.register(
+            service,
+            name=name,
+            metadata=metadata,
+        )
 
 
 
     def unregister(
         self,
-        service: object,
+        name: str,
     ):
 
-        if service in self.services:
-
-            self.services.remove(
-                service
-            )
+        return self.registry.unregister(
+            name
+        )
 
 
-            self.states.pop(
-                service,
-                None,
-            )
+
+    # --------------------------------------------------
+    # Discovery
+    # --------------------------------------------------
+
+    def discover(
+        self,
+        name: str,
+    ):
+
+        return self.registry.discover(
+            name
+        )
 
 
-            self._emit(
-                EventType.SERVICE_UNREGISTERED,
-                service,
-            )
+
+    def all(self):
+
+        return self._services()
 
 
 
@@ -157,56 +184,22 @@ class ServiceOrchestrator:
     ):
 
 
-        for service in self.services:
+        for descriptor in self._services():
 
-            try:
-
-                self.states[service] = (
-                    ServiceState.STARTING
-                )
+            service = descriptor.service
 
 
-                self._emit(
-                    EventType.SERVICE_STARTING,
-                    service,
-                )
+            start = getattr(
+                service,
+                "start",
+                None,
+            )
 
 
-                start = getattr(
-                    service,
-                    "start",
-                    None,
-                )
+            if start:
 
-
-                if start:
-
-                    start(
-                        context
-                    )
-
-
-                self.states[service] = (
-                    ServiceState.RUNNING
-                )
-
-
-                self._emit(
-                    EventType.SERVICE_STARTED,
-                    service,
-                )
-
-
-            except Exception:
-
-                self.states[service] = (
-                    ServiceState.FAILED
-                )
-
-
-                self._emit(
-                    EventType.SERVICE_FAILED,
-                    service,
+                start(
+                    context
                 )
 
 
@@ -217,50 +210,22 @@ class ServiceOrchestrator:
     ):
 
 
-        for service in self.services:
+        for descriptor in self._services():
 
-            try:
-
-                self.states[service] = (
-                    ServiceState.STOPPING
-                )
+            service = descriptor.service
 
 
-                self._emit(
-                    EventType.SERVICE_STOPPING,
-                    service,
-                )
+            stop = getattr(
+                service,
+                "stop",
+                None,
+            )
 
 
-                stop = getattr(
-                    service,
-                    "stop",
-                    None,
-                )
+            if stop:
 
-
-                if stop:
-
-                    stop(
-                        context
-                    )
-
-
-                self.states[service] = (
-                    ServiceState.STOPPED
-                )
-
-
-                self._emit(
-                    EventType.SERVICE_STOPPED,
-                    service,
-                )
-
-
-            except Exception:
-
-                self.states[service] = (
-                    ServiceState.FAILED
+                stop(
+                    context
                 )
 
 
@@ -281,12 +246,14 @@ class ServiceOrchestrator:
         executions: list[ServiceExecution] = []
 
 
-        for service in self.services:
+
+        for descriptor in self._services():
 
             execution = self._execute_service(
-                service,
+                descriptor.service,
                 context,
             )
+
 
             executions.append(
                 execution
@@ -295,12 +262,18 @@ class ServiceOrchestrator:
 
 
         return OrchestrationResult(
+
             success=all(
                 execution.success
                 for execution in executions
             ),
+
             executions=executions,
-            services_executed=len(executions),
+
+            services_executed=len(
+                executions
+            ),
+
             failed_services=sum(
                 1
                 for execution in executions
@@ -349,8 +322,8 @@ class ServiceOrchestrator:
                     context
                 )
 
-
                 metadata["result"] = result
+
 
 
             else:
@@ -388,15 +361,16 @@ class ServiceOrchestrator:
 
 
         return ServiceExecution(
+
             service_name=name,
+
             success=success,
-            state=(
-                ServiceState.RUNNING
-                if success
-                else ServiceState.FAILED
-            ),
+
             started_at=started,
+
             finished_at=finished,
+
             duration_ms=duration,
+
             metadata=metadata,
         )
