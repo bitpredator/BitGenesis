@@ -14,6 +14,14 @@ from bitgenesis.runtime.action_registry import ActionRegistry
 from bitgenesis.runtime.executor import Executor
 from bitgenesis.runtime.planner import CognitiveExecutionPlanner
 
+from bitgenesis.runtime.service_context import (
+    ServiceContext,
+)
+
+from bitgenesis.runtime.service_orchestrator import (
+    ServiceOrchestrator,
+)
+
 
 
 class RuntimeManager:
@@ -25,10 +33,13 @@ class RuntimeManager:
     - own action registry
     - own executor
     - own execution planner
+    - own service orchestrator
     - create execution plans
     - execute plans
+    - orchestrate runtime services
     - manage execution lifecycle
     """
+
 
 
     def __init__(
@@ -38,6 +49,8 @@ class RuntimeManager:
         graph=None,
         event_bus: EventBus | None = None,
         planner: CognitiveExecutionPlanner | None = None,
+        services: list[object] | None = None,
+        orchestrator: ServiceOrchestrator | None = None,
     ):
 
         self.memory_store = memory_store
@@ -59,12 +72,23 @@ class RuntimeManager:
         )
 
 
+
         self.executor = Executor(
             registry=self.registry,
             memory_store=self.memory_store,
             graph=self.graph,
             event_bus=self.event_bus,
         )
+
+
+
+        self.service_orchestrator = (
+            orchestrator
+            or ServiceOrchestrator(
+                services=services,
+            )
+        )
+
 
 
         self.running = False
@@ -221,20 +245,6 @@ class RuntimeManager:
         decision,
         event=None,
     ):
-        """
-        Execute a cognitive decision.
-
-        Flow:
-
-        Decision
-            ↓
-        Planner
-            ↓
-        ExecutionPlan
-            ↓
-        Executor
-        """
-
 
         planning_result = self.create_plan(
             decision
@@ -256,6 +266,51 @@ class RuntimeManager:
 
 
     # --------------------------------------------------
+    # Service orchestration
+    # --------------------------------------------------
+
+    def orchestrate_services(self):
+
+        context = ServiceContext(
+            event_bus=self.event_bus,
+            memory_store=self.memory_store,
+            graph=self.graph,
+            runtime_state=self,
+        )
+
+
+        result = self.service_orchestrator.execute(
+            context
+        )
+
+
+        if self.event_bus:
+
+            self.event_bus.emit(
+                Event(
+                    category=EventCategory.RUNTIME,
+                    type=(
+                        EventType.SERVICE_FAILED
+                        if not result.success
+                        else EventType.SERVICE_TICKED
+                    ),
+                    source="runtime_manager",
+                    payload={
+                        "services_executed":
+                            result.services_executed,
+
+                        "failed_services":
+                            result.failed_services,
+                    },
+                )
+            )
+
+
+        return result
+
+
+
+    # --------------------------------------------------
     # Runtime
     # --------------------------------------------------
 
@@ -263,3 +318,7 @@ class RuntimeManager:
 
         if not self.running:
             return
+
+
+
+        self.orchestrate_services()
