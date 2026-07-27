@@ -12,7 +12,10 @@ from bitgenesis.events.enums import (
 
 from bitgenesis.runtime.action_registry import ActionRegistry
 from bitgenesis.runtime.executor import Executor
-from bitgenesis.runtime.planner import CognitiveExecutionPlanner
+from bitgenesis.runtime.planner import (
+    CognitiveExecutionPlanner,
+)
+
 
 from bitgenesis.runtime.service_context import (
     ServiceContext,
@@ -34,10 +37,9 @@ class RuntimeManager:
     - own executor
     - own execution planner
     - own service orchestrator
+    - manage service lifecycle
     - create execution plans
     - execute plans
-    - orchestrate runtime services
-    - manage execution lifecycle
     """
 
 
@@ -72,7 +74,6 @@ class RuntimeManager:
         )
 
 
-
         self.executor = Executor(
             registry=self.registry,
             memory_store=self.memory_store,
@@ -81,14 +82,21 @@ class RuntimeManager:
         )
 
 
-
         self.service_orchestrator = (
             orchestrator
             or ServiceOrchestrator(
                 services=services,
+                event_bus=self.event_bus,
             )
         )
 
+
+        self.service_context = ServiceContext(
+            event_bus=self.event_bus,
+            memory_store=self.memory_store,
+            graph=self.graph,
+            runtime_state=self,
+        )
 
 
         self.running = False
@@ -108,11 +116,21 @@ class RuntimeManager:
         self.running = True
 
 
+        self.service_orchestrator.start_services(
+            self.service_context
+        )
+
+
 
     def stop(self):
 
         if not self.running:
             return
+
+
+        self.service_orchestrator.stop_services(
+            self.service_context
+        )
 
 
         self.running = False
@@ -271,17 +289,23 @@ class RuntimeManager:
 
     def orchestrate_services(self):
 
-        context = ServiceContext(
-            event_bus=self.event_bus,
-            memory_store=self.memory_store,
-            graph=self.graph,
-            runtime_state=self,
+        return self.service_orchestrator.execute(
+            self.service_context
         )
 
 
-        result = self.service_orchestrator.execute(
-            context
-        )
+
+    # --------------------------------------------------
+    # Runtime
+    # --------------------------------------------------
+
+    def tick(self):
+
+        if not self.running:
+            return
+
+
+        result = self.orchestrate_services()
 
 
         if self.event_bus:
@@ -298,7 +322,6 @@ class RuntimeManager:
                     payload={
                         "services_executed":
                             result.services_executed,
-
                         "failed_services":
                             result.failed_services,
                     },
@@ -307,18 +330,3 @@ class RuntimeManager:
 
 
         return result
-
-
-
-    # --------------------------------------------------
-    # Runtime
-    # --------------------------------------------------
-
-    def tick(self):
-
-        if not self.running:
-            return
-
-
-
-        self.orchestrate_services()

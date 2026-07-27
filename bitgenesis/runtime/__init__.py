@@ -20,6 +20,9 @@ from bitgenesis.runtime.orchestration_result import (
     OrchestrationResult,
 )
 
+from bitgenesis.runtime.service_state import (
+    ServiceState,
+)
 
 
 __all__ = [
@@ -27,7 +30,7 @@ __all__ = [
     "ExecutionPlan",
     "CognitiveExecutionPlanner",
     "PlannerResult",
-
+    "ServiceState",
     "ServiceExecution",
     "ServiceContext",
     "ServiceOrchestrator",
