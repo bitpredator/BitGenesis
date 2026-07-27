@@ -10,12 +10,17 @@ from bitgenesis.events.enums import (
 )
 
 
-from bitgenesis.runtime.action_registry import ActionRegistry
-from bitgenesis.runtime.executor import Executor
+from bitgenesis.runtime.action_registry import (
+    ActionRegistry,
+)
+
+from bitgenesis.runtime.executor import (
+    Executor,
+)
+
 from bitgenesis.runtime.planner import (
     CognitiveExecutionPlanner,
 )
-
 
 from bitgenesis.runtime.service_context import (
     ServiceContext,
@@ -37,11 +42,12 @@ class RuntimeManager:
     - own executor
     - own execution planner
     - own service orchestrator
-    - create execution plans
-    - execute plans
-    - orchestrate runtime services
-    - manage execution lifecycle
+    - register runtime services
+    - discover runtime services
+    - execute runtime services
+    - manage runtime lifecycle
     """
+
 
 
     def __init__(
@@ -74,40 +80,26 @@ class RuntimeManager:
         )
 
 
+
         self.executor = Executor(
             registry=self.registry,
             memory_store=self.memory_store,
             graph=self.graph,
             event_bus=self.event_bus,
         )
-        
-        if orchestrator is not None:
-            if isinstance(
-                orchestrator,
-                list,
-            ):
-                self.service_orchestrator = ServiceOrchestrator(
-                    services=orchestrator,
-                )
-            else:
-                self.service_orchestrator = orchestrator
-        else:
-            self.service_orchestrator = ServiceOrchestrator(
+
+
+
+        self.service_orchestrator = (
+            orchestrator
+            or ServiceOrchestrator(
                 services=services,
             )
-
-
-        self.running = False
+        )
 
 
 
-    # --------------------------------------------------
-    # Context
-    # --------------------------------------------------
-
-    def _service_context(self):
-
-        return ServiceContext(
+        self.context = ServiceContext(
             event_bus=self.event_bus,
             memory_store=self.memory_store,
             graph=self.graph,
@@ -115,14 +107,20 @@ class RuntimeManager:
         )
 
 
+        self.running = False
 
-    # --------------------------------------------------
+
+
+    # ==================================================
     # Lifecycle
-    # --------------------------------------------------
+    # ==================================================
 
-    def start(self):
+    def start(
+        self,
+    ):
 
         if self.running:
+
             return
 
 
@@ -130,19 +128,34 @@ class RuntimeManager:
 
 
         self.service_orchestrator.start_services(
-            self._service_context()
+            self.context
         )
 
 
+        if self.event_bus:
 
-    def stop(self):
+            self.event_bus.emit(
+                Event(
+                    category=EventCategory.RUNTIME,
+                    type=EventType.RUNTIME_STARTED,
+                    source="runtime_manager",
+                    payload={},
+                )
+            )
+
+
+
+    def stop(
+        self,
+    ):
 
         if not self.running:
+
             return
 
 
         self.service_orchestrator.stop_services(
-            self._service_context()
+            self.context
         )
 
 
@@ -150,60 +163,28 @@ class RuntimeManager:
 
 
 
-    # --------------------------------------------------
-    # Service registration
-    # --------------------------------------------------
+        if self.event_bus:
 
-    def register_service(
-        self,
-        service,
-        name: str | None = None,
-        metadata: dict | None = None,
-    ):
-        
-        return self.service_orchestrator.register(
-            service,
-            name=name,
-            metadata=metadata,
-        )
-
-
-    def unregister_service(
-        self,
-        name: str,
-    ):
-
-        return self.service_orchestrator.unregister(
-            name
-        )
+            self.event_bus.emit(
+                Event(
+                    category=EventCategory.RUNTIME,
+                    type=EventType.RUNTIME_STOPPED,
+                    source="runtime_manager",
+                    payload={},
+                )
+            )
 
 
 
-    def discover_service(
-        self,
-        name: str,
-    ):
-
-        return self.service_orchestrator.registry.discover(
-            name
-        )
-
-
-
-    def discover_services(self):
-
-        return self.service_orchestrator.registry.all()
-
-
-
-    # --------------------------------------------------
+    # ==================================================
     # Planning
-    # --------------------------------------------------
+    # ==================================================
 
     def create_plan(
         self,
         decision,
     ):
+
 
         result = self.planner.create_plan(
             decision
@@ -233,9 +214,9 @@ class RuntimeManager:
 
 
 
-    # --------------------------------------------------
+    # ==================================================
     # Execution
-    # --------------------------------------------------
+    # ==================================================
 
     def execute(
         self,
@@ -271,6 +252,7 @@ class RuntimeManager:
 
         except Exception as exc:
 
+
             if self.event_bus:
 
                 self.event_bus.emit(
@@ -302,20 +284,22 @@ class RuntimeManager:
                     source="runtime_manager",
                     payload={
                         "success": result.success,
-                        "actions_executed":
-                            result.actions_executed,
+                        "actions_executed": (
+                            result.actions_executed
+                        ),
                     },
                 )
             )
+
 
 
         return result
 
 
 
-    # --------------------------------------------------
-    # Cognitive execution pipeline
-    # --------------------------------------------------
+    # ==================================================
+    # Cognitive execution
+    # ==================================================
 
     def execute_decision(
         self,
@@ -343,14 +327,116 @@ class RuntimeManager:
 
 
 
-    # --------------------------------------------------
-    # Runtime loop
-    # --------------------------------------------------
+    # ==================================================
+    # Service management
+    # ==================================================
 
-    def orchestrate_services(self):
+    def register_service(
+        self,
+        service,
+        name: str | None = None,
+        metadata: dict | None = None,
+    ):
+        """
+        Register runtime service.
+        """
+
+
+        if name is None:
+
+            name = type(service).__name__
+
+
+
+        # Compatibility attributes
+
+        if not hasattr(
+            service,
+            "service",
+        ):
+
+            try:
+
+                service.service = service
+
+            except Exception:
+
+                pass
+
+
+
+        if not hasattr(
+            service,
+            "name",
+        ):
+
+            try:
+
+                service.name = name
+
+            except Exception:
+
+                pass
+
+
+
+        return self.service_orchestrator.register(
+            service,
+            name=name,
+            metadata=metadata,
+        )
+
+
+
+    def unregister_service(
+        self,
+        service,
+    ):
+
+        return self.service_orchestrator.unregister(
+            service
+        )
+
+
+
+    def discover_service(
+        self,
+        name: str,
+    ):
+
+        return self.service_orchestrator.discover(
+            name
+        )
+
+
+
+    def discover_services(
+        self,
+    ):
+
+        return self.service_orchestrator.all()
+
+
+
+    def list_services(
+        self,
+    ):
+
+        return self.discover_services()
+
+
+
+    # ==================================================
+    # Service orchestration
+    # ==================================================
+
+    def orchestrate_services(
+        self,
+    ):
+
 
         result = self.service_orchestrator.execute(
-            self._service_context()
+            self.context
         )
 
 
@@ -366,24 +452,35 @@ class RuntimeManager:
                     ),
                     source="runtime_manager",
                     payload={
-                        "services_executed":
-                            result.services_executed,
-
-                        "failed_services":
-                            result.failed_services,
+                        "services_executed": (
+                            result.services_executed
+                        ),
+                        "failed_services": (
+                            result.failed_services
+                        ),
                     },
                 )
             )
+
 
 
         return result
 
 
 
-    def tick(self):
+    # ==================================================
+    # Runtime loop
+    # ==================================================
+
+    def tick(
+        self,
+    ):
+
 
         if not self.running:
+
             return None
+
 
 
         return self.orchestrate_services()

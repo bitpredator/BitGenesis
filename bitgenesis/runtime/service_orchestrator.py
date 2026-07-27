@@ -14,10 +14,6 @@ from bitgenesis.runtime.orchestration_result import (
     OrchestrationResult,
 )
 
-from bitgenesis.runtime.service_registry import (
-    ServiceRegistry,
-)
-
 
 
 class ServiceOrchestrator:
@@ -28,98 +24,27 @@ class ServiceOrchestrator:
 
     - register services
     - unregister services
+    - discover services
     - execute ordered services
-    - manage lifecycle
+    - provide shared context
     - collect execution results
-    - isolate failures
-
-    Compatibility:
-    - supports ServiceRegistry
-    - supports legacy services list
+    - isolate service failures
     """
 
 
 
     def __init__(
         self,
-        registry: ServiceRegistry | None = None,
         services: list[object] | None = None,
+        registry=None,
     ):
 
-
-        #
-        # Compatibility:
-        #
-        # Old usage:
-        #
-        # ServiceOrchestrator([service])
-        #
-        # New usage:
-        #
-        # ServiceOrchestrator(
-        #     registry=ServiceRegistry()
-        # )
-        #
-
-        if isinstance(
-            registry,
-            list,
-        ):
-
-            services = registry
-
-            registry = None
-
-
-
-        self.registry = (
-            registry
-            or ServiceRegistry()
+        self.services = (
+            services
+            or []
         )
 
-
-
-        if services:
-
-            for service in services:
-
-                self.register(
-                    service
-                )
-
-
-
-    # --------------------------------------------------
-    # Compatibility helpers
-    # --------------------------------------------------
-
-    def _services(self):
-
-        #
-        # Extra protection in case
-        # external code injects a list
-        #
-
-        if isinstance(
-            self.registry,
-            list,
-        ):
-
-            return [
-                type(
-                    "ServiceDescriptor",
-                    (),
-                    {
-                        "service": service,
-                        "name": type(service).__name__,
-                    },
-                )
-                for service in self.registry
-            ]
-
-
-
-        return self.registry.all()
+        self.registry = registry
 
 
 
@@ -133,23 +58,54 @@ class ServiceOrchestrator:
         name: str | None = None,
         metadata: dict | None = None,
     ):
+        """
+        Register a runtime service.
+        """
 
-        return self.registry.register(
-            service,
-            name=name,
-            metadata=metadata,
-        )
+        if service not in self.services:
+
+            self.services.append(
+                service
+            )
+
+
+        return service
 
 
 
     def unregister(
         self,
-        name: str,
+        service,
     ):
+        """
+        Remove a runtime service.
+        """
 
-        return self.registry.unregister(
-            name
-        )
+        if service in self.services:
+
+            self.services.remove(
+                service
+            )
+
+            return True
+
+
+        if isinstance(service, str):
+
+            found = self.discover(
+                service
+            )
+
+            if found:
+
+                self.services.remove(
+                    found
+                )
+
+                return True
+
+
+        return False
 
 
 
@@ -161,16 +117,46 @@ class ServiceOrchestrator:
         self,
         name: str,
     ):
+        """
+        Discover service by name.
+        """
 
-        return self.registry.discover(
-            name
+        for service in self.all():
+
+            service_name = (
+                getattr(
+                    service,
+                    "name",
+                    None,
+                )
+                or type(service).__name__
+            )
+
+
+            if service_name == name:
+
+                return service
+
+
+        return None
+
+
+
+    def all(
+        self,
+    ):
+        """
+        Return registered services.
+        """
+
+        if self.registry is not None:
+
+            return self.registry.all()
+
+
+        return list(
+            self.services
         )
-
-
-
-    def all(self):
-
-        return self._services()
 
 
 
@@ -183,11 +169,10 @@ class ServiceOrchestrator:
         context: ServiceContext,
     ):
 
+        results = []
 
-        for descriptor in self._services():
 
-            service = descriptor.service
-
+        for service in self.all():
 
             start = getattr(
                 service,
@@ -198,9 +183,24 @@ class ServiceOrchestrator:
 
             if start:
 
-                start(
-                    context
-                )
+                try:
+
+                    start(
+                        context
+                    )
+
+                    results.append(
+                        True
+                    )
+
+                except Exception:
+
+                    results.append(
+                        False
+                    )
+
+
+        return all(results) if results else True
 
 
 
@@ -209,11 +209,10 @@ class ServiceOrchestrator:
         context: ServiceContext,
     ):
 
+        results = []
 
-        for descriptor in self._services():
 
-            service = descriptor.service
-
+        for service in self.all():
 
             stop = getattr(
                 service,
@@ -224,9 +223,24 @@ class ServiceOrchestrator:
 
             if stop:
 
-                stop(
-                    context
-                )
+                try:
+
+                    stop(
+                        context
+                    )
+
+                    results.append(
+                        True
+                    )
+
+                except Exception:
+
+                    results.append(
+                        False
+                    )
+
+
+        return all(results) if results else True
 
 
 
@@ -242,18 +256,15 @@ class ServiceOrchestrator:
         Execute all registered services.
         """
 
-
-        executions: list[ServiceExecution] = []
-
+        executions = []
 
 
-        for descriptor in self._services():
+        for service in self.all():
 
             execution = self._execute_service(
-                descriptor.service,
+                service,
                 context,
             )
-
 
             executions.append(
                 execution
@@ -262,18 +273,12 @@ class ServiceOrchestrator:
 
 
         return OrchestrationResult(
-
             success=all(
                 execution.success
                 for execution in executions
             ),
-
             executions=executions,
-
-            services_executed=len(
-                executions
-            ),
-
+            services_executed=len(executions),
             failed_services=sum(
                 1
                 for execution in executions
@@ -294,14 +299,20 @@ class ServiceOrchestrator:
     ) -> ServiceExecution:
 
 
-        name = type(service).__name__
+        name = (
+            getattr(
+                service,
+                "name",
+                None,
+            )
+            or type(service).__name__
+        )
 
 
         started = datetime.now()
 
 
         success = True
-
 
         metadata = {}
 
@@ -323,7 +334,6 @@ class ServiceOrchestrator:
                 )
 
                 metadata["result"] = result
-
 
 
             else:
@@ -361,16 +371,10 @@ class ServiceOrchestrator:
 
 
         return ServiceExecution(
-
             service_name=name,
-
             success=success,
-
             started_at=started,
-
             finished_at=finished,
-
             duration_ms=duration,
-
             metadata=metadata,
         )
