@@ -4,9 +4,20 @@
 
 BitGenesis is an open-source research project focused on designing and implementing an artificial cognitive architecture entirely from scratch.
 
-Unlike traditional AI assistants that rely on pre-trained Large Language Models (LLMs), BitGenesis aims to develop its own modular cognitive system, where every component is designed, implemented, tested and documented independently.
+Unlike traditional AI assistants based on pre-trained Large Language Models (LLMs), BitGenesis explores the construction of a modular cognitive system where every component is independently designed, implemented, tested and documented.
 
-The long-term vision is to create an intelligent software architecture capable of perceiving information, storing knowledge, reasoning, planning actions, learning from experience and interacting with external tools through a transparent and explainable design.
+The long-term vision is to create a transparent and explainable artificial cognitive architecture capable of:
+
+- Perception
+- Memory formation
+- Knowledge representation
+- Reasoning
+- Planning
+- Learning
+- Self-reflection
+- Interaction with external systems
+
+BitGenesis is not designed as a chatbot replacement, but as an experimental cognitive software architecture built from first principles.
 
 ---
 
@@ -14,28 +25,49 @@ The long-term vision is to create an intelligent software architecture capable o
 
 The primary objectives of BitGenesis are:
 
-* Build an artificial cognitive architecture from scratch.
-* Design every subsystem as an independent and replaceable module.
-* Develop explainable reasoning instead of opaque decision making.
-* Implement flexible short-term and long-term memory systems.
-* Create an event-driven architecture.
-* Allow continuous learning and knowledge acquisition.
-* Integrate external development tools without depending on proprietary AI services.
-* Maintain a fully documented and reproducible codebase.
+- Build an artificial cognitive architecture from scratch.
+- Design every subsystem as an independent and replaceable module.
+- Create explainable cognitive processes.
+- Develop flexible short-term and long-term memory systems.
+- Implement event-driven communication between components.
+- Create autonomous execution capabilities.
+- Enable future learning mechanisms.
+- Provide secure interaction with external systems.
+- Maintain a fully documented and reproducible architecture.
 
 ---
 
 # Core Principles
 
-BitGenesis is developed around the following principles:
+BitGenesis development follows these principles:
 
-* **Modularity** – Every subsystem has a single responsibility.
-* **Transparency** – Every decision should be explainable.
-* **Extensibility** – Components can evolve independently.
-* **Determinism** – Predictable behavior whenever possible.
-* **Documentation First** – Architecture is designed before implementation.
-* **Security** – Safe interaction with external systems.
-* **Maintainability** – Long-term sustainability over short-term complexity.
+## Modularity
+
+Every subsystem must have a clear responsibility and minimal coupling.
+
+## Transparency
+
+Cognitive decisions should be understandable and traceable.
+
+## Extensibility
+
+Components must evolve independently without requiring architectural rewrites.
+
+## Determinism
+
+Predictable behaviour is preferred whenever possible.
+
+## Documentation First
+
+Architecture design comes before implementation.
+
+## Security
+
+External interactions must happen through controlled boundaries.
+
+## Maintainability
+
+Long-term architectural stability is preferred over short-term complexity.
 
 ---
 
@@ -43,113 +75,168 @@ BitGenesis is developed around the following principles:
 
 Current version:
 
-**v0.2.0-dev**
+v0.2.0
+
 
 Development stage:
 
-**Cognitive Runtime Evolution**
+Cognitive Runtime Evolution
 
-BitGenesis has moved beyond the initial foundation phase and is currently evolving toward a coordinated cognitive runtime architecture.
 
-The current implementation includes:
+BitGenesis has completed the initial foundation milestone and has evolved into a coordinated cognitive runtime architecture.
 
-* Cognitive core and Brain lifecycle
-* Event-driven architecture
-* Cognitive execution runtime
-* Cognitive pipeline orchestration
-* Context propagation system
-* Cognitive state management
-* Identity system
-* Memory system
-* Memory retrieval and importance evaluation
-* Memory consolidation and episode generation
-* Knowledge representation
-* Reasoning engine
-* Reflection system
-* Inference engine
-* Dialogue and response system
+The current system includes:
 
-The architecture is continuously evolving toward a more complete cognitive framework.
+- Cognitive Kernel
+- Brain lifecycle management
+- Runtime execution architecture
+- Service orchestration
+- Event-driven communication
+- Cognitive planning
+- Action execution framework
+- Runtime metrics
+- Runtime statistics
+- Runtime snapshots
+- Memory subsystem
+- Knowledge representation
+- Reasoning engine
+- Reflection system
+- Inference engine
+- Dialogue system
+
+The project is now moving toward the Adaptive Intelligence Layer.
 
 ---
 
 # Implemented Systems
 
-## Cognitive Core
+# Cognitive Core
 
-* Brain controller
-* Lifecycle management
-* Configuration system
-* Runtime statistics
-* Version management
+Implemented:
 
----
-
-## Cognitive Runtime
-
-* Cognitive execution cycle
-* Cognitive context propagation
-* Modular processing pipeline
-* Cognitive state transitions
-* Stage orchestration
-* Stage execution tracking
-* Reflection and consolidation cycle
+- Brain controller
+- Lifecycle management
+- Configuration system
+- Version management
+- Runtime statistics
+- Core identifiers
 
 ---
 
-## Event System
+# Kernel Architecture
 
-* Event model
-* Event categories
-* Event priorities
-* Event dispatcher
-* Event subscription system
-* Internal communication layer
+Implemented:
 
----
-
-## Memory
-
-* Event-based memory creation
-* Memory object model
-* Memory storage
-* Memory querying
-* Memory retrieval
-* Memory similarity
-* Importance scoring
-* Memory consolidation
-* Episode generation
+- Kernel bootstrap system
+- Kernel lifecycle management
+- Kernel states
+- Service registration
+- Service discovery
+- Service lifecycle control
+- Runtime loop execution
+- Runtime coordination
 
 ---
 
-## Knowledge
+# Cognitive Runtime
 
-* Entity management
-* Knowledge registry
-* Knowledge graph foundation
-* Relations
-* Knowledge queries
-* Inference rules
+Implemented:
 
----
-
-## Reasoning
-
-* Intent detection
-* Resolution system
-* Reasoning sessions
-* Inference engine
-* Reflection engine
-* Reasoning rules
+- RuntimeManager
+- Cognitive execution pipeline
+- Execution plans
+- Execution steps
+- Planner system
+- Planner results
+- Executor engine
+- Action registry
+- Action execution context
+- Execution results
+- Service orchestration
+- Runtime context propagation
 
 ---
 
-## Dialogue
+# Event System
 
-* Identity responses
-* Memory self-reporting
-* Response formatting
-* Dialogue engine
+Implemented:
+
+- Immutable event model
+- Event categories
+- Event types
+- Event priorities
+- Event dispatcher
+- Event subscription system
+- Event routing
+- Category based routing
+- Runtime lifecycle events
+- Internal communication layer
+
+---
+
+# Runtime Observability
+
+Implemented:
+
+- Runtime metrics
+- Runtime statistics
+- Runtime snapshots
+- Execution monitoring foundation
+- Runtime state inspection
+
+---
+
+# Memory System
+
+Implemented:
+
+- Memory object model
+- Memory storage
+- Memory factory
+- Memory querying
+- Memory retrieval
+- Similarity evaluation
+- Importance evaluation
+- Memory consolidation
+- Episode generation
+
+---
+
+# Knowledge System
+
+Implemented:
+
+- Entity representation
+- Knowledge registry
+- Relations
+- Knowledge graph foundation
+- Knowledge queries
+- Inference foundation
+
+---
+
+# Reasoning System
+
+Implemented:
+
+- Intent detection
+- Resolver system
+- Reasoning sessions
+- Reflection engine
+- Reflection rules
+- Inference engine
+- Reasoning rules
+
+---
+
+# Dialogue System
+
+Implemented:
+
+- Response engine
+- Response formatting
+- Identity responses
+- Memory self-reporting
 
 ---
 
@@ -159,215 +246,521 @@ Current implementation status of the BitGenesis cognitive architecture.
 
 | Component | Status | Description |
 |-----------|--------|-------------|
-| Core | ✅ Solid | Brain controller, lifecycle management and cognitive runtime foundation |
-| Event System | ✅ Mature | Event model, dispatching, subscriptions and internal communication layer |
-| Memory | ✅ Advanced | Memory objects, storage, retrieval, importance evaluation and consolidation |
-| Knowledge | 🟢 Good foundation | Knowledge registry, entities, relations and graph foundation |
-| Reasoning | 🟢 Functional | Intent detection, inference engine and symbolic reasoning components |
-| Reflection | 🟢 Implemented | Cognitive self-evaluation and reflection cycle |
-| Planning | 🟡 Basic | Initial planning framework and execution preparation |
-| Learning | 🔴 In development | Adaptive learning mechanisms are not implemented yet |
-| Autonomy | 🔴 In development | Autonomous decision-making and long-term goal management are future objectives |
-| External Tools | 🔴 In development | External interaction layer and tool execution framework are planned |
+| Core | ✅ Stable | Brain controller and foundational architecture |
+| Kernel | ✅ Stable | Lifecycle, services and runtime loop |
+| Event System | ✅ Mature | Event routing and internal communication |
+| Runtime | ✅ Mature | Planner, executor and orchestration |
+| Runtime Metrics | ✅ Implemented | Runtime monitoring foundation |
+| Memory | 🟢 Advanced | Storage, retrieval and consolidation |
+| Knowledge | 🟢 Foundation | Entities, relations and graph system |
+| Reasoning | 🟢 Functional | Symbolic reasoning components |
+| Reflection | 🟢 Implemented | Cognitive evaluation cycle |
+| Planning | 🟡 Basic | Initial execution planning |
+| Learning | 🔴 Future | Adaptive learning mechanisms |
+| Autonomy | 🔴 Future | Autonomous goal management |
+| External Tools | 🔴 Future | Controlled external interaction layer |
+
+---
 
 > BitGenesis is currently focused on building the architectural foundations of a modular cognitive system. Advanced capabilities such as learning, autonomy and external tool interaction will be introduced progressively through future milestones.
 
+# Functional Validation
+
+BitGenesis includes a dedicated functional validation layer separated from the unit testing system.
+
+The purpose of functional tests is validating that the complete architecture works correctly from a user perspective, verifying communication between major subsystems.
+
+Current functional validation coverage:
+
+Functional tests: 9
+Status: PASSING
+
+
+Implemented functional scenarios:
+
+## Import Validation
+
+Validates:
+
+- Package availability
+- Module exports
+- Public API integrity
+
+Example:
+
+BitGenesis import OK
+
+
 ---
 
-# Installation
+## Kernel Boot Validation
 
-Clone the repository:
+Validates:
 
-```bash
-git clone https://github.com/your-user/BitGenesis.git
-cd BitGenesis
-```
+- Kernel creation
+- Initial state
+- Brain initialization
+- Lifecycle transitions
+- Shutdown process
 
-Install the package:
+Example:
 
-```bash
-pip install -e .
-```
+Kernel created
+Kernel started
+Brain initialized
+Kernel stopped
+Kernel Boot Test OK
+
 
 ---
 
-# Quick Example
+## Service Lifecycle Validation
 
-```python
-from bitgenesis.core.brain import Brain
+Validates:
+
+- Service registration
+- Service startup
+- Runtime execution
+- Service ticking
+- Service shutdown
+
+Example:
+
+Service registered
+Kernel running
+Ticks executed
+Service state verified
+Service Lifecycle Test OK
 
 
-brain = Brain()
+---
 
-context = brain.think(
-    "Hello BitGenesis"
-)
+## Cognitive Pipeline Validation
 
-print(context.response)
-```
+Validates:
+
+- Action registration
+- Execution plan creation
+- Action execution
+- Execution result handling
+
+Example:
+
+Action registered
+Plan generated
+Execution completed
+Cognitive Pipeline Test OK
+
+
+---
+
+## Cognitive Planner Validation
+
+Validates:
+
+- Decision processing
+- Plan generation
+- Planner execution flow
+
+Example:
+
+Planner success
+Generated execution steps
+Execution completed
+Cognitive Planner Test OK
+
+
+---
+
+## Event System Validation
+
+Validates:
+
+- Event subscription
+- Event publishing
+- Category routing
+- Listener removal
+- Event cleanup
+
+Example:
+
+Subscriber registered
+Event emitted
+Routing OK
+Unsubscribe OK
+Clear OK
+Event System Test OK
+
+
+---
+
+## Runtime Manager Validation
+
+Validates:
+
+- RuntimeManager creation
+- Planner integration
+- Executor integration
+- Action execution
+- Decision execution
+
+Example:
+
+Plan created
+Execution success
+Actions executed
+Runtime Manager Test OK
+
+
+---
+
+## Kernel Runtime Integration Validation
+
+Validates:
+
+- Kernel
+- RuntimeLoop
+- ServiceManager
+- Services
+
+working together.
+
+Example:
+
+Kernel running
+RuntimeLoop ticks executed
+Service ticks executed
+Kernel stopped
+Kernel Runtime Integration Test OK
+
+
+---
+
+## Full System Validation
+
+Validates the complete architecture flow:
+
+Kernel
+|
+RuntimeLoop
+|
+Service Layer
+|
+Runtime Manager
+|
+Planner
+|
+Executor
+|
+Action Registry
+|
+Event System
+
+Example:
+
+Kernel service registered
+Kernel started
+RuntimeLoop ticks executed
+Runtime action registered
+Plan generated
+Cognitive execution completed
+Kernel stopped
+BitGenesis Full System Test OK
+
 
 ---
 
 # Testing
 
-BitGenesis currently includes:
+BitGenesis uses automated testing as a core architectural requirement.
 
-```
-294 automated tests passing
-```
+Current status:
 
-Run the test suite:
+515 automated tests passing
+
+
+Test categories:
+
+- Core tests
+- Kernel tests
+- Runtime tests
+- Memory tests
+- Knowledge tests
+- Reasoning tests
+- Event system tests
+- Service lifecycle tests
+- Integration tests
+- Functional validation tests
+
+Run the complete test suite:
 
 ```bash
 pytest
-```
 
----
+Development Environment
 
-# Repository Structure
+Recommended:
 
-```text
+- Python 3.12+
+- Virtual environment
+- Editable installation
+
+Install:
+
+git clone https://github.com/bitpredator/BitGenesis.git
+
+cd BitGenesis
+
+pip install -e .
+
+Run tests:
+
+pytest
+
+Repository Structure
+
+Current architecture:
+
 bitgenesis/
+│
 ├── core/
-├── cognition/
-├── memory/
-├── knowledge/
-├── reasoning/
-├── planning/
-├── dialogue/
-├── events/
-├── runtime/
+│   ├── brain
+│   ├── configuration
+│   └── identifiers
+│
 ├── kernel/
+│   ├── kernel
+│   ├── services
+│   ├── runtime_loop
+│   └── state
+│
+├── runtime/
+│   ├── execution_plan
+│   ├── execution_step
+│   ├── planner
+│   ├── executor
+│   ├── action_registry
+│   ├── service_orchestrator
+│   ├── runtime_metrics
+│   ├── runtime_statistics
+│   └── runtime_snapshot
+│
+├── events/
+│   ├── event
+│   ├── event_bus
+│   └── enums
+│
+├── memory/
+│
+├── knowledge/
+│
+├── reasoning/
+│
+├── cognition/
+│
+├── dialogue/
+│
 ├── learning/
+│
 ├── language/
+│
 ├── perception/
-├── neural/
+│
 ├── tools/
+│
 ├── security/
+│
 └── utils/
-```
 
-Additional project documentation can be found inside the `docs/` directory.
+Additional documentation:
 
----
+docs/
 
-# Development Philosophy
-
-BitGenesis follows an architecture-first approach.
-
-Every major component is:
-
-* Specified
-* Documented
-* Implemented
-* Tested
-* Reviewed
-
-before becoming part of the official architecture.
-
----
-
-# Roadmap
-
-## v0.1.0 — Foundation Release
+Roadmap
+v0.1.0 — Foundation Release ✅
 
 Status:
 
-Completed ✅
+Completed
 
 Implemented:
 
-* Core architecture
-* Memory subsystem
-* Knowledge subsystem
-* Reasoning foundation
-* Reflection and inference
-* Dialogue system
-* Testing infrastructure
+- Core architecture
+- Brain lifecycle
+- Memory subsystem
+- Knowledge foundation
+- Reasoning foundation
+- Reflection system
+- Dialogue system
+- Testing infrastructure
 
----
-
-# v0.2.0 — Cognitive Runtime Evolution
+v0.2.0 — Cognitive Runtime Evolution 🟢
 
 Status:
 
-In Development 🟢
+In Development
 
-The objective of this milestone is transforming BitGenesis from a collection of independent cognitive modules into a coordinated cognitive runtime.
+Objective:
+
+Transform BitGenesis from independent cognitive modules into a coordinated cognitive runtime.
 
 Implemented:
 
-* Cognitive runtime orchestration
-* Cognitive execution pipeline
-* Context propagation system
-* Cognitive state management
-* Reflection integration
-* Memory consolidation cycle
-* Stage execution tracking
+- Kernel lifecycle architecture
+- Runtime loop
+- Service management
+- Service discovery
+- RuntimeManager
+- Cognitive execution pipeline
+- Execution plans
+- Execution steps
+- Planner system
+- Executor system
+- Action registry
+- Runtime metrics
+- Runtime statistics
+- Runtime snapshots
+- Event-driven runtime communication
+- Functional validation framework
+
+Remaining focus:
+
+Persistent Memory Architecture
 
 Planned:
 
-* Persistent memory storage
-* Memory serialization framework
-* Long-term memory management
-* Learning subsystem expansion
-* Adaptive behavior mechanisms
-* External tool execution framework
-* Improved autonomous lifecycle management
+- Persistent memory backend
+- Memory serialization
+- Memory restoration
+- Long-term memory management
+- Cognitive state persistence
 
----
+Adaptive Learning Foundation
 
-# v0.3.0 — Adaptive Intelligence Layer
+Planned:
+
+- Experience evaluation
+- Feedback processing
+- Adaptive rules
+- Knowledge reinforcement
+- Memory optimization
+
+Runtime Improvements
+
+Planned:
+
+- Runtime lifecycle refinement
+- Improved error propagation
+- Advanced execution tracing
+- Better runtime diagnostics
+
+Architecture Consolidation
+
+Planned:
+
+- API stabilization
+- Internal refactoring
+- Documentation improvements
+- Test suite optimization
+
+v0.3.0 — Adaptive Intelligence Layer
 
 Status:
 
 Future
 
-Planned:
+Objective:
 
-* Advanced planning
-* Goal management
-* Autonomous task execution
-* Self-evaluation mechanisms
-* Knowledge acquisition improvements
-
----
-
-# v0.4.0 — Cognitive Expansion
-
-Status:
-
-Future
+Introduce the first autonomous cognitive capabilities.
 
 Planned:
 
-* Advanced language processing
-* Contextual understanding improvements
-* Multimodal perception foundations
-* External environment interaction
+Advanced Planning
 
----
+- Multi-step planning
+- Dependency aware execution
+- Planning strategies
+- Dynamic plan adaptation
 
-# Contributing
+Goal Management
+- Internal goals
+- Goal prioritization
+- Goal lifecycle
+- Goal tracking
+
+Autonomous Execution
+- Autonomous task generation
+- Task scheduling
+- Self-directed execution cycles
+- Execution evaluation
+
+Self Evaluation
+- Cognitive performance analysis
+- Behaviour evaluation
+- Runtime self-monitoring
+- Improvement suggestions
+
+Knowledge Acquisition
+- Dynamic knowledge ingestion
+- Knowledge expansion
+- Knowledge validation
+- Knowledge evolution
+
+Test Architecture Cleanup
+
+Planned:
+
+- Review current test organization
+- Merge duplicated tests
+- Remove obsolete tests
+- Improve test maintainability
+- Keep functional tests separated from unit tests
+
+v0.4.0 — Cognitive Expansion
+
+Future objectives:
+
+- Advanced language processing
+- Improved contextual understanding
+- Multimodal perception foundations
+- External environment interaction
+- Advanced cognitive interfaces
+
+Contributing
 
 Contributions are welcome.
 
-Please read the `CONTRIBUTING.md` document before submitting issues or pull requests.
+Before contributing:
 
----
+1. Read CONTRIBUTING.md
+2. Understand the architecture principles
+3. Keep changes modular
+4. Add tests for new components
+5. Update documentation when architecture changes
 
-# License
+License
 
 BitGenesis is licensed under the Apache License 2.0.
 
-See the `LICENSE` file for details.
+See:
 
----
+LICENSE.md
 
-# Project Vision
+for full details.
 
-BitGenesis is not intended to be another chatbot.
+Project Vision
 
-Its purpose is to explore how an artificial cognitive architecture can be designed from first principles, combining software engineering, reasoning systems, memory structures and learning algorithms into a transparent, modular and extensible platform.
+BitGenesis explores how an artificial cognitive architecture can be designed from first principles.
 
-BitGenesis is an evolving research platform where every subsystem can independently improve while maintaining architectural transparency.
+The objective is not creating another conversational assistant, but building a transparent cognitive software platform where:
+
+- Memory is explicit.
+- Knowledge is structured.
+- Reasoning is inspectable.
+- Planning is modular.
+- Learning can evolve.
+- Decisions can be analyzed.
+
+Every subsystem is designed to evolve independently while maintaining architectural transparency.
+
+BitGenesis represents a long-term research platform for exploring artificial cognition through software architecture, engineering discipline and explainable design.
