@@ -1,55 +1,116 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = [
+    "setuptools>=68",
+    "wheel"
+]
 build-backend = "setuptools.build_meta"
 
 
 [project]
 name = "bitgenesis"
+
 version = "0.2.0"
-description = "BitGenesis - Modular Cognitive Architecture from Scratch"
+
+description = "BitGenesis - Open source modular cognitive architecture built from scratch"
+
 readme = "README.md"
+
 requires-python = ">=3.10"
 
 license = { text = "Apache-2.0" }
+
 
 authors = [
     { name = "Bitpredator" }
 ]
 
+
 keywords = [
     "artificial-intelligence",
     "cognitive-architecture",
+    "cognitive-runtime",
     "reasoning",
     "memory-system",
-    "knowledge-engine"
+    "knowledge-engine",
+    "autonomous-systems",
+    "event-driven",
+    "machine-learning-foundation"
 ]
 
+
 classifiers = [
+
     "Development Status :: 3 - Alpha",
+
     "Intended Audience :: Developers",
+
+    "Topic :: Software Development :: Libraries",
+
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+
     "License :: OSI Approved :: Apache Software License",
+
+    "Programming Language :: Python",
+
     "Programming Language :: Python :: 3",
+
     "Programming Language :: Python :: 3.10",
+
     "Programming Language :: Python :: 3.11",
+
     "Programming Language :: Python :: 3.12",
+
     "Programming Language :: Python :: 3.13",
+
     "Programming Language :: Python :: 3.14"
 ]
+
 
 dependencies = []
 
 
+[project.urls]
+
+Homepage = "https://github.com/bitpredator/BitGenesis"
+
+Repository = "https://github.com/bitpredator/BitGenesis"
+
+Documentation = "https://github.com/bitpredator/BitGenesis/tree/main/docs"
+
+Issues = "https://github.com/bitpredator/BitGenesis/issues"
+
+
+
 [tool.setuptools.packages.find]
+
 where = [
     "."
 ]
 
+include = [
+    "bitgenesis*"
+]
+
+
 
 [tool.pytest.ini_options]
+
 testpaths = [
     "tests"
 ]
 
+
 python_files = [
     "test_*.py"
+]
+
+
+addopts = [
+    "-v",
+    "--strict-markers"
+]
+
+
+filterwarnings = [
+    "ignore::DeprecationWarning"
 ]
