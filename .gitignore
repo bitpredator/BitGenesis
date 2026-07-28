@@ -41,3 +41,9 @@ Thumbs.db
 # Project specific
 # =========================
 structure.txt
+
+# =========================
+# Build artifacts
+# =========================
+
+build/
