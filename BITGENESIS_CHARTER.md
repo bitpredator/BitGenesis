@@ -8,276 +8,431 @@ It is not a chatbot, not a wrapper of existing AI systems, and not a thin layer 
 
 It is a structured attempt to build cognition as software.
 
-The project explores how intelligence-like behavior can emerge from the interaction of modular, explainable, and independent cognitive components.
+The project explores how intelligence-like behavior can emerge from the interaction of modular, explainable, and independent cognitive components coordinated through a structured runtime architecture.
+
+BitGenesis focuses on understanding and engineering the foundations required for artificial cognition rather than reproducing existing AI approaches.
 
 ---
 
-## 2. Mission
+# 2. Mission
 
 The mission of BitGenesis is to design a modular cognitive system capable of:
 
-- Perceiving structured and unstructured information
-- Storing and organizing knowledge over time
-- Maintaining contextual memory
-- Reasoning through explicit and traceable mechanisms
-- Planning sequences of actions
-- Learning from interaction and feedback
-- Interacting with external tools in a controlled environment
+- Perceiving structured and unstructured information.
+- Storing and organizing knowledge over time.
+- Maintaining contextual memory.
+- Reasoning through explicit and traceable mechanisms.
+- Planning sequences of actions.
+- Executing controlled operations.
+- Learning from interaction and feedback.
+- Interacting with external tools through secure interfaces.
 
-All while maintaining transparency, modularity, explainability, and architectural integrity.
+All while maintaining:
+
+- Transparency.
+- Modularity.
+- Explainability.
+- Architectural integrity.
+- Long-term evolvability.
 
 ---
 
-## 3. Vision
+# 3. Vision
 
 BitGenesis aims to become a reference architecture for artificial cognition in software systems.
 
-The long-term vision is a system where intelligence is not represented by a single model, but by an ecosystem of interacting components, each responsible for a specific cognitive function.
+The long-term vision is a system where intelligence is not represented by a single model, but by an ecosystem of interacting specialized components.
 
-Cognition emerges from coordination between specialized systems rather than from a single monolithic process.
+Cognition emerges from coordination between:
+
+- Perception.
+- Memory.
+- Knowledge.
+- Reasoning.
+- Planning.
+- Execution.
+- Learning.
+
+Rather than from a single monolithic process.
 
 ---
 
-## 4. Core Principles
+# 4. Core Principles
 
-BitGenesis is built on the following principles:
+BitGenesis is built on the following principles.
 
-### 4.1 Modularity
+---
+
+## 4.1 Modularity
 
 Every subsystem must be independent, replaceable, and clearly defined.
 
-Components must have explicit responsibilities and communicate through well-defined interfaces.
+Components must have:
+
+- Explicit responsibilities.
+- Stable interfaces.
+- Controlled communication boundaries.
+
+No subsystem should become an unnecessary dependency for unrelated components.
 
 ---
 
-### 4.2 Explainability
+## 4.2 Explainability
 
 Every decision must be traceable to a reasoned process.
 
-The system should provide visibility into how information is processed, stored, evaluated, and transformed into actions.
+The system should provide visibility into:
+
+- How information is processed.
+- How memories are created.
+- How knowledge is evaluated.
+- How decisions become actions.
+
+Opaque behavior should be avoided whenever possible.
 
 ---
 
-### 4.3 Deterministic Structure
+## 4.3 Deterministic Structure
 
 Where possible, system behavior should be predictable and reproducible.
 
-Cognitive processes should be based on structured mechanisms rather than opaque behavior.
+Cognitive processes should rely on:
+
+- Explicit mechanisms.
+- Structured transitions.
+- Observable execution paths.
 
 ---
 
-### 4.4 Separation of Concerns
+## 4.4 Separation of Concerns
 
-Perception, memory, knowledge, reasoning, planning, and execution must remain distinct layers.
+BitGenesis separates cognitive capabilities into independent architectural layers.
 
-Each subsystem must evolve independently while maintaining architectural compatibility.
+The following responsibilities must remain distinct:
+
+- Perception.
+- Cognition.
+- Memory.
+- Knowledge.
+- Reasoning.
+- Planning.
+- Execution.
+- External interaction.
+
+Each layer must evolve independently while maintaining architectural compatibility.
 
 ---
 
-### 4.5 Architecture First
+## 4.5 Architecture First
 
 Design always precedes implementation.
 
 Code is a consequence of architectural decisions, not the starting point.
 
-Every major component must have a clear purpose and documented reasoning.
+Every major component must have:
+
+- A defined purpose.
+- Documented behavior.
+- Clear integration rules.
 
 ---
 
-### 4.6 Evolvability
+## 4.6 Evolvability
 
-The system must be designed to evolve without requiring complete rewrites.
+The system must evolve without requiring complete rewrites.
 
-Future capabilities must be introduced through extension and refinement of existing architecture.
+Future capabilities must be introduced through:
 
----
-
-# 5. Cognitive Model
-
-BitGenesis is structured as a layered cognitive architecture coordinated by a Cognitive Runtime.
-
-The system is composed of:
-
-- Perception Layer
-- Cognition Layer
-- Memory System
-- Knowledge System
-- Reasoning Engine
-- Planning Module
-- Execution Runtime
-- Tool Interface Layer
-
-The Cognitive Runtime coordinates the interaction between layers, managing information flow, cognitive state transitions, and execution cycles.
-
-Each layer communicates through a structured event-based system.
-
-The architecture is designed so that each cognitive capability can evolve independently while remaining part of a unified cognitive process.
+- Extension.
+- Refinement.
+- Controlled architectural evolution.
 
 ---
 
-# 6. Event-Driven Foundation
+# 5. Cognitive Architecture Model
 
-The core of BitGenesis is an event-driven architecture.
+BitGenesis is structured as a layered cognitive architecture coordinated by the Cognitive Runtime.
 
-Internal processes are represented as events flowing between modules.
+The architecture contains:
 
-This ensures:
+Perception
+|
+Cognition
+|
+Memory
+|
+Knowledge
+|
+Reasoning
+|
+Planning
+|
+Execution Runtime
+|
+External Tools
 
-- Traceability of system behavior
-- Decoupling of components
-- Extensibility of functionality
-- Clear communication boundaries between subsystems
 
-Events provide the communication foundation required for future cognitive expansion.
+The Cognitive Runtime coordinates communication between these layers.
+
+Its purpose is not to provide intelligence itself, but to provide the structure through which cognitive components operate together.
+
+---
+
+# 6. Cognitive Kernel
+
+The Cognitive Kernel represents the lifecycle foundation of BitGenesis.
+
+The Kernel is responsible for:
+
+- System initialization.
+- Configuration loading.
+- Cognitive component coordination.
+- Runtime startup and shutdown.
+- Service lifecycle management.
+
+The Kernel provides the environment where cognitive processes can exist and evolve.
 
 ---
 
 # 7. Cognitive Runtime Philosophy
 
-The Cognitive Runtime represents the central coordination mechanism of BitGenesis.
+The Cognitive Runtime is the execution foundation of BitGenesis.
 
-It does not contain intelligence itself, but provides the structure through which cognitive components interact.
+It provides:
 
-Its responsibilities include:
+- Cognitive execution cycles.
+- Runtime coordination.
+- Context propagation.
+- Service orchestration.
+- Execution management.
+- Runtime state tracking.
 
-- Managing cognitive execution cycles
-- Coordinating subsystem communication
-- Maintaining cognitive state
-- Controlling transitions between perception, memory, reasoning, planning, and action
-- Providing a controlled execution environment
+The runtime follows the principle:
 
-The runtime exists to provide continuity, organization, and structure to the cognitive process.
+Cognition decides.
+Runtime coordinates.
+Execution performs.
+
+
+The runtime must remain separate from cognitive intelligence itself.
 
 ---
 
-# 8. Memory Philosophy
+# 8. Execution Architecture
+
+BitGenesis uses a controlled execution pipeline.
+
+The execution model follows:
+
+Decision
+|
+Planner
+|
+Execution Plan
+|
+Executor
+|
+Action Registry
+|
+Action Execution
+
+
+Responsibilities:
+
+## Planner
+
+Creates executable strategies.
+
+## Executor
+
+Performs planned operations.
+
+## Action Registry
+
+Provides controlled access to executable capabilities.
+
+## Runtime Manager
+
+Coordinates execution flow and runtime services.
+
+Every execution must remain observable and traceable.
+
+---
+
+# 9. Event-Driven Foundation
+
+The core communication mechanism of BitGenesis is event-driven.
+
+Internal processes communicate through structured events.
+
+The Event System provides:
+
+- Component decoupling.
+- Execution traceability.
+- Lifecycle communication.
+- Extensible internal messaging.
+
+Events represent the nervous system of the architecture.
+
+---
+
+# 10. Runtime Observability
+
+BitGenesis requires internal visibility into system behavior.
+
+Runtime metrics provide:
+
+- Execution statistics.
+- Runtime state snapshots.
+- Performance information.
+- Future cognitive evaluation foundations.
+
+A cognitive architecture must not only operate, but understand its own operation.
+
+---
+
+# 11. Memory Philosophy
 
 Memory is not a database.
 
-It is an active cognitive subsystem responsible for storing, organizing, retrieving, and maintaining information over time.
+Memory is an active cognitive subsystem responsible for:
 
-Memory is composed of multiple layers:
-
-- Short-term operational memory
-- Long-term persistent memory
-- Contextual working memory
-- Episodic memory
+- Storing information.
+- Preserving experience.
+- Maintaining context.
+- Supporting reasoning.
 
 Memory must be:
 
-- Queryable
-- Structured
-- Persistent
-- Explainable
-- Adaptable
+- Structured.
+- Queryable.
+- Persistent.
+- Explainable.
+- Adaptable.
 
-The purpose of memory is not only storage, but preservation of experience and context.
+The purpose of memory is not only storage, but continuity.
 
 ---
 
-# 9. Reasoning Philosophy
+# 12. Reasoning Philosophy
 
 Reasoning in BitGenesis is explicit.
 
-It is not hidden inside opaque models, but constructed through:
+It is constructed through:
 
-- Defined rules
-- Logical structures
-- Traceable decision paths
-- Context-aware evaluation
+- Defined rules.
+- Logical structures.
+- Traceable decision paths.
+- Context-aware evaluation.
 
-The objective is not only producing correct outputs, but creating understandable reasoning processes.
-
-Reasoning should be inspectable, reproducible, and continuously improvable.
+The objective is not only generating results, but understanding the process that creates them.
 
 ---
 
-# 10. Learning Philosophy
+# 13. Learning Philosophy
 
-Learning in BitGenesis is considered an adaptive process.
+Learning in BitGenesis represents controlled adaptation.
 
-Learning does not represent uncontrolled self-modification, but structured adaptation based on:
+Learning mechanisms must operate through:
 
-- Experience evaluation
-- Feedback processing
-- Knowledge reinforcement
-- Memory optimization
+- Experience evaluation.
+- Feedback processing.
+- Knowledge reinforcement.
+- Memory optimization.
 
-Learning mechanisms must remain observable and explainable.
+Learning must remain observable and explainable.
+
+Self-modification without control is not part of the architecture philosophy.
 
 ---
 
-# 11. Tool Integration
+# 14. Tool Integration
 
-External tools are treated as controlled extensions of the cognitive system.
+External tools are treated as controlled extensions.
 
 Tools must:
 
-- Be explicitly defined
-- Have clear input/output contracts
-- Operate within a secure execution context
-- Respect permission boundaries
+- Have explicit definitions.
+- Provide clear input/output contracts.
+- Operate within security boundaries.
+- Respect permission systems.
 
-No tool is trusted by default.
-
-Every external interaction must be validated and controlled by the architecture.
+No external capability is trusted by default.
 
 ---
 
-# 12. Non-Goals
+# 15. Testing Philosophy
+
+Testing is an architectural requirement.
+
+Every major component must include validation through:
+
+- Unit tests.
+- Integration tests.
+- Functional validation.
+
+A subsystem is not considered complete until its behavior is verified.
+
+---
+
+# 16. Non-Goals
 
 BitGenesis is NOT:
 
-- A replacement for large language models
-- A closed black-box AI system
-- A general-purpose chatbot framework
-- A dependency on external AI APIs
-- A collection of disconnected automation scripts
+- A replacement for large language models.
+- A closed black-box AI system.
+- A chatbot framework.
+- A collection of automation scripts.
+- A dependency layer over external AI APIs.
 
-The project focuses on cognitive architecture rather than imitation of existing AI systems.
-
----
-
-# 13. Governance Principle
-
-Architectural decisions are made through documented reasoning.
-
-Major changes must be recorded using Architecture Decision Records (ADR).
-
-No component should be added without:
-
-- Clear justification
-- Defined responsibility
-- Architectural compatibility
-- Documentation
-
-The architecture must remain understandable as it grows.
+The project focuses on cognitive architecture.
 
 ---
 
-# 14. Long-Term Objective
+# 17. Governance Principle
 
-The long-term objective of BitGenesis is to explore whether intelligence-like behavior can emerge from:
+Architectural decisions must be documented.
 
-- Well-defined modules
-- Structured memory systems
-- Event-driven communication
-- Explicit reasoning processes
-- Adaptive mechanisms
-- Controlled interaction with external environments
+Major changes should include:
 
-Without relying on monolithic pre-trained intelligence systems.
+- Clear reasoning.
+- Defined responsibilities.
+- Compatibility analysis.
+- Documentation updates.
+
+The architecture must remain understandable as complexity increases.
 
 ---
 
-# 15. Final Statement
+# 18. Long-Term Objective
 
-BitGenesis is not defined by its codebase, but by its architecture.
+The long-term objective of BitGenesis is exploring whether intelligence-like behavior can emerge from:
+
+- Modular systems.
+- Structured memory.
+- Event-driven communication.
+- Explicit reasoning.
+- Planning mechanisms.
+- Learning processes.
+- Controlled environmental interaction.
+
+Without depending on monolithic intelligence systems.
+
+---
+
+# 19. Final Statement
+
+BitGenesis is not defined only by its codebase.
+
+It is defined by the architecture behind the code.
 
 Every component represents a hypothesis about how cognition can be structured in software.
 
-This project is an exploration of that hypothesis.
+The project evolves through:
 
-The goal is not to create a shortcut to intelligence, but to understand the foundations required for building cognitive systems.
+- Architecture.
+- Experimentation.
+- Validation.
+- Continuous refinement.
 
-BitGenesis evolves through architecture, experimentation, and continuous refinement.
+BitGenesis is a long-term research platform exploring the foundations of artificial cognition.
