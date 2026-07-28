@@ -4,7 +4,9 @@
 
 This roadmap describes the planned evolution of BitGenesis from its foundational architecture toward a complete modular cognitive system.
 
-The roadmap is divided into development milestones. Each milestone represents an architectural evolution rather than only a collection of features.
+Each milestone represents an architectural evolution rather than only a collection of features.
+
+The goal of BitGenesis is not only to implement isolated capabilities, but to progressively build a transparent, modular and explainable artificial cognitive architecture.
 
 ---
 
@@ -20,7 +22,9 @@ The first functional foundation of BitGenesis has been implemented.
 
 This milestone established the core architecture required for future cognitive capabilities.
 
-### Completed Components
+---
+
+# Completed Components
 
 ## Core
 
@@ -29,6 +33,8 @@ This milestone established the core architecture required for future cognitive c
 - Configuration system
 - Runtime statistics
 - Version management
+- Core identifiers system
+
 
 ## Events
 
@@ -36,12 +42,16 @@ This milestone established the core architecture required for future cognitive c
 - Event categories
 - Event dispatcher
 - Event subscription system
+- Event routing
+- Event lifecycle communication
+
 
 ## Identity
 
 - Identity profile
 - Identity management
 - Identity queries
+
 
 ## Memory
 
@@ -55,6 +65,7 @@ This milestone established the core architecture required for future cognitive c
 - Memory consolidation
 - Episode generation
 
+
 ## Knowledge
 
 - Knowledge registry
@@ -62,6 +73,7 @@ This milestone established the core architecture required for future cognitive c
 - Relations
 - Knowledge graph foundation
 - Knowledge queries
+
 
 ## Reasoning
 
@@ -73,6 +85,7 @@ This milestone established the core architecture required for future cognitive c
 - Inference engine
 - Inference rules
 
+
 ## Dialogue
 
 - Response engine
@@ -80,121 +93,240 @@ This milestone established the core architecture required for future cognitive c
 - Memory self-reporting
 - Identity responses
 
+
 ## Testing
 
-Current status:
+Initial status:
 
 294 tests passing
 
 
 ---
 
-# v0.2.0 — Cognitive Runtime Evolution
+# v0.2.0 — Cognitive Runtime Evolution ✅
 
 Status:
 
-**In Development Planning**
+**Completed**
 
-The objective of this milestone is to transform BitGenesis from a collection of independent cognitive modules into a coordinated cognitive runtime.
+The objective of this milestone was to transform BitGenesis from a collection of independent cognitive modules into a coordinated cognitive runtime.
 
-This milestone focuses on connecting existing subsystems into a unified execution architecture.
+This milestone established the first complete execution architecture connecting kernel, services, runtime orchestration and cognitive processing components.
 
 ---
 
 # Cognitive Kernel Evolution
 
-Goal:
+Status:
 
-Create the foundation of a central cognitive execution cycle.
+**Completed**
 
-Planned:
+## Completed
 
-- Expand kernel orchestration responsibilities.
-- Introduce cognitive processing pipeline.
-- Coordinate communication between cognitive subsystems.
-- Improve initialization and lifecycle management.
-- Introduce unified runtime state management.
+- Kernel lifecycle management.
+- Kernel bootstrap flow.
+- Service lifecycle orchestration.
+- Service discovery.
+- Service registration and removal.
+- Unified runtime state handling.
+- Runtime execution loop.
+- Kernel/runtime integration.
+
 
 ---
 
 # Cognitive Processing Pipeline
 
-Goal:
+Status:
 
-Establish a complete internal processing flow.
+**Completed**
 
-Planned:
+The internal execution flow has been established.
 
-- Unified perception → cognition → memory → reasoning → action pipeline.
-- Context propagation between modules.
-- Cognitive state transitions.
-- Processing cycle management.
-- Internal event-driven execution flow.
+## Completed
+
+- Cognitive execution planner.
+- Execution plan generation.
+- Execution step management.
+- Runtime execution context.
+- Context propagation.
+- Cognitive decision execution.
+- Action execution pipeline.
+- Execution result handling.
+
+
+---
+
+# Runtime Action Framework
+
+Status:
+
+**Completed**
+
+A controlled execution layer between cognition and operations has been introduced.
+
+## Completed
+
+- Action registration system.
+- Action discovery.
+- Action execution.
+- Executor component.
+- Action lifecycle events.
+- Action result management.
+- Runtime action registry.
+
+
+## Remaining
+
+- External tool interface.
+- Permission validation.
+- Secure execution boundaries.
+
+
+---
+
+# Runtime Orchestration
+
+Status:
+
+**Completed**
+
+## Completed
+
+- RuntimeManager component.
+- Service orchestration.
+- Runtime service execution.
+- Runtime lifecycle management.
+- Runtime event integration.
+- Service execution tracking.
+
+
+---
+
+# Event Driven Runtime Architecture
+
+Status:
+
+**Completed**
+
+## Completed
+
+- Runtime event communication.
+- Execution lifecycle events.
+- Service lifecycle events.
+- Kernel runtime events.
+- EventBus integration.
+
+
+---
+
+# Runtime Observability
+
+Status:
+
+**Completed**
+
+## Completed
+
+- Runtime metrics.
+- Runtime statistics.
+- Runtime snapshots.
+- Execution monitoring foundation.
+
 
 ---
 
 # Persistent Memory Architecture
 
-Goal:
+Status:
 
-Transform memory from runtime storage into a persistent cognitive component.
+**Partially Completed**
 
-Planned:
+The memory subsystem foundation exists, but long-term persistence evolution remains.
+
+## Completed
+
+- Memory object model.
+- Memory retrieval.
+- Memory consolidation.
+- Cognitive memory foundations.
+
+
+## Remaining
 
 - Persistent memory backend.
 - Memory serialization framework.
 - Memory restoration.
-- Long-term memory management.
-- Memory lifecycle improvements.
-- Persistent cognitive state storage.
+- Memory version migration.
+- Long-term cognitive state persistence.
+
 
 ---
 
 # Adaptive Learning Foundation
 
-Goal:
+Status:
 
-Introduce the first foundations for system adaptation.
+**Planned**
 
-Planned:
+The first foundations for system adaptation will be introduced.
+
+## Planned
 
 - Experience evaluation framework.
 - Feedback processing.
 - Adaptive behavior rules.
 - Knowledge reinforcement mechanisms.
 - Memory optimization strategies.
+- Learning feedback loops.
 
----
-
-# Runtime Action Framework
-
-Goal:
-
-Create a controlled interface between cognition and external operations.
-
-Planned:
-
-- External tool interface.
-- Action registration system.
-- Action execution pipeline.
-- Permission validation.
-- Secure execution boundaries.
 
 ---
 
 # Architecture Improvements
 
-Goal:
+Status:
 
-Improve reliability, maintainability and developer experience.
+**Partially Completed**
 
-Planned:
+## Completed
+
+- Extended automated testing.
+- Functional validation suite.
+- Improved lifecycle error handling.
+- Runtime metrics.
+- Runtime snapshots.
+- Runtime documentation improvements.
+
+
+## Remaining
 
 - Internal logging architecture.
-- Configuration improvements.
-- Extended documentation.
-- Additional automated tests.
-- Improved error handling.
+- Further configuration improvements.
+- API consistency improvements.
+- Developer tooling improvements.
+
+
+---
+
+# Validation Status
+
+Current automated validation:
+
+515 tests passing
+
+
+Additional functional validation:
+
+- Kernel boot functional test.
+- Service lifecycle functional test.
+- Kernel runtime integration test.
+- Runtime pipeline functional test.
+- Cognitive planner functional test.
+- Event system functional test.
+- RuntimeManager functional test.
+- Full system functional test.
+
 
 ---
 
@@ -204,9 +336,92 @@ Status:
 
 **Future**
 
-The objective is to introduce more advanced autonomous capabilities.
+The objective of this milestone is to introduce more advanced autonomous capabilities while consolidating the architecture created in previous releases.
 
-Planned:
+This milestone focuses on moving BitGenesis from a runtime architecture toward an adaptive cognitive system.
+
+---
+
+# Architecture Consolidation
+
+Goal:
+
+Improve maintainability, consistency and long-term evolution.
+
+## Planned
+
+- Consolidate test suite structure.
+- Reduce duplicated tests.
+- Merge redundant validation scenarios.
+- Remove obsolete tests.
+- Improve shared test fixtures.
+- Improve internal APIs consistency.
+- Refine module boundaries.
+
+
+---
+
+# Memory Evolution
+
+Goal:
+
+Transform memory into a persistent cognitive subsystem.
+
+## Planned
+
+- Persistent memory backend.
+- Memory serialization.
+- Memory restoration.
+- Memory migration support.
+- Identity persistence improvements.
+- Long-term cognitive state management.
+
+
+---
+
+# Runtime Evolution
+
+Goal:
+
+Improve runtime intelligence and coordination.
+
+## Planned
+
+- Expand Event Bus responsibilities.
+- Improve service discovery.
+- Advanced service lifecycle coordination.
+- Runtime dependency improvements.
+- Improved scheduling mechanisms.
+- More advanced execution orchestration.
+
+
+---
+
+# LearningEngine Foundation
+
+Goal:
+
+Introduce the foundations of adaptive behaviour.
+
+## Planned
+
+- Learning engine architecture.
+- Experience analysis.
+- Feedback evaluation.
+- Behaviour adaptation.
+- Knowledge reinforcement.
+- Memory optimization.
+
+
+---
+
+# Cognitive Intelligence Expansion
+
+Goal:
+
+Increase autonomous reasoning capabilities.
+
+## Planned
 
 - Advanced planning.
 - Goal management.
@@ -214,6 +429,8 @@ Planned:
 - Improved reasoning strategies.
 - Self-evaluation mechanisms.
 - More complex knowledge acquisition.
+- Cognitive feedback loops.
+
 
 ---
 
@@ -223,12 +440,18 @@ Status:
 
 **Future**
 
-Planned:
+The objective is to expand interaction capabilities and external perception.
+
+---
+
+# Planned
 
 - Advanced language processing.
 - Improved contextual understanding.
 - Multimodal perception foundations.
 - External environment interaction.
+- Advanced cognitive interfaces.
+
 
 ---
 
@@ -243,7 +466,9 @@ The long-term objective of BitGenesis is to create a modular artificial cognitiv
 - Planning.
 - Learning.
 - Self-reflection.
+- Adaptation.
 - Interaction with external systems.
+
 
 BitGenesis is designed as an evolving research platform where each subsystem can be independently improved while maintaining architectural transparency.
 
@@ -259,3 +484,22 @@ Every milestone follows these principles:
 - Explainable behavior.
 - Automated testing.
 - Long-term maintainability.
+- Controlled evolution.
+- Transparent system design.
+
+---
+
+# Release Philosophy
+
+Each version represents an architectural evolution.
+
+New capabilities are introduced only when the underlying architecture can support them reliably.
+
+BitGenesis prioritizes:
+
+1. Stable foundations.
+2. Clear architecture.
+3. Test-driven evolution.
+4. Explainable cognitive processes.
+5. Long-term sustainability.
+
