@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 
+from datetime import datetime
+
+
 from bitgenesis.events.event_bus import EventBus
 from bitgenesis.events.event import Event
 
@@ -31,6 +34,19 @@ from bitgenesis.runtime.service_orchestrator import (
 )
 
 
+from bitgenesis.runtime.runtime_metrics import (
+    RuntimeMetrics,
+)
+
+from bitgenesis.runtime.runtime_statistics import (
+    RuntimeStatistics,
+)
+
+from bitgenesis.runtime.runtime_snapshot import (
+    RuntimeSnapshot,
+)
+
+
 
 class RuntimeManager:
     """
@@ -45,6 +61,7 @@ class RuntimeManager:
     - register runtime services
     - discover runtime services
     - execute runtime services
+    - collect runtime metrics
     - manage runtime lifecycle
     """
 
@@ -61,9 +78,11 @@ class RuntimeManager:
         orchestrator: ServiceOrchestrator | None = None,
     ):
 
+
         self.memory_store = memory_store
         self.graph = graph
         self.event_bus = event_bus
+
 
 
         self.registry = (
@@ -72,6 +91,7 @@ class RuntimeManager:
                 event_bus=self.event_bus
             )
         )
+
 
 
         self.planner = (
@@ -107,7 +127,40 @@ class RuntimeManager:
         )
 
 
+
+        # Runtime metrics
+
+        self.metrics = RuntimeMetrics()
+
+
+
         self.running = False
+
+
+
+    # ==================================================
+    # Metrics
+    # ==================================================
+
+    @property
+    def statistics(
+        self,
+    ):
+
+        return RuntimeStatistics(
+            self.metrics
+        )
+
+
+
+    def snapshot(
+        self,
+    ):
+
+        return RuntimeSnapshot(
+            created_at=datetime.now(),
+            statistics=self.statistics,
+        )
 
 
 
@@ -119,17 +172,21 @@ class RuntimeManager:
         self,
     ):
 
+
         if self.running:
 
             return
 
 
+
         self.running = True
+
 
 
         self.service_orchestrator.start_services(
             self.context
         )
+
 
 
         if self.event_bus:
@@ -149,14 +206,17 @@ class RuntimeManager:
         self,
     ):
 
+
         if not self.running:
 
             return
 
 
+
         self.service_orchestrator.stop_services(
             self.context
         )
+
 
 
         self.running = False
@@ -191,6 +251,7 @@ class RuntimeManager:
         )
 
 
+
         if self.event_bus:
 
             self.event_bus.emit(
@@ -210,6 +271,7 @@ class RuntimeManager:
             )
 
 
+
         return result
 
 
@@ -224,6 +286,10 @@ class RuntimeManager:
         decision=None,
         event=None,
     ):
+
+
+        started = datetime.now()
+
 
 
         if self.event_bus:
@@ -243,6 +309,7 @@ class RuntimeManager:
 
         try:
 
+
             result = self.executor.execute(
                 plan,
                 decision,
@@ -250,7 +317,20 @@ class RuntimeManager:
             )
 
 
+
         except Exception as exc:
+
+
+            finished = datetime.now()
+
+
+            self.metrics.record_execution(
+                success=False,
+                duration_ms=(
+                    finished - started
+                ).total_seconds() * 1000,
+            )
+
 
 
             if self.event_bus:
@@ -267,7 +347,21 @@ class RuntimeManager:
                 )
 
 
+
             raise
+
+
+
+        finished = datetime.now()
+
+
+
+        self.metrics.record_execution(
+            success=result.success,
+            duration_ms=(
+                finished - started
+            ).total_seconds() * 1000,
+        )
 
 
 
@@ -297,10 +391,6 @@ class RuntimeManager:
 
 
 
-    # ==================================================
-    # Cognitive execution
-    # ==================================================
-
     def execute_decision(
         self,
         decision,
@@ -311,6 +401,7 @@ class RuntimeManager:
         planning_result = self.create_plan(
             decision
         )
+
 
 
         if not planning_result.success:
@@ -337,9 +428,6 @@ class RuntimeManager:
         name: str | None = None,
         metadata: dict | None = None,
     ):
-        """
-        Register runtime service.
-        """
 
 
         if name is None:
@@ -347,8 +435,6 @@ class RuntimeManager:
             name = type(service).__name__
 
 
-
-        # Compatibility attributes
 
         if not hasattr(
             service,
@@ -435,9 +521,28 @@ class RuntimeManager:
     ):
 
 
+        started = datetime.now()
+
+
+
         result = self.service_orchestrator.execute(
             self.context
         )
+
+
+
+        finished = datetime.now()
+
+
+
+        self.metrics.record_services(
+            executed=result.services_executed,
+            failed=result.failed_services,
+            duration_ms=(
+                finished - started
+            ).total_seconds() * 1000,
+        )
+
 
 
         if self.event_bus:
@@ -480,6 +585,10 @@ class RuntimeManager:
         if not self.running:
 
             return None
+
+
+
+        self.metrics.record_tick()
 
 
 
