@@ -4,6 +4,7 @@ from bitgenesis.cognition.context import CognitiveContext
 
 from bitgenesis.cognition.stages import (
     ConsolidationStage,
+    DialogueStage,
     ExecutionStage,
     KnowledgeStage,
     MemoryStage,
@@ -30,7 +31,11 @@ class CognitiveLoop:
     debugging, etc.).
     """
 
-    def __init__(self, stages=None):
+
+    def __init__(
+        self,
+        stages=None,
+    ):
 
         self._stages = stages or [
             PerceptionStage(),
@@ -41,14 +46,17 @@ class CognitiveLoop:
             ExecutionStage(),
             ReflectionStage(),
             ConsolidationStage(),
+            DialogueStage(),
         ]
 
         self._execution_count = 0
+
 
     @property
     def stages(self):
 
         return tuple(self._stages)
+
 
     @property
     def execution_count(self) -> int:
@@ -57,6 +65,7 @@ class CognitiveLoop:
         """
 
         return self._execution_count
+
 
     # --------------------------------------------------
     # Hooks
@@ -72,6 +81,7 @@ class CognitiveLoop:
         Intended for subclasses and future runtime extensions.
         """
 
+
     def after_cycle(
         self,
         context: CognitiveContext,
@@ -79,6 +89,7 @@ class CognitiveLoop:
         """
         Called after a cognitive cycle completes successfully.
         """
+
 
     def before_stage(
         self,
@@ -89,6 +100,7 @@ class CognitiveLoop:
         Called immediately before a stage executes.
         """
 
+
     def after_stage(
         self,
         stage,
@@ -97,6 +109,7 @@ class CognitiveLoop:
         """
         Called immediately after a stage completes.
         """
+
 
     def on_stage_failed(
         self,
@@ -107,6 +120,7 @@ class CognitiveLoop:
         """
         Called when a stage raises an exception.
         """
+
 
     # --------------------------------------------------
     # Pipeline execution
@@ -131,11 +145,14 @@ class CognitiveLoop:
                     context,
                 )
 
+
                 stage_name = stage.__class__.__name__
+
 
                 execution = context.start_stage(
                     stage_name
                 )
+
 
                 try:
 
@@ -143,14 +160,17 @@ class CognitiveLoop:
                         context
                     )
 
+
                     context.complete_stage(
                         execution
                     )
+
 
                     self.after_stage(
                         stage,
                         context,
                     )
+
 
                 except Exception as exc:
 
@@ -159,23 +179,29 @@ class CognitiveLoop:
                         exc,
                     )
 
+
                     self.on_stage_failed(
                         stage,
                         context,
                         exc,
                     )
 
+
                     raise
+
 
             context.complete_cycle()
 
             self._execution_count += 1
 
+
             self.after_cycle(
                 context
             )
 
+
             return context
+
 
         except Exception as exc:
 

@@ -7,6 +7,7 @@ from .planning import PlanningStage
 from .execution import ExecutionStage
 from .reflection import ReflectionStage
 from .consolidation import ConsolidationStage
+from bitgenesis.cognition.stages.dialogue import DialogueStage
 
 __all__ = [
     "CognitiveStage",
@@ -18,4 +19,5 @@ __all__ = [
     "ExecutionStage",
     "ReflectionStage",
     "ConsolidationStage",
+    "DialogueStage",
 ]

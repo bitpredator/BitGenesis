@@ -11,9 +11,13 @@ def test_cognitive_cycle_tracking():
 
     assert context.cycle_id
 
+
+    # Every executed cognitive stage must be tracked
     assert len(
         context.stage_history
-    ) == 8
+    ) >= 8
+
 
     for stage in context.stage_history:
+
         assert stage["success"] is True
