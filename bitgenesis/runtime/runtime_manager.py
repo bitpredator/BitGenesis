@@ -13,38 +13,21 @@ from bitgenesis.events.enums import (
 )
 
 
-from bitgenesis.runtime.action_registry import (
-    ActionRegistry,
-)
+from bitgenesis.runtime.action_registry import ActionRegistry
 
-from bitgenesis.runtime.executor import (
-    Executor,
-)
+from bitgenesis.runtime.executor import Executor
 
-from bitgenesis.runtime.planner import (
-    CognitiveExecutionPlanner,
-)
+from bitgenesis.runtime.planner import CognitiveExecutionPlanner
 
-from bitgenesis.runtime.service_context import (
-    ServiceContext,
-)
+from bitgenesis.runtime.service_context import ServiceContext
 
-from bitgenesis.runtime.service_orchestrator import (
-    ServiceOrchestrator,
-)
+from bitgenesis.runtime.service_orchestrator import ServiceOrchestrator
 
+from bitgenesis.runtime.runtime_metrics import RuntimeMetrics
 
-from bitgenesis.runtime.runtime_metrics import (
-    RuntimeMetrics,
-)
+from bitgenesis.runtime.runtime_statistics import RuntimeStatistics
 
-from bitgenesis.runtime.runtime_statistics import (
-    RuntimeStatistics,
-)
-
-from bitgenesis.runtime.runtime_snapshot import (
-    RuntimeSnapshot,
-)
+from bitgenesis.runtime.runtime_snapshot import RuntimeSnapshot
 
 
 
@@ -62,9 +45,9 @@ class RuntimeManager:
     - discover runtime services
     - execute runtime services
     - collect runtime metrics
-    - manage runtime lifecycle
-    """
 
+    Lifecycle ownership belongs to RuntimeService.
+    """
 
 
     def __init__(
@@ -78,11 +61,11 @@ class RuntimeManager:
         orchestrator: ServiceOrchestrator | None = None,
     ):
 
-
         self.memory_store = memory_store
-        self.graph = graph
-        self.event_bus = event_bus
 
+        self.graph = graph
+
+        self.event_bus = event_bus
 
 
         self.registry = (
@@ -93,12 +76,10 @@ class RuntimeManager:
         )
 
 
-
         self.planner = (
             planner
             or CognitiveExecutionPlanner()
         )
-
 
 
         self.executor = Executor(
@@ -109,14 +90,12 @@ class RuntimeManager:
         )
 
 
-
         self.service_orchestrator = (
             orchestrator
             or ServiceOrchestrator(
                 services=services,
             )
         )
-
 
 
         self.context = ServiceContext(
@@ -127,11 +106,7 @@ class RuntimeManager:
         )
 
 
-
-        # Runtime metrics
-
         self.metrics = RuntimeMetrics()
-
 
 
         self.running = False
@@ -143,9 +118,7 @@ class RuntimeManager:
     # ==================================================
 
     @property
-    def statistics(
-        self,
-    ):
+    def statistics(self):
 
         return RuntimeStatistics(
             self.metrics
@@ -153,9 +126,7 @@ class RuntimeManager:
 
 
 
-    def snapshot(
-        self,
-    ):
+    def snapshot(self):
 
         return RuntimeSnapshot(
             created_at=datetime.now(),
@@ -168,19 +139,14 @@ class RuntimeManager:
     # Lifecycle
     # ==================================================
 
-    def start(
-        self,
-    ):
-
+    def start(self):
 
         if self.running:
 
             return
 
 
-
         self.running = True
-
 
 
         self.service_orchestrator.start_services(
@@ -189,28 +155,11 @@ class RuntimeManager:
 
 
 
-        if self.event_bus:
-
-            self.event_bus.emit(
-                Event(
-                    category=EventCategory.RUNTIME,
-                    type=EventType.RUNTIME_STARTED,
-                    source="runtime_manager",
-                    payload={},
-                )
-            )
-
-
-
-    def stop(
-        self,
-    ):
-
+    def stop(self):
 
         if not self.running:
 
             return
-
 
 
         self.service_orchestrator.stop_services(
@@ -218,21 +167,7 @@ class RuntimeManager:
         )
 
 
-
         self.running = False
-
-
-
-        if self.event_bus:
-
-            self.event_bus.emit(
-                Event(
-                    category=EventCategory.RUNTIME,
-                    type=EventType.RUNTIME_STOPPED,
-                    source="runtime_manager",
-                    payload={},
-                )
-            )
 
 
 
@@ -245,11 +180,9 @@ class RuntimeManager:
         decision,
     ):
 
-
         result = self.planner.create_plan(
             decision
         )
-
 
 
         if self.event_bus:
@@ -271,7 +204,6 @@ class RuntimeManager:
             )
 
 
-
         return result
 
 
@@ -287,9 +219,7 @@ class RuntimeManager:
         event=None,
     ):
 
-
         started = datetime.now()
-
 
 
         if self.event_bus:
@@ -306,9 +236,7 @@ class RuntimeManager:
             )
 
 
-
         try:
-
 
             result = self.executor.execute(
                 plan,
@@ -317,9 +245,7 @@ class RuntimeManager:
             )
 
 
-
         except Exception as exc:
-
 
             finished = datetime.now()
 
@@ -330,7 +256,6 @@ class RuntimeManager:
                     finished - started
                 ).total_seconds() * 1000,
             )
-
 
 
             if self.event_bus:
@@ -347,13 +272,11 @@ class RuntimeManager:
                 )
 
 
-
             raise
 
 
 
         finished = datetime.now()
-
 
 
         self.metrics.record_execution(
@@ -386,7 +309,6 @@ class RuntimeManager:
             )
 
 
-
         return result
 
 
@@ -397,17 +319,14 @@ class RuntimeManager:
         event=None,
     ):
 
-
         planning_result = self.create_plan(
             decision
         )
 
 
-
         if not planning_result.success:
 
             return None
-
 
 
         return self.execute(
@@ -429,17 +348,13 @@ class RuntimeManager:
         metadata: dict | None = None,
     ):
 
-
         if name is None:
 
             name = type(service).__name__
 
 
 
-        if not hasattr(
-            service,
-            "service",
-        ):
+        if not hasattr(service, "service"):
 
             try:
 
@@ -451,10 +366,7 @@ class RuntimeManager:
 
 
 
-        if not hasattr(
-            service,
-            "name",
-        ):
+        if not hasattr(service, "name"):
 
             try:
 
@@ -520,9 +432,7 @@ class RuntimeManager:
         self,
     ):
 
-
         started = datetime.now()
-
 
 
         result = self.service_orchestrator.execute(
@@ -530,9 +440,7 @@ class RuntimeManager:
         )
 
 
-
         finished = datetime.now()
-
 
 
         self.metrics.record_services(
@@ -542,7 +450,6 @@ class RuntimeManager:
                 finished - started
             ).total_seconds() * 1000,
         )
-
 
 
         if self.event_bus:
@@ -568,7 +475,6 @@ class RuntimeManager:
             )
 
 
-
         return result
 
 
@@ -581,15 +487,12 @@ class RuntimeManager:
         self,
     ):
 
-
         if not self.running:
 
             return None
 
 
-
         self.metrics.record_tick()
-
 
 
         return self.orchestrate_services()
