@@ -81,6 +81,20 @@ Issues = "https://github.com/bitpredator/BitGenesis/issues"
 
 
 
+# ==========================================================
+# Command line interface
+# ==========================================================
+
+[project.scripts]
+
+bitgenesis = "bitgenesis.__main__:main"
+
+
+
+# ==========================================================
+# Package discovery
+# ==========================================================
+
 [tool.setuptools.packages.find]
 
 where = [
@@ -92,6 +106,10 @@ include = [
 ]
 
 
+
+# ==========================================================
+# Pytest configuration
+# ==========================================================
 
 [tool.pytest.ini_options]
 
