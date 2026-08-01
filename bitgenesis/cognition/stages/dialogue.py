@@ -7,18 +7,7 @@ class DialogueStage:
     """
     Generates the final cognitive response.
 
-    The DialogueStage represents the final communication
-    phase of the cognitive cycle.
-
-    Responsibilities:
-
-    - consume cognitive results
-    - invoke the response engine
-    - attach generated response to context
-
-    It does not perform reasoning.
-    It only transforms internal cognitive state
-    into an external response.
+    Final communication layer of the cognitive pipeline.
     """
 
 
@@ -26,31 +15,24 @@ class DialogueStage:
         self,
         context: CognitiveContext,
     ) -> CognitiveContext:
-        """
-        Execute dialogue generation.
-        """
 
-        # --------------------------------------------------
-        # Validate response engine availability
-        # --------------------------------------------------
 
         if context.response_engine is None:
 
             return context
 
 
-        # --------------------------------------------------
-        # Generate response
-        # --------------------------------------------------
+        # Always use original input.
+        #
+        # Reasoning output is internal cognitive data,
+        # not a user question.
+        dialogue_input = context.input_data
+
 
         response = context.response_engine.respond(
-            context.input_data
+            dialogue_input
         )
 
-
-        # --------------------------------------------------
-        # Store result in cognitive context
-        # --------------------------------------------------
 
         context.response = response
 

@@ -44,9 +44,9 @@ class CognitiveLoop:
             ReasoningStage(),
             PlanningStage(),
             ExecutionStage(),
+            DialogueStage(),
             ReflectionStage(),
             ConsolidationStage(),
-            DialogueStage(),
         ]
 
         self._execution_count = 0
@@ -134,7 +134,9 @@ class CognitiveLoop:
         Executes one complete cognitive cycle.
         """
 
-        self.before_cycle(context)
+        self.before_cycle(
+            context
+        )
 
         try:
 
@@ -145,14 +147,11 @@ class CognitiveLoop:
                     context,
                 )
 
-
                 stage_name = stage.__class__.__name__
-
 
                 execution = context.start_stage(
                     stage_name
                 )
-
 
                 try:
 
@@ -160,11 +159,9 @@ class CognitiveLoop:
                         context
                     )
 
-
                     context.complete_stage(
                         execution
                     )
-
 
                     self.after_stage(
                         stage,
@@ -179,13 +176,11 @@ class CognitiveLoop:
                         exc,
                     )
 
-
                     self.on_stage_failed(
                         stage,
                         context,
                         exc,
                     )
-
 
                     raise
 
@@ -194,11 +189,9 @@ class CognitiveLoop:
 
             self._execution_count += 1
 
-
             self.after_cycle(
                 context
             )
-
 
             return context
 

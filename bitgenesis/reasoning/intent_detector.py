@@ -52,14 +52,22 @@ class IntentDetector:
     }
 
 
-    def detect(self, text: str) -> Intent | None:
+    def detect(
+        self,
+        text: str
+    ) -> Intent | None:
+
 
         if not text:
+
             return None
+
 
         normalized = text.strip().lower()
 
+
         if not normalized:
+
             return None
 
 
@@ -74,6 +82,7 @@ class IntentDetector:
                 1
             )[1].strip()
 
+
             if target:
 
                 return Intent(
@@ -84,13 +93,16 @@ class IntentDetector:
                 )
 
 
-        if normalized.startswith("do you remember "):
+        if normalized.startswith(
+            "do you remember "
+        ):
 
             target = normalized.replace(
                 "do you remember ",
                 "",
                 1
             ).strip()
+
 
             if target:
 
@@ -138,4 +150,13 @@ class IntentDetector:
                     )
 
 
-        return None
+        # --------------------------
+        # UNKNOWN KNOWLEDGE
+        # --------------------------
+
+        return Intent(
+            domain="unknown",
+            action="unknown",
+            target=text,
+            confidence=0.0,
+        )

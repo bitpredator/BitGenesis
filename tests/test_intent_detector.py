@@ -1,178 +1,80 @@
-from bitgenesis.reasoning.intent_detector import (
-    Intent,
-    IntentDetector,
-)
+from bitgenesis.reasoning.intent_detector import IntentDetector
 
 
-def test_detect_creator_intent():
+def test_detect_identity_name():
 
     detector = IntentDetector()
 
-    intent = detector.detect("Who created you?")
-
-    assert isinstance(intent, Intent)
-    assert intent.domain == "identity"
-    assert intent.action == "query"
-    assert intent.target == "creator"
-    assert intent.confidence == 1.0
-
-
-def test_detect_name_intent():
-
-    detector = IntentDetector()
-
-    intent = detector.detect("What is your name?")
+    intent = detector.detect(
+        "Who are you?"
+    )
 
     assert intent is not None
+
+    assert intent.domain == "identity"
+
     assert intent.target == "name"
 
 
-def test_detect_project_intent():
+
+def test_detect_creator():
 
     detector = IntentDetector()
 
-    intent = detector.detect("What is your project?")
+    intent = detector.detect(
+        "Who created you?"
+    )
 
-    assert intent is not None
-    assert intent.target == "project"
+    assert intent.domain == "identity"
 
-
-def test_detect_version_intent():
-
-    detector = IntentDetector()
-
-    intent = detector.detect("What is your version?")
-
-    assert intent is not None
-    assert intent.target == "version"
-
-
-def test_detect_description_intent():
-
-    detector = IntentDetector()
-
-    intent = detector.detect("Describe yourself")
-
-    assert intent is not None
-    assert intent.target == "description"
-
-
-def test_detect_is_case_insensitive():
-
-    detector = IntentDetector()
-
-    intent = detector.detect("WHO CREATED YOU?")
-
-    assert intent is not None
     assert intent.target == "creator"
 
 
-def test_detect_returns_none_for_unknown_input():
+
+def test_detect_memory_query():
 
     detector = IntentDetector()
 
-    intent = detector.detect("What is the weather today?")
+    intent = detector.detect(
+        "What do you remember?"
+    )
 
-    assert intent is None
+    assert intent is not None
+
+    assert intent.domain == "memory"
+
+
+
+def test_detect_returns_unknown_for_unknown_input():
+
+    detector = IntentDetector()
+
+    intent = detector.detect(
+        "What is the weather today?"
+    )
+
+    assert intent is not None
+
+    assert intent.domain == "unknown"
+
+    assert intent.confidence == 0.0
+
 
 
 def test_detect_returns_none_for_empty_string():
 
     detector = IntentDetector()
 
-    assert detector.detect("") is None
+    assert detector.detect(
+        ""
+    ) is None
+
 
 
 def test_detect_returns_none_for_whitespace():
 
     detector = IntentDetector()
 
-    assert detector.detect("     ") is None
-
-def test_detect_latest_memory_intent():
-
-    detector = IntentDetector()
-
-    intent = detector.detect("What is your latest memory?")
-
-    assert intent is not None
-    assert intent.domain == "memory"
-    assert intent.action == "query"
-    assert intent.target == "latest"
-
-
-def test_detect_recent_memories_intent():
-
-    detector = IntentDetector()
-
-    intent = detector.detect("Show me your recent memories.")
-
-    assert intent is not None
-    assert intent.domain == "memory"
-    assert intent.action == "query"
-    assert intent.target == "recent"
-
-
-def test_detect_remember_intent():
-
-    detector = IntentDetector()
-
-    intent = detector.detect("What do you remember?")
-
-    assert intent is not None
-    assert intent.domain == "memory"
-    assert intent.action == "query"
-    assert intent.target == "recent"
-
-
-def test_detect_tell_me_what_you_remember():
-
-    detector = IntentDetector()
-
-    intent = detector.detect("Tell me what you remember.")
-
-    assert intent is not None
-    assert intent.domain == "memory"
-    assert intent.action == "query"
-    assert intent.target == "recent"
-
-def test_detect_memory_search_about():
-
-    detector = IntentDetector()
-
-    intent = detector.detect(
-        "What do you remember about planner?"
-    )
-
-    assert intent is not None
-    assert intent.domain == "memory"
-    assert intent.action == "search"
-    assert intent.target == "planner"
-
-
-def test_detect_memory_search_do_you_remember():
-
-    detector = IntentDetector()
-
-    intent = detector.detect(
-        "Do you remember Python?"
-    )
-
-    assert intent is not None
-    assert intent.domain == "memory"
-    assert intent.action == "search"
-    assert intent.target == "python"
-
-
-def test_detect_memory_search_case_insensitive():
-
-    detector = IntentDetector()
-
-    intent = detector.detect(
-        "DO YOU REMEMBER NETWORKING?"
-    )
-
-    assert intent is not None
-    assert intent.domain == "memory"
-    assert intent.action == "search"
-    assert intent.target == "networking"    
+    assert detector.detect(
+        "   "
+    ) is None

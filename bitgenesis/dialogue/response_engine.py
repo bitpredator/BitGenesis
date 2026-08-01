@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from bitgenesis.dialogue.response import CognitiveResponse
 from bitgenesis.dialogue.formatter import ResponseFormatter
+
+from bitgenesis.reasoning.intent_detector import Intent
 from bitgenesis.reasoning.intent_detector import IntentDetector
+
+from bitgenesis.reasoning.resolution import Resolution
 from bitgenesis.reasoning.resolver import Resolver
 
 
@@ -10,12 +14,12 @@ class ResponseEngine:
     """
     Generates structured cognitive responses.
 
-    The ResponseEngine converts internal reasoning results
-    into a structured output usable by the cognitive runtime.
+    The ResponseEngine converts detected intent and
+    resolved knowledge into a CognitiveResponse object.
 
-    It does not own cognition.
-    It only transforms cognitive results into communication.
+    It is the final bridge between cognition and dialogue.
     """
+
 
     def __init__(
         self,
@@ -31,19 +35,26 @@ class ResponseEngine:
         self.formatter = ResponseFormatter()
 
 
+    # ==================================================
+    # Public API
+    # ==================================================
+
     def respond(
         self,
         question: str,
     ) -> CognitiveResponse | None:
         """
-        Generates a cognitive response from an input question.
+        Generates a structured response from user input.
         """
+
 
         intent = self.detector.detect(
             question
         )
 
+
         if intent is None:
+
             return None
 
 
@@ -51,8 +62,31 @@ class ResponseEngine:
             intent
         )
 
+
         if resolution is None:
+
             return None
+
+
+        return self.respond_from_resolution(
+            intent,
+            resolution,
+        )
+
+
+    # ==================================================
+    # Response generation
+    # ==================================================
+
+    def respond_from_resolution(
+        self,
+        intent: Intent,
+        resolution: Resolution,
+    ) -> CognitiveResponse:
+        """
+        Converts a resolved cognitive result into
+        a structured response.
+        """
 
 
         content = self.formatter.format(
@@ -61,12 +95,12 @@ class ResponseEngine:
 
 
         return CognitiveResponse(
-            content=content,
-            confidence=1.0,
+            content=str(content),
+            confidence=intent.confidence,
             intent=intent,
             reasoning_trace=[
                 {
-                    "resolver": resolution,
+                    "resolution": resolution,
                 }
             ],
         )

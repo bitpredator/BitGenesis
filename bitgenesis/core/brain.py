@@ -8,6 +8,7 @@ from bitgenesis.core.version import VERSION
 from bitgenesis.cognition import CognitiveManager
 
 from bitgenesis.dialogue.response_engine import ResponseEngine
+from bitgenesis.dialogue.response import CognitiveResponse
 
 from bitgenesis.memory.store import MemoryStore
 from bitgenesis.memory.factory import MemoryFactory
@@ -37,6 +38,7 @@ class Brain:
     modular composition and testing.
     """
 
+
     def __init__(
         self,
         config=None,
@@ -53,13 +55,17 @@ class Brain:
 
         self.state = BrainState.IDLE
 
+
         # -------------------------------------------------
         # External services
         # -------------------------------------------------
 
         self.event_bus = event_bus
+
         self.runtime = runtime
+
         self.episode_manager = episode_manager
+
         self.identity = identity
 
 
@@ -122,10 +128,15 @@ class Brain:
 
         self.cognitive_manager = CognitiveManager(
             memory_store=self.memory_store,
+
             knowledge_registry=self.knowledge_registry,
+
             inference_engine=self.inference_engine,
+
             reflection_engine=self.reflection_engine,
+
             response_engine=self.response_engine,
+
             memory_factory=self.memory_factory,
         )
 
@@ -140,10 +151,12 @@ class Brain:
         return str(VERSION)
 
 
+
     @property
     def cognitive_context(self):
 
         return self.cognitive_manager.last_context
+
 
 
     @property
@@ -152,10 +165,12 @@ class Brain:
         return self.event_bus
 
 
+
     @property
     def runtime_manager(self):
 
         return self.runtime
+
 
 
     @property
@@ -166,6 +181,7 @@ class Brain:
             return []
 
         return self.episode_manager.episodes
+
 
 
     # -------------------------------------------------
@@ -193,6 +209,7 @@ class Brain:
         )
 
 
+
     # -------------------------------------------------
     # Cognition
     # -------------------------------------------------
@@ -208,15 +225,18 @@ class Brain:
 
         self.state = BrainState.THINKING
 
+
         try:
 
             return self.cognitive_manager.execute(
                 input_data
             )
 
+
         finally:
 
             self.state = BrainState.IDLE
+
 
 
     # -------------------------------------------------
@@ -227,18 +247,62 @@ class Brain:
         self,
         question: str,
     ):
+        """
+        Executes a complete cognitive cycle and returns
+        the generated CognitiveResponse.
+
+        The public API exposes structured cognitive
+        responses instead of plain strings.
+        """
 
         self.state = BrainState.RESPONDING
 
+
         try:
 
-            return self.response_engine.respond(
+            context = self.think(
                 question
             )
+
+
+            response = context.response
+
+
+            if response is None:
+
+                return None
+
+
+            # -------------------------------------------------
+            # Compatibility layer
+            #
+            # Some legacy stages may still return raw strings.
+            # Convert them into CognitiveResponse.
+            # -------------------------------------------------
+
+            if isinstance(
+                response,
+                str
+            ):
+
+                return CognitiveResponse(
+                    content=response,
+                    confidence=0.0,
+                    reasoning_trace=[
+                        {
+                            "source": "legacy_stage",
+                        }
+                    ],
+                )
+
+
+            return response
+
 
         finally:
 
             self.state = BrainState.IDLE
+
 
 
     # -------------------------------------------------
@@ -252,21 +316,26 @@ class Brain:
 
         self.state = BrainState.OBSERVING
 
+
         try:
 
             memory = self.memory_factory.from_event(
                 event
             )
 
+
             self.memory_store.add(
                 memory
             )
 
+
             return memory
+
 
         finally:
 
             self.state = BrainState.IDLE
+
 
 
     # -------------------------------------------------
@@ -280,15 +349,18 @@ class Brain:
 
         self.state = BrainState.INFERRING
 
+
         try:
 
             return self.inference_engine.infer(
                 facts
             )
 
+
         finally:
 
             self.state = BrainState.IDLE
+
 
 
     # -------------------------------------------------
@@ -302,15 +374,18 @@ class Brain:
 
         self.state = BrainState.REFLECTING
 
+
         try:
 
             return self.reflection_engine.reflect(
                 facts
             )
 
+
         finally:
 
             self.state = BrainState.IDLE
+
 
 
     # -------------------------------------------------
@@ -320,6 +395,7 @@ class Brain:
     def remember(self):
 
         return self.memory_store.all()
+
 
 
     # -------------------------------------------------
