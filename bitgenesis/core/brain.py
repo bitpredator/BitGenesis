@@ -20,6 +20,9 @@ from bitgenesis.knowledge.inference_engine import InferenceEngine
 from bitgenesis.reasoning.reflection_engine import ReflectionEngine
 
 from bitgenesis.learning.engine import LearningEngine
+from bitgenesis.learning.strategies import (
+    StatisticsLearningStrategy,
+)
 
 
 
@@ -84,18 +87,15 @@ class Brain:
 
         else:
 
-
             if self.config.memory_backend == "json":
 
                 backend = JsonMemoryBackend(
                     self.config.memory_path
                 )
 
-
             else:
 
                 backend = InMemoryBackend()
-
 
 
             self.memory_store = MemoryStore(
@@ -138,7 +138,16 @@ class Brain:
         # Learning subsystem
         # -------------------------------------------------
 
-        self.learning_engine = LearningEngine()
+        self.learning_strategy = (
+            StatisticsLearningStrategy()
+        )
+
+
+        self.learning_engine = LearningEngine(
+            strategies=[
+                self.learning_strategy
+            ]
+        )
 
 
 
@@ -164,7 +173,6 @@ class Brain:
 
             event_bus=self.event_bus,
         )
-
 
 
 
@@ -211,7 +219,6 @@ class Brain:
 
 
 
-
     # -------------------------------------------------
     # Statistics
     # -------------------------------------------------
@@ -239,6 +246,15 @@ class Brain:
 
 
 
+    # -------------------------------------------------
+    # Learning statistics
+    # -------------------------------------------------
+
+    def learning_stats(self):
+
+        return self.learning_strategy.statistics()
+
+
 
     # -------------------------------------------------
     # Cognition
@@ -248,7 +264,6 @@ class Brain:
         self,
         input_data=None,
     ):
-
 
         self.state = BrainState.THINKING
 
@@ -266,8 +281,6 @@ class Brain:
 
 
 
-
-
     # -------------------------------------------------
     # Dialogue
     # -------------------------------------------------
@@ -276,11 +289,6 @@ class Brain:
         self,
         question: str,
     ):
-        """
-        Executes cognition and returns CognitiveResponse.
-
-        Public API keeps the structured response object.
-        """
 
         self.state = BrainState.RESPONDING
 
@@ -295,11 +303,9 @@ class Brain:
             return context.response
 
 
-
         finally:
 
             self.state = BrainState.IDLE
-
 
 
 
@@ -311,7 +317,6 @@ class Brain:
         self,
         event,
     ):
-
 
         self.state = BrainState.OBSERVING
 
@@ -337,8 +342,6 @@ class Brain:
 
 
 
-
-
     # -------------------------------------------------
     # Inference
     # -------------------------------------------------
@@ -347,7 +350,6 @@ class Brain:
         self,
         facts,
     ):
-
 
         self.state = BrainState.INFERRING
 
@@ -365,7 +367,6 @@ class Brain:
 
 
 
-
     # -------------------------------------------------
     # Reflection
     # -------------------------------------------------
@@ -374,7 +375,6 @@ class Brain:
         self,
         facts,
     ):
-
 
         self.state = BrainState.REFLECTING
 
@@ -392,7 +392,6 @@ class Brain:
 
 
 
-
     # -------------------------------------------------
     # Memory
     # -------------------------------------------------
@@ -400,7 +399,6 @@ class Brain:
     def remember(self):
 
         return self.memory_store.all()
-
 
 
 

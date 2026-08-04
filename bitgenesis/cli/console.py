@@ -1,22 +1,12 @@
 from __future__ import annotations
 
 from bitgenesis.core.brain import Brain
-
-from bitgenesis.cli.commands import CLICommand
-from bitgenesis.cli.formatter import ConsoleFormatter
-
+from bitgenesis.cli.formatter import CLIFormatter
 
 
 class ConsoleInterface:
     """
     Interactive console interface for BitGenesis.
-
-    Responsibilities:
-
-    - interact with users
-    - route commands
-    - expose runtime controls
-    - display cognitive responses
     """
 
 
@@ -27,42 +17,44 @@ class ConsoleInterface:
 
         self.brain = brain or Brain()
 
-        self.formatter = ConsoleFormatter()
-
         self.running = False
 
 
 
-    # ==================================================
-    # Lifecycle
-    # ==================================================
-
-    def start(
-        self,
-    ):
+    def start(self):
 
         self.running = True
 
 
+        print()
+
         print(
-            self.formatter.banner(
-                self.brain.version
-            )
+            f"BitGenesis Cognitive System v{self.brain.version}"
         )
+
+        print(
+            "Type '/help' for commands."
+        )
+
+        print(
+            "Type '/exit' to shutdown."
+        )
+
+        print()
+
 
 
         while self.running:
 
             try:
 
-                user_input = input(
-                    "> "
-                ).strip()
+                user_input = input("> ").strip()
 
 
                 if not user_input:
 
                     continue
+
 
 
                 if user_input.startswith("/"):
@@ -72,6 +64,7 @@ class ConsoleInterface:
                     )
 
                     continue
+
 
 
                 response = self.brain.ask(
@@ -104,35 +97,22 @@ class ConsoleInterface:
             except Exception as exc:
 
                 print(
-                    self.formatter.error(
-                        str(exc)
-                    )
+                    f"[ERROR] {exc}"
                 )
 
 
 
-    # ==================================================
-    # Command Router
-    # ==================================================
 
     def handle_command(
         self,
-        command: CLICommand | str,
+        command: str,
     ):
 
-        # Compatibility with old tests/API
-        if isinstance(
-            command,
-            str,
-        ):
-
-            command = CLICommand(
-                command
-            )
+        command = command.lower()
 
 
 
-        if command.name == "/exit":
+        if command == "/exit":
 
             self.shutdown()
 
@@ -140,7 +120,7 @@ class ConsoleInterface:
 
 
 
-        if command.name == "/help":
+        if command == "/help":
 
             self.help()
 
@@ -148,7 +128,7 @@ class ConsoleInterface:
 
 
 
-        if command.name == "/stats":
+        if command == "/stats":
 
             print(
                 self.brain.stats()
@@ -158,161 +138,23 @@ class ConsoleInterface:
 
 
 
-        if command.name == "/memory":
+        if command == "/memory":
 
             memories = self.brain.remember()
 
-
-            if not memories:
-
-                print(
-                    memories
-                )
-
-            else:
-
-                print(
-                    self.formatter.memory(
-                        memories
-                    )
-                )
-
-            return
-
-
-
-        if command.name == "/runtime":
-
-            self.runtime_command(
-                command
+            print(
+                memories
             )
 
             return
 
 
 
-        if command.name == "/events":
-
-            self.events_command()
-
-            return
-
-
-
-        if command.name == "/learning":
-
-            self.learning_command(
-                command
-            )
-
-            return
-
-
-
-        print(
-            self.formatter.unknown_command(
-                command.raw
-            )
-        )
-
-
-
-    # ==================================================
-    # Runtime Commands
-    # ==================================================
-
-    def runtime_command(
-        self,
-        command: CLICommand,
-    ):
-
-        runtime = getattr(
-            self.brain,
-            "runtime",
-            None,
-        )
-
-
-        if runtime is None:
+        if command == "/learning":
 
             print(
-                "Runtime unavailable."
-            )
-
-            return
-
-
-
-        action = command.argument(
-            0
-        )
-
-
-
-        if action == "start":
-
-            runtime.start()
-
-            print(
-                "Runtime started."
-            )
-
-            return
-
-
-
-        if action == "stop":
-
-            runtime.stop()
-
-            print(
-                "Runtime stopped."
-            )
-
-            return
-
-
-
-        if action == "tick":
-
-            result = runtime.tick()
-
-            print(
-                self.formatter.runtime(
-                    "tick",
-                    result
-                )
-            )
-
-            return
-
-
-
-        if action == "snapshot":
-
-            snapshot = runtime.snapshot()
-
-            print(
-                snapshot
-            )
-
-            return
-
-
-
-        if action == "status":
-
-            print(
-                self.formatter.status(
-                    {
-                        "running":
-                            runtime.running,
-
-                        "services":
-                            len(
-                                runtime.list_services()
-                            ),
-                    }
+                CLIFormatter.learning(
+                    self.brain.learning_stats()
                 )
             )
 
@@ -321,125 +163,23 @@ class ConsoleInterface:
 
 
         print(
-            "Usage: /runtime <status|start|stop|tick|snapshot>"
+            f"Unknown command: {command}"
         )
 
 
 
-    # ==================================================
-    # Events
-    # ==================================================
 
-    def events_command(
-        self,
-    ):
-
-        bus = getattr(
-            self.brain,
-            "event_bus",
-            None,
-        )
-
-
-        if bus is None:
-
-            print(
-                "EventBus unavailable."
-            )
-
-            return
-
-
-
-        print(
-            self.formatter.events(
-                bus.subscriber_count()
-            )
-        )
-
-
-
-    # ==================================================
-    # Learning
-    # ==================================================
-
-    def learning_command(
-        self,
-        command: CLICommand,
-    ):
-
-        engine = getattr(
-            self.brain,
-            "learning_engine",
-            None,
-        )
-
-
-        if engine is None:
-
-            print(
-                "LearningEngine unavailable."
-            )
-
-            return
-
-
-
-        action = command.argument(
-            0
-        )
-
-
-        if action == "stats":
-
-            print(
-                engine.statistics()
-            )
-
-            return
-
-
-
-        print(
-            "Usage: /learning stats"
-        )
-
-
-
-    # ==================================================
-    # Help
-    # ==================================================
-
-    def help(
-        self,
-    ):
+    def help(self):
 
         print(
             """
 Available commands:
 
-/help                   Show commands
-
-/stats                  Brain statistics
-
-/memory                 Stored memories
-
-
-/runtime status         Runtime status
-/runtime start          Start runtime
-/runtime stop           Stop runtime
-/runtime tick           Execute runtime tick
-/runtime snapshot       Runtime snapshot
-
-
-/events                 EventBus information
-
-
-/learning stats         Learning statistics
-
-
-/exit                   Shutdown BitGenesis
-
+/help       Show commands
+/stats      Show brain statistics
+/memory     Show memories
+/learning   Show learning statistics
+/exit       Shutdown BitGenesis
 
 Anything else is interpreted as a cognitive request.
 """
@@ -447,13 +187,8 @@ Anything else is interpreted as a cognitive request.
 
 
 
-    # ==================================================
-    # Shutdown
-    # ==================================================
 
-    def shutdown(
-        self,
-    ):
+    def shutdown(self):
 
         self.running = False
 

@@ -30,8 +30,8 @@ class CognitiveLoop:
     The CognitiveLoop orchestrates cognitive stages
     and emits lifecycle events through EventBus.
 
-    After a successful cognitive cycle, the loop can
-    generate an Experience and forward it to the
+    After a successful cognitive cycle, the loop
+    generates an Experience and forwards it to the
     LearningEngine.
     """
 
@@ -56,10 +56,12 @@ class CognitiveLoop:
         self._execution_count = 0
 
 
+
     @property
     def stages(self):
 
         return tuple(self._stages)
+
 
 
     @property
@@ -81,6 +83,7 @@ class CognitiveLoop:
     ):
 
         if context.event_bus is None:
+
             return
 
 
@@ -102,11 +105,12 @@ class CognitiveLoop:
     def create_experience(
         self,
         context: CognitiveContext,
-    ):
+    ) -> Experience:
         """
         Converts a completed cognitive cycle
         into a learning experience.
         """
+
 
         return Experience(
 
@@ -133,6 +137,7 @@ class CognitiveLoop:
         )
 
 
+
     def process_learning(
         self,
         context: CognitiveContext,
@@ -141,6 +146,7 @@ class CognitiveLoop:
         Sends the completed experience
         to the LearningEngine.
         """
+
 
         learning_engine = (
             context.learning_engine
@@ -152,23 +158,59 @@ class CognitiveLoop:
             return
 
 
+
         experience = self.create_experience(
             context
         )
 
 
-        learning_engine.learn(
-            experience
-        )
-
 
         self._emit(
             context,
-            EventType.LEARNING_COMPLETED,
+            EventType.LEARNING_STARTED,
             {
                 "cycle_id": context.cycle_id,
             },
         )
+
+
+
+        try:
+
+            learning_engine.learn(
+                experience
+            )
+
+
+            self._emit(
+                context,
+                EventType.LEARNING_COMPLETED,
+                {
+                    "cycle_id": context.cycle_id,
+
+                    "experience_count":
+                    learning_engine.experience_count,
+                },
+            )
+
+
+
+        except Exception as exc:
+
+            context.errors.append(
+                f"LearningEngine: {exc}"
+            )
+
+
+            self._emit(
+                context,
+                EventType.LEARNING_FAILED,
+                {
+                    "cycle_id": context.cycle_id,
+
+                    "error": str(exc),
+                },
+            )
 
 
 
@@ -278,6 +320,7 @@ class CognitiveLoop:
         Executes one complete cognitive cycle.
         """
 
+
         self.before_cycle(
             context
         )
@@ -322,6 +365,7 @@ class CognitiveLoop:
                     )
 
 
+
                 except Exception as exc:
 
 
@@ -336,6 +380,7 @@ class CognitiveLoop:
                         context,
                         exc,
                     )
+
 
                     raise
 
@@ -362,5 +407,6 @@ class CognitiveLoop:
             context.errors.append(
                 str(exc)
             )
+
 
             raise

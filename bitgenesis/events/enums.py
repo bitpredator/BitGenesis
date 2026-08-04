@@ -55,7 +55,6 @@ class EventType(Enum):
     """
 
 
-
     # ======================================================
     # System
     # ======================================================
@@ -233,8 +232,17 @@ class EventType(Enum):
     # Learning
     # ======================================================
 
-    LEARNING_STARTED = "learning.started"
-    LEARNING_COMPLETED = "learning.completed"
+    LEARNING_STARTED = (
+        "learning.started"
+    )
+
+    LEARNING_COMPLETED = (
+        "learning.completed"
+    )
+
+    LEARNING_FAILED = (
+        "learning.failed"
+    )
 
 
 

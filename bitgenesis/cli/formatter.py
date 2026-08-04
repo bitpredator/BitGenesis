@@ -1,20 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
 
 
-class ConsoleFormatter:
+class CLIFormatter:
     """
-    Formats BitGenesis console output.
-
-    Responsible only for presentation.
-    It does not execute commands or access runtime logic.
+    Formats BitGenesis CLI output.
     """
 
-
-    # ==================================================
-    # Generic
-    # ==================================================
 
     @staticmethod
     def title(
@@ -22,215 +14,65 @@ class ConsoleFormatter:
     ) -> str:
 
         return (
-            "\n"
-            + "=" * 50
-            + "\n"
-            + f" {text}"
-            + "\n"
-            + "=" * 50
+            f"\n{text}\n"
+            f"{'-' * len(text)}"
         )
 
 
 
     @staticmethod
-    def section(
-        text: str,
+    def learning(
+        statistics: dict,
     ) -> str:
+        """
+        Formats learning statistics.
+        """
 
-        return (
-            "\n"
-            + text
-            + "\n"
-            + "-" * len(text)
-        )
-
-
-
-    # ==================================================
-    # System
-    # ==================================================
-
-    @staticmethod
-    def banner(
-        version: str,
-    ) -> str:
-
-        return (
-            "\n"
-            "==============================================\n"
-            f" BitGenesis Cognitive System v{version}\n"
-            "==============================================\n"
-            " Type '/help' for commands.\n"
-            " Type '/exit' to shutdown.\n"
-        )
-
-
-
-    @staticmethod
-    def status(
-        data: dict[str, Any],
-    ) -> str:
 
         lines = [
-            "",
-            "BitGenesis Status",
-            "-----------------",
-        ]
 
+            "Learning Statistics",
 
-        for key, value in data.items():
-
-            lines.append(
-                f"{key}: {value}"
-            )
-
-
-        return "\n".join(
-            lines
-        )
-
-
-
-    # ==================================================
-    # Runtime
-    # ==================================================
-
-    @staticmethod
-    def runtime(
-        action: str,
-        result=None,
-    ) -> str:
-
-        if result is None:
-
-            return (
-                f"Runtime {action} completed."
-            )
-
-
-        return (
-            f"Runtime {action}:\n"
-            f"{result}"
-        )
-
-
-
-    # ==================================================
-    # Services
-    # ==================================================
-
-    @staticmethod
-    def services(
-        services,
-    ) -> str:
-
-        lines = [
-            "",
-            "Registered Services",
             "-------------------",
-        ]
 
+            f"Experiences: {statistics.get('total', 0)}",
 
-        if not services:
+            f"Successful: {statistics.get('successful', 0)}",
 
-            lines.append(
-                "No services registered."
-            )
+            f"Failed: {statistics.get('failed', 0)}",
 
+            (
+                f"Success rate: "
+                f"{statistics.get('success_rate', 0) * 100:.2f}%"
+            ),
 
-        else:
-
-            for service in services:
-
-                lines.append(
-                    f"- {service}"
-                )
-
-
-        return "\n".join(
-            lines
-        )
-
-
-
-    # ==================================================
-    # Memory
-    # ==================================================
-
-    @staticmethod
-    def memory(
-        memories,
-    ) -> str:
-
-        lines = [
             "",
-            "Memory Store",
-            "------------",
+
+            "States:",
         ]
 
 
-        if not memories:
+        states = statistics.get(
+            "states",
+            {},
+        )
+
+
+        if not states:
 
             lines.append(
-                "No memories stored."
+                "- none"
             )
-
 
         else:
 
-            for index, memory in enumerate(
-                memories,
-                start=1,
-            ):
+            for state, count in states.items():
 
                 lines.append(
-                    f"{index}. {memory}"
+                    f"- {state}: {count}"
                 )
 
 
         return "\n".join(
             lines
-        )
-
-
-
-    # ==================================================
-    # Events
-    # ==================================================
-
-    @staticmethod
-    def events(
-        count: int,
-    ) -> str:
-
-        return (
-            "\nEventBus\n"
-            "--------\n"
-            f"Subscribers: {count}"
-        )
-
-
-
-    # ==================================================
-    # Errors
-    # ==================================================
-
-    @staticmethod
-    def error(
-        message: str,
-    ) -> str:
-
-        return (
-            f"[ERROR] {message}"
-        )
-
-
-
-    @staticmethod
-    def unknown_command(
-        command: str,
-    ) -> str:
-
-        return (
-            f"Unknown command: {command}"
         )
