@@ -140,11 +140,21 @@ class EventType(Enum):
 
     PERCEPTION_RECEIVED = "perception.received"
     PERCEPTION_PROCESSED = "perception.processed"
-    
-    
+
+
+
     # ======================================================
     # Cognitive Lifecycle
     # ======================================================
+
+    COGNITIVE_RUNTIME_STARTED = (
+        "cognition.runtime.started"
+    )
+
+    COGNITIVE_RUNTIME_STOPPED = (
+        "cognition.runtime.stopped"
+    )
+
 
     COGNITIVE_CYCLE_STARTED = (
         "cognition.cycle.started"
@@ -154,6 +164,11 @@ class EventType(Enum):
         "cognition.cycle.completed"
     )
 
+    COGNITIVE_CYCLE_FAILED = (
+        "cognition.cycle.failed"
+    )
+
+
     COGNITIVE_STAGE_STARTED = (
         "cognition.stage.started"
     )
@@ -161,6 +176,7 @@ class EventType(Enum):
     COGNITIVE_STAGE_COMPLETED = (
         "cognition.stage.completed"
     )
+
 
 
     # ======================================================

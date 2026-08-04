@@ -1,12 +1,20 @@
 from __future__ import annotations
 
-from datetime import datetime
 
 from bitgenesis.cognition.context import CognitiveContext
 from bitgenesis.cognition.loop import CognitiveLoop
 from bitgenesis.cognition.state import CognitiveState
 
+from bitgenesis.events.event import Event
+from bitgenesis.events.enums import (
+    EventCategory,
+    EventType,
+)
+
 from bitgenesis.runtime.runtime_status import RuntimeState
+
+from bitgenesis.learning.experience import Experience
+
 
 
 class CognitiveRuntime:
@@ -19,14 +27,17 @@ class CognitiveRuntime:
     - inject cognitive subsystems
     - execute cognitive cycles
     - track execution state
-    - persist runtime metadata
+    - emit cognitive lifecycle events
+    - create learning experiences
 
-    Designed for future:
+    Future:
+
     - continuous execution
     - scheduling
-    - pause/resume
-    - external stimuli
+    - autonomous learning
+    - adaptive cognition
     """
+
 
     def __init__(
         self,
@@ -43,6 +54,7 @@ class CognitiveRuntime:
         event_bus=None,
     ):
 
+
         # --------------------------------------------------
         # Runtime state
         # --------------------------------------------------
@@ -51,12 +63,15 @@ class CognitiveRuntime:
 
         self.runtime_state = RuntimeState()
 
+
         # --------------------------------------------------
         # Runtime statistics
         # --------------------------------------------------
 
         self._cycle_counter = 0
+
         self._last_context = None
+
 
 
         # --------------------------------------------------
@@ -64,74 +79,174 @@ class CognitiveRuntime:
         # --------------------------------------------------
 
         self.memory_store = memory_store
+
         self.memory_factory = memory_factory
 
         self.knowledge_registry = knowledge_registry
+
         self.inference_engine = inference_engine
 
         self.reflection_engine = reflection_engine
+
         self.response_engine = response_engine
+
         self.learning_engine = learning_engine
 
         self.planner = planner
+
         self.executor = executor
 
         self.event_bus = event_bus
 
 
+
         # --------------------------------------------------
-        # Pipeline
+        # Cognitive pipeline
         # --------------------------------------------------
 
         self._loop = CognitiveLoop()
+
 
 
     # ======================================================
     # Properties
     # ======================================================
 
+
     @property
-    def loop(self) -> CognitiveLoop:
+    def loop(
+        self,
+    ) -> CognitiveLoop:
+
         return self._loop
 
 
+
     @property
-    def is_running(self) -> bool:
+    def is_running(
+        self,
+    ) -> bool:
+
         return self.state != CognitiveState.IDLE
 
 
+
     @property
-    def cycle_count(self) -> int:
+    def cycle_count(
+        self,
+    ) -> int:
+
         return self._cycle_counter
 
 
+
     @property
-    def last_context(self) -> CognitiveContext | None:
+    def last_context(
+        self,
+    ) -> CognitiveContext | None:
+
         return self._last_context
 
 
+
     # ======================================================
-    # Runtime lifecycle
+    # Event system
     # ======================================================
 
-    def start(self):
-        """
-        Starts runtime execution.
-        """
+
+    def _emit(
+        self,
+        event_type,
+        payload=None,
+    ):
+
+
+        if self.event_bus is None:
+
+            return
+
+
+        self.event_bus.emit(
+            Event(
+                category=EventCategory.COGNITION,
+                type=event_type,
+                source="cognitive_runtime",
+                payload=payload or {},
+            )
+        )
+
+
+
+    # ======================================================
+    # Lifecycle
+    # ======================================================
+
+
+    def start(
+        self,
+    ):
+
 
         self.state = CognitiveState.INITIALIZING
+
 
         self.runtime_state.mark_started()
 
 
-    def stop(self):
-        """
-        Stops runtime execution.
-        """
+        self._emit(
+            EventType.COGNITIVE_RUNTIME_STARTED,
+        )
+
+
+
+    def stop(
+        self,
+    ):
+
 
         self.state = CognitiveState.IDLE
 
+
         self.runtime_state.mark_stopped()
+
+
+        self._emit(
+            EventType.COGNITIVE_RUNTIME_STOPPED,
+        )
+
+
+
+    # ======================================================
+    # Learning integration
+    # ======================================================
+
+
+    def _create_experience(
+        self,
+        context,
+    ):
+
+
+        if self.learning_engine is None:
+
+            return
+
+
+        experience = Experience(
+            input_data=context.input_data,
+            output_data=context.response,
+            metadata={
+                "cycle_id": context.cycle_id,
+                "stages": len(
+                    context.stage_history
+                ),
+            },
+        )
+
+
+        self.learning_engine.learn(
+            experience
+        )
 
 
 
@@ -139,15 +254,15 @@ class CognitiveRuntime:
     # Execution
     # ======================================================
 
+
     def run(
         self,
         input_data=None,
     ) -> CognitiveContext:
-        """
-        Executes one cognitive cycle.
-        """
+
 
         self.start()
+
 
 
         context = CognitiveContext(
@@ -157,23 +272,39 @@ class CognitiveRuntime:
 
 
             memory_store=self.memory_store,
+
             memory_factory=self.memory_factory,
 
             knowledge_registry=self.knowledge_registry,
+
             inference_engine=self.inference_engine,
 
             reflection_engine=self.reflection_engine,
+
             response_engine=self.response_engine,
+
             learning_engine=self.learning_engine,
 
             planner=self.planner,
+
             executor=self.executor,
 
             event_bus=self.event_bus,
         )
 
 
+
+        self._emit(
+            EventType.COGNITIVE_CYCLE_STARTED,
+            {
+                "input": str(input_data),
+            },
+        )
+
+
+
         try:
+
 
             context = self._loop.execute(
                 context
@@ -182,12 +313,30 @@ class CognitiveRuntime:
 
             self._cycle_counter += 1
 
+
             self._last_context = context
+
 
 
             self.runtime_state.update_cycle(
                 cycle=self._cycle_counter
             )
+
+
+
+            self._create_experience(
+                context
+            )
+
+
+
+            self._emit(
+                EventType.COGNITIVE_CYCLE_COMPLETED,
+                {
+                    "cycle": self._cycle_counter,
+                },
+            )
+
 
 
             return context
@@ -210,6 +359,14 @@ class CognitiveRuntime:
             )
 
 
+            self._emit(
+                EventType.COGNITIVE_CYCLE_FAILED,
+                {
+                    "error": str(exc),
+                },
+            )
+
+
             raise
 
 
@@ -221,13 +378,14 @@ class CognitiveRuntime:
 
 
     # ======================================================
-    # Persistence helpers
+    # Persistence
     # ======================================================
 
-    def export_state(self) -> dict:
-        """
-        Returns serializable runtime state.
-        """
+
+    def export_state(
+        self,
+    ) -> dict:
+
 
         return self.runtime_state.to_dict()
 
@@ -237,23 +395,23 @@ class CognitiveRuntime:
         self,
         data: dict,
     ):
-        """
-        Restores runtime state.
-        """
+
 
         self.runtime_state.from_dict(
             data
         )
 
 
+
     # ======================================================
     # Utilities
     # ======================================================
 
-    def reset_statistics(self):
-        """
-        Reset runtime counters.
-        """
+
+    def reset_statistics(
+        self,
+    ):
+
 
         self._cycle_counter = 0
 
