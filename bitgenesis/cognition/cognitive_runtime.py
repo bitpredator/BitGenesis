@@ -37,6 +37,7 @@ class CognitiveRuntime:
         inference_engine=None,
         reflection_engine=None,
         response_engine=None,
+        learning_engine=None,
         planner=None,
         executor=None,
         event_bus=None,
@@ -70,6 +71,7 @@ class CognitiveRuntime:
 
         self.reflection_engine = reflection_engine
         self.response_engine = response_engine
+        self.learning_engine = learning_engine
 
         self.planner = planner
         self.executor = executor
@@ -162,6 +164,7 @@ class CognitiveRuntime:
 
             reflection_engine=self.reflection_engine,
             response_engine=self.response_engine,
+            learning_engine=self.learning_engine,
 
             planner=self.planner,
             executor=self.executor,

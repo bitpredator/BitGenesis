@@ -91,6 +91,8 @@ class CognitiveContext:
     reflection_engine: Any = None
 
     response_engine: Any = None
+    
+    learning_engine: Any = None
 
     planner: Any = None
 

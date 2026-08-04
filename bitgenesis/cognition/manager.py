@@ -21,9 +21,15 @@ class CognitiveManager:
         inference_engine=None,
         reflection_engine=None,
         response_engine=None,
+        learning_engine=None,
         planner=None,
+        executor=None,
         event_bus=None,
     ):
+
+        # --------------------------------------------------
+        # Cognitive subsystems
+        # --------------------------------------------------
 
         self.memory_store = memory_store
 
@@ -37,9 +43,23 @@ class CognitiveManager:
 
         self.response_engine = response_engine
 
+        self.learning_engine = learning_engine
+
+
+        # --------------------------------------------------
+        # Runtime services
+        # --------------------------------------------------
+
         self.planner = planner
 
+        self.executor = executor
+
         self.event_bus = event_bus
+
+
+        # --------------------------------------------------
+        # Runtime tracking
+        # --------------------------------------------------
 
         self._runtime: CognitiveRuntime | None = None
 
@@ -47,6 +67,11 @@ class CognitiveManager:
 
         self._cycles = 0
 
+
+
+    # ======================================================
+    # Properties
+    # ======================================================
 
     @property
     def state(self) -> CognitiveState:
@@ -58,10 +83,12 @@ class CognitiveManager:
         return self._runtime.state
 
 
+
     @property
     def last_context(self) -> CognitiveContext | None:
 
         return self._last_context
+
 
 
     @property
@@ -70,28 +97,61 @@ class CognitiveManager:
         return self._cycles
 
 
-    def execute(self, input_data=None) -> CognitiveContext:
+
+    # ======================================================
+    # Execution
+    # ======================================================
+
+    def execute(
+        self,
+        input_data=None,
+    ) -> CognitiveContext:
         """
         Executes one cognitive cycle.
         """
 
+
         runtime = CognitiveRuntime(
+
             memory_store=self.memory_store,
+
             memory_factory=self.memory_factory,
+
+
             knowledge_registry=self.knowledge_registry,
+
             inference_engine=self.inference_engine,
+
+
             reflection_engine=self.reflection_engine,
+
             response_engine=self.response_engine,
+
+
+            learning_engine=self.learning_engine,
+
+
             planner=self.planner,
+
+            executor=self.executor,
+
+
             event_bus=self.event_bus,
         )
 
+
         self._runtime = runtime
 
-        context = runtime.run(input_data)
+
+        context = runtime.run(
+            input_data
+        )
+
 
         self._last_context = context
 
+
         self._cycles += 1
+
 
         return context

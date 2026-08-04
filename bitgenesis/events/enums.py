@@ -140,7 +140,27 @@ class EventType(Enum):
 
     PERCEPTION_RECEIVED = "perception.received"
     PERCEPTION_PROCESSED = "perception.processed"
+    
+    
+    # ======================================================
+    # Cognitive Lifecycle
+    # ======================================================
 
+    COGNITIVE_CYCLE_STARTED = (
+        "cognition.cycle.started"
+    )
+
+    COGNITIVE_CYCLE_COMPLETED = (
+        "cognition.cycle.completed"
+    )
+
+    COGNITIVE_STAGE_STARTED = (
+        "cognition.stage.started"
+    )
+
+    COGNITIVE_STAGE_COMPLETED = (
+        "cognition.stage.completed"
+    )
 
 
     # ======================================================
