@@ -23,35 +23,57 @@ from bitgenesis.cognition.stages import (
 )
 
 
+
 class CognitiveLoop:
     """
     Executes a single cognitive pipeline.
 
-    The CognitiveLoop orchestrates cognitive stages
-    and emits lifecycle events through EventBus.
+    The CognitiveLoop orchestrates cognitive stages,
+    emits lifecycle events and integrates learning.
 
-    After a successful cognitive cycle, the loop
-    generates an Experience and forwards it to the
-    LearningEngine.
+    Language processing is injected into the perception
+    stage as part of the cognitive input pipeline.
     """
+
 
 
     def __init__(
         self,
         stages=None,
+        language_processor=None,
     ):
 
+
+        self.language_processor = (
+            language_processor
+        )
+
+
         self._stages = stages or [
-            PerceptionStage(),
+
+            PerceptionStage(
+                language_processor=
+                self.language_processor
+            ),
+
             MemoryStage(),
+
             KnowledgeStage(),
+
             ReasoningStage(),
+
             PlanningStage(),
+
             ExecutionStage(),
+
             DialogueStage(),
+
             ReflectionStage(),
+
             ConsolidationStage(),
+
         ]
+
 
         self._execution_count = 0
 
@@ -60,12 +82,16 @@ class CognitiveLoop:
     @property
     def stages(self):
 
-        return tuple(self._stages)
+        return tuple(
+            self._stages
+        )
 
 
 
     @property
-    def execution_count(self) -> int:
+    def execution_count(
+        self,
+    ) -> int:
 
         return self._execution_count
 
@@ -75,12 +101,14 @@ class CognitiveLoop:
     # Event helper
     # --------------------------------------------------
 
+
     def _emit(
         self,
         context,
         event_type,
         payload=None,
     ):
+
 
         if context.event_bus is None:
 
@@ -102,14 +130,11 @@ class CognitiveLoop:
     # Learning integration
     # --------------------------------------------------
 
+
     def create_experience(
         self,
         context: CognitiveContext,
     ) -> Experience:
-        """
-        Converts a completed cognitive cycle
-        into a learning experience.
-        """
 
 
         return Experience(
@@ -118,22 +143,47 @@ class CognitiveLoop:
 
             output_data=context.response,
 
+
             context={
-                "cycle_id": context.cycle_id,
+
+                "cycle_id":
+                context.cycle_id,
+
 
                 "stages": [
+
                     item["stage"]
+
                     for item in context.stage_history
+
                 ],
+
+
+                "language": getattr(
+                    getattr(
+                        context,
+                        "language_context",
+                        None,
+                    ),
+                    "language",
+                    None,
+                ),
+
             },
+
 
             success=(
                 len(context.errors) == 0
             ),
 
+
             metadata={
-                "state": context.state.value,
+
+                "state":
+                context.state.value,
+
             },
+
         )
 
 
@@ -142,10 +192,6 @@ class CognitiveLoop:
         self,
         context: CognitiveContext,
     ):
-        """
-        Sends the completed experience
-        to the LearningEngine.
-        """
 
 
         learning_engine = (
@@ -164,15 +210,14 @@ class CognitiveLoop:
         )
 
 
-
         self._emit(
             context,
             EventType.LEARNING_STARTED,
             {
-                "cycle_id": context.cycle_id,
+                "cycle_id":
+                context.cycle_id,
             },
         )
-
 
 
         try:
@@ -186,13 +231,13 @@ class CognitiveLoop:
                 context,
                 EventType.LEARNING_COMPLETED,
                 {
-                    "cycle_id": context.cycle_id,
+                    "cycle_id":
+                    context.cycle_id,
 
                     "experience_count":
                     learning_engine.experience_count,
                 },
             )
-
 
 
         except Exception as exc:
@@ -206,9 +251,11 @@ class CognitiveLoop:
                 context,
                 EventType.LEARNING_FAILED,
                 {
-                    "cycle_id": context.cycle_id,
+                    "cycle_id":
+                    context.cycle_id,
 
-                    "error": str(exc),
+                    "error":
+                    str(exc),
                 },
             )
 
@@ -217,6 +264,7 @@ class CognitiveLoop:
     # --------------------------------------------------
     # Hooks
     # --------------------------------------------------
+
 
     def before_cycle(
         self,
@@ -235,6 +283,7 @@ class CognitiveLoop:
         context,
     ):
 
+
         self.process_learning(
             context
         )
@@ -244,7 +293,8 @@ class CognitiveLoop:
             context,
             EventType.COGNITIVE_CYCLE_COMPLETED,
             {
-                "execution_count": self._execution_count,
+                "execution_count":
+                self._execution_count,
             },
         )
 
@@ -260,7 +310,8 @@ class CognitiveLoop:
             context,
             EventType.COGNITIVE_STAGE_STARTED,
             {
-                "stage": stage.__class__.__name__,
+                "stage":
+                stage.__class__.__name__,
             },
         )
 
@@ -276,7 +327,8 @@ class CognitiveLoop:
             context,
             EventType.COGNITIVE_STAGE_COMPLETED,
             {
-                "stage": stage.__class__.__name__,
+                "stage":
+                stage.__class__.__name__,
             },
         )
 
@@ -289,36 +341,47 @@ class CognitiveLoop:
         exception,
     ):
 
+
         if context.event_bus is None:
 
             return
 
 
+
         context.event_bus.emit(
             Event(
+
                 category=EventCategory.COGNITION,
+
                 type=EventType.COGNITIVE_CYCLE_FAILED,
+
                 source="cognitive_loop",
+
                 payload={
-                    "stage": stage.__class__.__name__,
-                    "error": str(exception),
+
+                    "stage":
+                    stage.__class__.__name__,
+
+
+                    "error":
+                    str(exception),
+
                 },
+
             )
         )
 
 
 
     # --------------------------------------------------
-    # Pipeline execution
+    # Execution
     # --------------------------------------------------
+
 
     def execute(
         self,
         context: CognitiveContext,
     ) -> CognitiveContext:
-        """
-        Executes one complete cognitive cycle.
-        """
 
 
         self.before_cycle(
@@ -327,6 +390,7 @@ class CognitiveLoop:
 
 
         try:
+
 
             for stage in self._stages:
 
@@ -337,17 +401,13 @@ class CognitiveLoop:
                 )
 
 
-                stage_name = (
+                execution = context.start_stage(
                     stage.__class__.__name__
                 )
 
 
-                execution = context.start_stage(
-                    stage_name
-                )
-
-
                 try:
+
 
                     context = stage.execute(
                         context

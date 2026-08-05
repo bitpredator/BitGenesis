@@ -25,18 +25,13 @@ class CognitiveRuntime:
 
     - create cognitive contexts
     - inject cognitive subsystems
+    - process language input
     - execute cognitive cycles
     - track execution state
     - emit cognitive lifecycle events
     - create learning experiences
-
-    Future:
-
-    - continuous execution
-    - scheduling
-    - autonomous learning
-    - adaptive cognition
     """
+
 
 
     def __init__(
@@ -49,6 +44,7 @@ class CognitiveRuntime:
         reflection_engine=None,
         response_engine=None,
         learning_engine=None,
+        language_processor=None,
         planner=None,
         executor=None,
         event_bus=None,
@@ -64,8 +60,9 @@ class CognitiveRuntime:
         self.runtime_state = RuntimeState()
 
 
+
         # --------------------------------------------------
-        # Runtime statistics
+        # Statistics
         # --------------------------------------------------
 
         self._cycle_counter = 0
@@ -92,6 +89,8 @@ class CognitiveRuntime:
 
         self.learning_engine = learning_engine
 
+        self.language_processor = language_processor
+
         self.planner = planner
 
         self.executor = executor
@@ -104,7 +103,9 @@ class CognitiveRuntime:
         # Cognitive pipeline
         # --------------------------------------------------
 
-        self._loop = CognitiveLoop()
+        self._loop = CognitiveLoop(
+            language_processor=self.language_processor,
+        )
 
 
 
@@ -150,7 +151,7 @@ class CognitiveRuntime:
 
 
     # ======================================================
-    # Event system
+    # Events
     # ======================================================
 
 
@@ -186,9 +187,7 @@ class CognitiveRuntime:
         self,
     ):
 
-
         self.state = CognitiveState.INITIALIZING
-
 
         self.runtime_state.mark_started()
 
@@ -203,9 +202,7 @@ class CognitiveRuntime:
         self,
     ):
 
-
         self.state = CognitiveState.IDLE
-
 
         self.runtime_state.mark_stopped()
 
@@ -217,7 +214,39 @@ class CognitiveRuntime:
 
 
     # ======================================================
-    # Learning integration
+    # Language processing
+    # ======================================================
+
+
+    def _process_language(
+        self,
+        context: CognitiveContext,
+    ):
+
+
+        if self.language_processor is None:
+
+            return
+
+
+        if not isinstance(
+            context.input_data,
+            str,
+        ):
+
+            return
+
+
+        context.language_context = (
+            self.language_processor.process(
+                context.input_data
+            )
+        )
+
+
+
+    # ======================================================
+    # Learning
     # ======================================================
 
 
@@ -232,15 +261,43 @@ class CognitiveRuntime:
             return
 
 
+
+        language = None
+
+
+        if getattr(
+            context,
+            "language_context",
+            None,
+        ) is not None:
+
+            language = (
+                context.language_context.language.value
+            )
+
+
+
         experience = Experience(
+
             input_data=context.input_data,
+
             output_data=context.response,
-            metadata={
+
+            context={
+
+                "language": language,
+
                 "cycle_id": context.cycle_id,
-                "stages": len(
-                    context.stage_history
-                ),
+
             },
+
+            metadata={
+
+                "stages":
+                    len(context.stage_history),
+
+            },
+
         )
 
 
@@ -266,6 +323,7 @@ class CognitiveRuntime:
 
 
         context = CognitiveContext(
+
             state=CognitiveState.INITIALIZING,
 
             input_data=input_data,
@@ -285,20 +343,13 @@ class CognitiveRuntime:
 
             learning_engine=self.learning_engine,
 
+
             planner=self.planner,
 
             executor=self.executor,
 
             event_bus=self.event_bus,
-        )
 
-
-
-        self._emit(
-            EventType.COGNITIVE_CYCLE_STARTED,
-            {
-                "input": str(input_data),
-            },
         )
 
 
@@ -306,9 +357,24 @@ class CognitiveRuntime:
         try:
 
 
+            self._process_language(
+                context
+            )
+
+
+            self._emit(
+                EventType.COGNITIVE_CYCLE_STARTED,
+                {
+                    "input": str(input_data),
+                },
+            )
+
+
+
             context = self._loop.execute(
                 context
             )
+
 
 
             self._cycle_counter += 1
@@ -386,7 +452,6 @@ class CognitiveRuntime:
         self,
     ) -> dict:
 
-
         return self.runtime_state.to_dict()
 
 
@@ -395,7 +460,6 @@ class CognitiveRuntime:
         self,
         data: dict,
     ):
-
 
         self.runtime_state.from_dict(
             data
@@ -411,7 +475,6 @@ class CognitiveRuntime:
     def reset_statistics(
         self,
     ):
-
 
         self._cycle_counter = 0
 

@@ -16,6 +16,7 @@ class CognitiveContext:
     execution metadata.
     """
 
+
     # ---------------------------------------------------------
     # Runtime state
     # ---------------------------------------------------------
@@ -34,6 +35,7 @@ class CognitiveContext:
 
     completed_at: datetime | None = None
 
+
     # ---------------------------------------------------------
     # Runtime observability
     # ---------------------------------------------------------
@@ -46,11 +48,14 @@ class CognitiveContext:
         default_factory=list
     )
 
+
     # ---------------------------------------------------------
     # Pipeline data
     # ---------------------------------------------------------
 
     perception: Any = None
+
+    language_context: Any = None
 
     working_memory: list[Any] = field(
         default_factory=list
@@ -76,6 +81,7 @@ class CognitiveContext:
 
     reflection: Any = None
 
+
     # ---------------------------------------------------------
     # Shared subsystem references
     # ---------------------------------------------------------
@@ -91,7 +97,7 @@ class CognitiveContext:
     reflection_engine: Any = None
 
     response_engine: Any = None
-    
+
     learning_engine: Any = None
 
     planner: Any = None
@@ -100,21 +106,23 @@ class CognitiveContext:
 
     event_bus: Any = None
 
+
     # ---------------------------------------------------------
     # Helpers
     # ---------------------------------------------------------
 
     def update_state(
         self,
-        state: CognitiveState
+        state: CognitiveState,
     ) -> None:
 
         self.state = state
 
 
+
     def add_memory(
         self,
-        memory: Any
+        memory: Any,
     ) -> None:
 
         self.memories.append(
@@ -122,9 +130,10 @@ class CognitiveContext:
         )
 
 
+
     def add_knowledge(
         self,
-        knowledge: Any
+        knowledge: Any,
     ) -> None:
 
         self.knowledge.append(
@@ -132,9 +141,10 @@ class CognitiveContext:
         )
 
 
+
     def add_action(
         self,
-        action: Any
+        action: Any,
     ) -> None:
 
         self.actions.append(
@@ -148,7 +158,7 @@ class CognitiveContext:
 
     def start_stage(
         self,
-        stage_name: str
+        stage_name: str,
     ) -> dict[str, Any]:
 
         execution = {
@@ -166,9 +176,10 @@ class CognitiveContext:
         return execution
 
 
+
     def complete_stage(
         self,
-        execution: dict[str, Any]
+        execution: dict[str, Any],
     ) -> None:
 
         execution["completed_at"] = datetime.now(UTC)
@@ -176,10 +187,11 @@ class CognitiveContext:
         execution["success"] = True
 
 
+
     def fail_stage(
         self,
         execution: dict[str, Any],
-        error: Exception
+        error: Exception,
     ) -> None:
 
         execution["completed_at"] = datetime.now(UTC)
@@ -191,6 +203,9 @@ class CognitiveContext:
         )
 
 
-    def complete_cycle(self) -> None:
+
+    def complete_cycle(
+        self,
+    ) -> None:
 
         self.completed_at = datetime.now(UTC)

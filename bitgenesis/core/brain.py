@@ -1,27 +1,39 @@
 from __future__ import annotations
 
+
 from bitgenesis.core.config import BrainConfig
 from bitgenesis.core.lifecycle import BrainState
 from bitgenesis.core.stats import BrainStats
 from bitgenesis.core.version import VERSION
 
+
 from bitgenesis.cognition import CognitiveManager
 
+
 from bitgenesis.dialogue.response_engine import ResponseEngine
+
 
 from bitgenesis.memory.store import MemoryStore
 from bitgenesis.memory.factory import MemoryFactory
 from bitgenesis.memory.storage.json_backend import JsonMemoryBackend
 from bitgenesis.memory.storage.in_memory_backend import InMemoryBackend
 
+
 from bitgenesis.knowledge.registry import KnowledgeRegistry
 from bitgenesis.knowledge.inference_engine import InferenceEngine
 
+
 from bitgenesis.reasoning.reflection_engine import ReflectionEngine
+
 
 from bitgenesis.learning.engine import LearningEngine
 from bitgenesis.learning.strategies import (
     StatisticsLearningStrategy,
+)
+
+
+from bitgenesis.language.processor import (
+    LanguageProcessor,
 )
 
 
@@ -38,9 +50,11 @@ class Brain:
     - reflection
     - dialogue
     - learning
+    - language processing
     - runtime services
     - event infrastructure
     """
+
 
 
     def __init__(
@@ -77,6 +91,14 @@ class Brain:
 
 
         # -------------------------------------------------
+        # Language subsystem
+        # -------------------------------------------------
+
+        self.language_processor = LanguageProcessor()
+
+
+
+        # -------------------------------------------------
         # Memory subsystem
         # -------------------------------------------------
 
@@ -87,6 +109,7 @@ class Brain:
 
         else:
 
+
             if self.config.memory_backend == "json":
 
                 backend = JsonMemoryBackend(
@@ -96,6 +119,7 @@ class Brain:
             else:
 
                 backend = InMemoryBackend()
+
 
 
             self.memory_store = MemoryStore(
@@ -109,16 +133,22 @@ class Brain:
         # -------------------------------------------------
 
         self.knowledge_registry = (
+
             knowledge
+
             if knowledge is not None
+
             else KnowledgeRegistry()
+
         )
 
 
 
         self.memory_factory = MemoryFactory()
 
+
         self.inference_engine = InferenceEngine()
+
 
         self.reflection_engine = ReflectionEngine()
 
@@ -129,7 +159,11 @@ class Brain:
         # -------------------------------------------------
 
         self.response_engine = ResponseEngine(
+
             memory_store=self.memory_store,
+
+            knowledge_registry=self.knowledge_registry,
+
         )
 
 
@@ -144,9 +178,13 @@ class Brain:
 
 
         self.learning_engine = LearningEngine(
+
             strategies=[
+
                 self.learning_strategy
+
             ]
+
         )
 
 
@@ -157,21 +195,33 @@ class Brain:
 
         self.cognitive_manager = CognitiveManager(
 
+
             memory_store=self.memory_store,
+
 
             knowledge_registry=self.knowledge_registry,
 
+
             inference_engine=self.inference_engine,
+
 
             reflection_engine=self.reflection_engine,
 
+
             response_engine=self.response_engine,
+
 
             memory_factory=self.memory_factory,
 
+
             learning_engine=self.learning_engine,
 
+
+            language_processor=self.language_processor,
+
+
             event_bus=self.event_bus,
+
         )
 
 
@@ -215,6 +265,7 @@ class Brain:
 
             return []
 
+
         return self.episode_manager.episodes
 
 
@@ -242,6 +293,7 @@ class Brain:
             state=self.state.value,
 
             version=self.version,
+
         )
 
 
@@ -264,6 +316,7 @@ class Brain:
         self,
         input_data=None,
     ):
+
 
         self.state = BrainState.THINKING
 
@@ -290,10 +343,12 @@ class Brain:
         question: str,
     ):
 
+
         self.state = BrainState.RESPONDING
 
 
         try:
+
 
             context = self.think(
                 question
@@ -318,10 +373,12 @@ class Brain:
         event,
     ):
 
+
         self.state = BrainState.OBSERVING
 
 
         try:
+
 
             memory = self.memory_factory.from_event(
                 event
@@ -338,6 +395,7 @@ class Brain:
 
         finally:
 
+
             self.state = BrainState.IDLE
 
 
@@ -351,10 +409,12 @@ class Brain:
         facts,
     ):
 
+
         self.state = BrainState.INFERRING
 
 
         try:
+
 
             return self.inference_engine.infer(
                 facts
@@ -362,6 +422,7 @@ class Brain:
 
 
         finally:
+
 
             self.state = BrainState.IDLE
 
@@ -376,10 +437,12 @@ class Brain:
         facts,
     ):
 
+
         self.state = BrainState.REFLECTING
 
 
         try:
+
 
             return self.reflection_engine.reflect(
                 facts
@@ -387,6 +450,7 @@ class Brain:
 
 
         finally:
+
 
             self.state = BrainState.IDLE
 
